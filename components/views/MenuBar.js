@@ -1,26 +1,26 @@
 import React, { useState } from 'react';
-import {StyleSheet, View, Text, TouchableHighlight, TouchableOpacity} from 'react-native';
+import {StyleSheet, View, Text, TouchableOpacity} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 const MenuBar = ( { currentScreenId } ) => {
   const navigation = useNavigation();
   return (
     <View style={styles.container}>
-        <TouchableHighlight onPress={() =>navigation.navigate('ExerciseGuide')}>
+        <TouchableOpacity onPress={() =>navigation.navigate('ExerciseGuide')}>
             <View style={styles.menuButton}>
                 <Text style={[styles.menuText, currentScreenId==0?{color: '#D4AF37'}:{color: 'white'}]}>Guide</Text>
             </View>
-        </TouchableHighlight>
-        <TouchableHighlight onPress={() =>navigation.navigate('RoutineScreen')}>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() =>navigation.navigate('RoutineScreen')}>
             <View style={styles.menuButton}>
                 <Text style={[styles.menuText, currentScreenId==1?{color: '#D4AF37'}:{color: 'white'}]}>Routines</Text>
             </View>
-        </TouchableHighlight>
-        <TouchableHighlight onPress={() =>navigation.navigate('ContactScreen', { sendCapture: false})}>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() =>navigation.navigate('ContactScreen', { sendCapture: false})}>
             <View style={styles.menuButton}>
                 <Text style={[styles.menuText, currentScreenId==2?{color: '#D4AF37'}:{color: 'white'}]}>Social</Text>
             </View>
-        </TouchableHighlight>
+        </TouchableOpacity>
     </View>
   );
 };

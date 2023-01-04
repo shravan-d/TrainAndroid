@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect} from 'react';
-import {StyleSheet, ImageBackground, View, Text, TextInput, ScrollView, TouchableHighlight, FlatList, Dimensions} from 'react-native';
+import {StyleSheet, ImageBackground, View, Text, TextInput, ScrollView, TouchableOpacity, FlatList, Dimensions} from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import ContactCard from '../views/ContactCard';
 import MenuBar from '../views/MenuBar';
@@ -79,9 +79,9 @@ const ContactScreen = ({ route }) => {
           {!openSearch &&
           <>
           <Text style={styles.header}>TrainShots</Text>
-          <TouchableHighlight onPress={() => {setOpenSearch(!openSearch)}} style={styles.searchButton}>
+          <TouchableOpacity onPress={() => {setOpenSearch(!openSearch)}} style={styles.searchButton}>
             <IonIcon name="ios-search-outline" color="rgba(255,255,255,0.8)" size={24} />
-          </TouchableHighlight>
+          </TouchableOpacity>
           </>
           }
           {openSearch &&
@@ -98,17 +98,17 @@ const ContactScreen = ({ route }) => {
         <View style={styles.contactContainer}>
           <ScrollView>
             {filteredContactList.map((contact) => (
-                <TouchableHighlight key={contact.id} onPress={() => onCardPress(contact.id)}>
+                <TouchableOpacity key={contact.id} onPress={() => onCardPress(contact.id)}>
                   <ContactCard contact={contact} highlight={selectedContacts.includes(contact.id)} />
-                </TouchableHighlight>
+                </TouchableOpacity>
             ))}
           </ScrollView>
-          <TouchableHighlight onPress={() => {navigation.navigate('CameraScreen');}} style={styles.addButton}>
+          <TouchableOpacity onPress={() => {navigation.navigate('CameraScreen');}} style={styles.addButton}>
             <>
               {!sendCapture && <IonIcon name="ios-add-outline" color="rgba(255,255,255,0.8)" size={30} />}
               {sendCapture && <IonIcon name="send-sharp" color="rgba(255,255,255,0.8)" size={30} />}
             </>
-          </TouchableHighlight>
+          </TouchableOpacity>
         </View>
         <NavBar />
         <MenuBar currentScreenId={2} />

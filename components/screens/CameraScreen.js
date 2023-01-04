@@ -1,5 +1,5 @@
 import { React, useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import {StyleSheet, View, Text, TouchableHighlight, TouchableOpacity} from 'react-native';
+import {StyleSheet, View, Text, TouchableOpacity} from 'react-native';
 import { useCameraDevices, Camera } from 'react-native-vision-camera';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { useIsForeground } from '../hooks/useIsAppForeground';
@@ -119,8 +119,8 @@ const CameraScreen = () => {
             video={true}
         />
         <TouchableOpacity disabled={!isActive} onLongPress={()=>{startRecording()}} onPressOut={()=>(isRecording?stopRecording():{})} onPress={() => {takePhoto()}} style={[styles.captureButton, isRecording?{backgroundColor: "rgba(250,0,0,0.7)"}:{}]}><></></TouchableOpacity>
-        <TouchableHighlight onPress={() => {setCameraPos(!cameraPos)}} style={styles.revButton}><IonIcon name="camera-reverse-outline" color="rgba(255,255,255,0.8)" size={30} /></TouchableHighlight>
-        <TouchableHighlight onPress={() => {setFlash(flash=='off'?'on':'off')}} style={styles.flashButton}><IonIcon name="ios-flash-outline"  color="rgba(255,255,255,0.8)" size={30} /></TouchableHighlight>
+        <TouchableOpacity onPress={() => {setCameraPos(!cameraPos)}} style={styles.revButton}><IonIcon name="camera-reverse-outline" color="rgba(255,255,255,0.8)" size={30} /></TouchableOpacity>
+        <TouchableOpacity onPress={() => {setFlash(flash=='off'?'on':'off')}} style={styles.flashButton}><IonIcon name="ios-flash-outline"  color="rgba(255,255,255,0.8)" size={30} /></TouchableOpacity>
         </>
         }
     </View>
@@ -157,4 +157,4 @@ const styles = StyleSheet.create({
 
 export default CameraScreen;
 
-// zoom, filters
+// zoom, filters, audio

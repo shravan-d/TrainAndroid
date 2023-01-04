@@ -1,5 +1,5 @@
 import { React, useState, useCallback, useMemo } from 'react';
-import {StyleSheet, Image, View, TouchableHighlight, Alert, PermissionsAndroid} from 'react-native';
+import {StyleSheet, Image, View, TouchableOpacity, Alert, PermissionsAndroid} from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import { CameraRoll } from "@react-native-camera-roll/camera-roll";
 import { useNavigation } from '@react-navigation/native';
@@ -93,15 +93,15 @@ const MediaScreen = ({ route }) => {
         )}
         
         
-        <TouchableHighlight onPress={() => {sendCapture()}} style={styles.sendButton}><IonIcon name="send-sharp"  color="rgba(255,255,255,0.8)" size={30} /></TouchableHighlight>
-        <TouchableHighlight style={styles.saveButton} onPress={onSavePressed} disabled={savingState !== 'none'}>
+        <TouchableOpacity onPress={() => {sendCapture()}} style={styles.sendButton}><IonIcon name="send-sharp"  color="rgba(255,255,255,0.8)" size={30} /></TouchableOpacity>
+        <TouchableOpacity style={styles.saveButton} onPress={onSavePressed} disabled={savingState !== 'none'}>
           <>
           {savingState === 'none' && <IonIcon name="download-outline" size={30} color="rgba(255,255,255,0.8)" />}
           {savingState === 'saved' && <IonIcon name="ios-checkmark" size={30} color="rgba(255,255,255,0.8)" />}
           {savingState === 'saving' && <IonIcon name="radio-button-off-sharp" size={30} color="rgba(255,255,255,0.8)" />}
           </>
-        </TouchableHighlight>
-        <TouchableHighlight onPress={() => {navigation.navigate('CameraScreen')}} style={styles.retakeButton}><></></TouchableHighlight>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => {navigation.navigate('CameraScreen')}} style={styles.retakeButton}><></></TouchableOpacity>
         
       
     </View>

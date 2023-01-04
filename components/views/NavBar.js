@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
-import {StyleSheet, ImageBackground, View, Button, TouchableHighlight, Text} from 'react-native';
+import {StyleSheet, ImageBackground, View, Button, TouchableOpacity, Text} from 'react-native';
 
 const NavBar = () => {
   const [showSidebar, setShowSidebar] = useState(false);
   return (
     <View style={styles.container}>
         <View style = {styles.navButton}>
-            <TouchableHighlight onPress={() => {setShowSidebar(!showSidebar)}} style={styles.button}>
+            <TouchableOpacity onPress={() => {setShowSidebar(!showSidebar)}} style={styles.button}>
                 <>
                 <View style = {[styles.menuLine, showSidebar ? styles.menuLineActive : {}]}></View>
                 <View style = {[styles.menuLine, styles.menuLine2, showSidebar ? styles.menuLineActive2 : {}]}></View>
                 </>
-            </TouchableHighlight>
+            </TouchableOpacity>
         </View>
         { showSidebar && 
             <View style={styles.sidebar}></View>

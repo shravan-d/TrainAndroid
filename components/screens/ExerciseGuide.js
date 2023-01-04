@@ -1,5 +1,5 @@
 import {React, useEffect, useState} from 'react';
-import {StyleSheet, ImageBackground, View, Text, Dimensions, TouchableHighlight, TextInput} from 'react-native';
+import {StyleSheet, ImageBackground, View, Text, Dimensions, TouchableOpacity, TextInput} from 'react-native';
 import ExerciseCard from '../views/ExerciseCard';
 import Dropdown from '../views/Dropdown';
 import MenuBar from '../views/MenuBar';
@@ -69,9 +69,9 @@ const ExerciseGuide = () => {
     <View style={styles.container}>
       <View style={styles.topBar}>
           {!openSearch &&
-          <TouchableHighlight onPress={() => {setOpenSearch(!openSearch)}} style={styles.searchButton}>
+          <TouchableOpacity onPress={() => {setOpenSearch(!openSearch)}} style={styles.searchButton}>
             <IonIcon name="ios-search-outline" color="rgba(255,255,255,0.8)" size={24} />
-          </TouchableHighlight>
+          </TouchableOpacity>
           }
           {openSearch &&
           <TextInput 

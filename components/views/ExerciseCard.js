@@ -1,5 +1,5 @@
 import {React, useState} from 'react';
-import {StyleSheet, TouchableHighlight, View, Text, Dimensions, Image, ScrollView} from 'react-native';
+import {StyleSheet, TouchableOpacity, View, Text, Dimensions, Image, ScrollView} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
 
@@ -23,9 +23,9 @@ const ExerciseCard = ({ exercise }) => {
               <Text style={styles.cardSubtext}>{exercise.requirements?exercise.requirements:"None"}</Text>
             </View>
           </View>
-          <TouchableHighlight onPress={() => {setCardPress(!cardPress)}} style={styles.expandArrow}>
+          <TouchableOpacity onPress={() => {setCardPress(!cardPress)}} style={styles.expandArrow}>
             <Icon name="angle-down" size={30} color="#D4AF37" />
-          </TouchableHighlight>
+          </TouchableOpacity>
         </View>
       }
       {cardPress && 
@@ -39,14 +39,14 @@ const ExerciseCard = ({ exercise }) => {
                   <View style={styles.bigCardText2}>
                       { exerciseSteps.map((item)=> <Text style={styles.bigCardSubtext}>{item}.</Text>) }
                   </View>
-                  <TouchableHighlight onPress={() =>navigation.navigate('ExerciseDetailScreen', {exerciseId: exercise.id})} style={{paddingBottom: 10}}>
+                  <TouchableOpacity onPress={() =>navigation.navigate('ExerciseDetailScreen', {exerciseIdList: [exercise.id], currIdx: 0})} style={{paddingBottom: 10}}>
                   <Text style={{fontFamily: 'Montserrat-Italic', marginTop: '5%'}}>Click to read more</Text>
-                  </TouchableHighlight>
+                  </TouchableOpacity>
                 </View>
             </View>
-            <TouchableHighlight onPress={() => {setCardPress(!cardPress)}} style={styles.expandArrow}>
+            <TouchableOpacity onPress={() => {setCardPress(!cardPress)}} style={styles.expandArrow}>
             <Icon name="angle-up" size={30} color="#D4AF37" />
-            </TouchableHighlight>
+            </TouchableOpacity>
         </View>
       }
     </View>
