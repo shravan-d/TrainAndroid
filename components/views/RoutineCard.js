@@ -8,7 +8,7 @@ import {
   Image,
   ScrollView,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import IonIcon from 'react-native-vector-icons/Ionicons';
 import {useNavigation} from '@react-navigation/native';
 
 var screenWidth = Dimensions.get('window').width;
@@ -16,8 +16,8 @@ var screenHeight = Dimensions.get('window').height;
 
 const RoutineCard = ({routine, self}) => {
   const navigation = useNavigation();
-  var defaultIcon = require('../../assets/media/logo1.png');
-  let image = routine.image ? {uri: routine.image} : defaultIcon;
+  var defaultIonIcon = require('../../assets/media/logo1.png');
+  let image = routine.image ? {uri: routine.image} : defaultIonIcon;
   let experienceMap = {0: 'Beginner', 1: 'Intermediate', 2: 'Expert'};
   let experienceColorMap = {0: '#ABE6CE', 1: '#CECBD6', 2: '#F388B1'};
   
@@ -48,27 +48,27 @@ const RoutineCard = ({routine, self}) => {
                 </Text>
                 {/* <Text style={styles.cardSubtext}>{routine.duration} weeks</Text> */}
                 <View style={styles.starContainer}>
-                  <Icon
+                  <IonIcon
                     name="star"
                     size={12}
                     color={routine.rating > 0 ? '#D4AF37' : 'white'}
                   />
-                  <Icon
+                  <IonIcon
                     name="star"
                     size={12}
                     color={routine.rating > 1 ? '#D4AF37' : 'white'}
                   />
-                  <Icon
+                  <IonIcon
                     name="star"
                     size={12}
                     color={routine.rating > 2 ? '#D4AF37' : 'white'}
                   />
-                  <Icon
+                  <IonIcon
                     name="star"
                     size={12}
                     color={routine.rating > 3 ? '#D4AF37' : 'white'}
                   />
-                  <Icon
+                  <IonIcon
                     name="star"
                     size={12}
                     color={routine.rating > 4 ? '#D4AF37' : 'white'}
@@ -83,7 +83,7 @@ const RoutineCard = ({routine, self}) => {
                   self: self
                 });
               }}
-              style={styles.moreIcon}>
+              style={styles.moreIonIcon}>
               <View style={styles.cardMoretext}>
                 <Text
                   style={{
@@ -93,7 +93,7 @@ const RoutineCard = ({routine, self}) => {
                   }}>
                   {self ? 'Start Now' : 'Show More'}
                 </Text>
-                <Icon name="arrow-forward" size={18} color="#D4AF37" />
+                <IonIcon name="arrow-forward" size={18} color="#D4AF37" />
               </View>
             </TouchableOpacity>
           </View>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {StyleSheet, Image, View, Text, Dimensions} from 'react-native';
-import IonIcon from 'react-native-vector-icons/Ionicons';
+import IonIonIcon from 'react-native-vector-icons/Ionicons';
 
 const screenHeight = Dimensions.get("window").height
 const screenWidth = Dimensions.get("window").width
@@ -36,8 +36,8 @@ const ContactCard = ({ contact, highlight }) => {
     getTime();
   }, [contact]);
   
-  var defaultIcon = require ('../../assets/media/logo.png');
-  let image = contact.image?{uri: contact.image}:defaultIcon;
+  var defaultIonIcon = require ('../../assets/media/logo.png');
+  let image = contact.image?{uri: contact.image}:defaultIonIcon;
   let subText = newShot? "New training shot": (newMsg ? "New message" : "Last seen "+contact.lastSeen+" ago");
   return (
     <View style={styles.container}>
@@ -54,7 +54,7 @@ const ContactCard = ({ contact, highlight }) => {
                 {contact.streak > 0 && 
                 <View style={{flexDirection: "row", justifyContent: 'center', marginTop: "6%"}}>
                   <Text style={{color: "white", fontFamily: 'Montserrat-Italic', marginRight:'8%'}}>{contact.streak}</Text>
-                  <IonIcon name="ios-fitness-sharp" color="rgba(212, 175, 55, 1)" size={18} />
+                  <IonIonIcon name="ios-fitness-sharp" color="rgba(212, 175, 55, 1)" size={18} />
                 </View>
                 }
             </View>

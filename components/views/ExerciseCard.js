@@ -1,6 +1,6 @@
 import {React, useState} from 'react';
 import {StyleSheet, TouchableOpacity, View, Text, Dimensions, Image, ScrollView} from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import IonIcon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 
 var width = Dimensions.get('window').width;
@@ -8,10 +8,11 @@ var screenHeight = Dimensions.get('window').height;
 
 const ExerciseCard = ({ exercise }) => {
   const navigation = useNavigation();
+  const [favorite, setFavorite] = useState(true);
   const [cardPress, setCardPress] = useState(false);
   const exerciseSteps = exercise.steps.split(".").slice(0,2);
-  var defaultIcon = require ('../../assets/media/logo1.png');
-  let image = exercise.image?{uri: exercise.image}:defaultIcon;
+  var defaultIonIcon = require ('../../assets/media/logo1.png');
+  let image = exercise.image?{uri: exercise.image}:defaultIonIcon;
   return (
     <View style={[styles.container, cardPress?{height:0.25*screenHeight}:{height:0.12*screenHeight}]}>
       {!cardPress && 
@@ -24,7 +25,10 @@ const ExerciseCard = ({ exercise }) => {
             </View>
           </View>
           <TouchableOpacity onPress={() => {setCardPress(!cardPress)}} style={styles.expandArrow}>
-            <Icon name="angle-down" size={30} color="#D4AF37" />
+            <IonIcon name="chevron-down" size={30} color="#D4AF37" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setFavorite(!favorite)} style={styles.heart}>
+            <IonIcon name="heart" size={18} color={favorite ? '#D4AF37' : 'rgba(20,20,20,0.2)'} />
           </TouchableOpacity>
         </View>
       }
@@ -45,7 +49,7 @@ const ExerciseCard = ({ exercise }) => {
                 </View>
             </View>
             <TouchableOpacity onPress={() => {setCardPress(!cardPress)}} style={styles.expandArrow}>
-            <Icon name="angle-up" size={30} color="#D4AF37" />
+            <IonIcon name="chevron-up" size={30} color="#D4AF37" />
             </TouchableOpacity>
         </View>
       }
@@ -125,12 +129,17 @@ const styles = StyleSheet.create({
     marginRight: "6%"
   },
   expandArrow: {
-    height: 40,
-    width: 40,
     backgroundColor: "rgba(0,0,0,0)",
     position: 'absolute',
-    marginLeft: "90%",
+    right: 4,
     paddingLeft: 11
+  },
+  heart: {
+    backgroundColor: "rgba(0,0,0,0)",
+    position: 'absolute',
+    right: 10,
+    bottom: 15,
+    paddingLeft: 10
   }
 });
 

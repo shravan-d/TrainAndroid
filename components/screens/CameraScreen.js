@@ -3,13 +3,13 @@ import {StyleSheet, View, Text, TouchableOpacity} from 'react-native';
 import { useCameraDevices, Camera } from 'react-native-vision-camera';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { useIsForeground } from '../hooks/useIsAppForeground';
-import IonIcon from 'react-native-vector-icons/Ionicons';
+import IonIonIcon from 'react-native-vector-icons/Ionicons';
 
 const CameraScreen = () => {
   const [camPerm, setCamPerm] = useState('not-determined');
   const navigation = useNavigation();
-//   const [microphonePermission, setMicrophonePermission] = useState();
-
+  const [microphonePermission, setMicrophonePermission] = useState('not-determined');
+  const [recordAudio, setRecordAudio] = useState(false);
   const isAppForeground = useIsForeground()
   const isFocused = useIsFocused()
   const isActive = isAppForeground && isFocused
@@ -79,20 +79,29 @@ const CameraScreen = () => {
     [navigation],
   );
 
-  const getPermission = async () => {
+  const getCamPermission = async () => {
     let status = await Camera.getCameraPermissionStatus();
+    if (status !== 'authorized') {
+        await Camera.requestMicrophonePermission();
+    }
+    setCamPerm(status);
+  }   
+
+  const getMicPermission = async () => {
+    let status = await Camera.getMicrophonePermissionStatus();
     if (status !== 'authorized') {
         await Camera.requestCameraPermission();
     }
-    setCamPerm('authorized');
-  }   
-
+    setMicrophonePermission(status);
+    console.log(status)
+  } 
   const devices = useCameraDevices()
   const device = cameraPos? devices.back : devices.front
   const camera = useRef()
 
   useEffect(() => { 
-    getPermission();
+    getCamPermission();
+    getMicPermission();
   }, []);
 
   let lastPress = 0;
@@ -117,10 +126,14 @@ const CameraScreen = () => {
             isActive={isActive}
             photo={true}
             video={true}
+            audio={recordAudio&&(microphonePermission==='authorized'?true:false)}
         />
         <TouchableOpacity disabled={!isActive} onLongPress={()=>{startRecording()}} onPressOut={()=>(isRecording?stopRecording():{})} onPress={() => {takePhoto()}} style={[styles.captureButton, isRecording?{backgroundColor: "rgba(250,0,0,0.7)"}:{}]}><></></TouchableOpacity>
-        <TouchableOpacity onPress={() => {setCameraPos(!cameraPos)}} style={styles.revButton}><IonIcon name="camera-reverse-outline" color="rgba(255,255,255,0.8)" size={30} /></TouchableOpacity>
-        <TouchableOpacity onPress={() => {setFlash(flash=='off'?'on':'off')}} style={styles.flashButton}><IonIcon name="ios-flash-outline"  color="rgba(255,255,255,0.8)" size={30} /></TouchableOpacity>
+        <TouchableOpacity onPress={() => {setCameraPos(!cameraPos)}} style={styles.revButton}><IonIonIcon name="camera-reverse-outline" color="rgba(255,255,255,0.8)" size={30} /></TouchableOpacity>
+        {flash=='off'&&<TouchableOpacity onPress={() => {setFlash(flash=='off'?'on':'off')}} style={styles.flashButton}><IonIonIcon name="ios-flash-outline"  color="rgba(255,255,255,0.8)" size={30} /></TouchableOpacity>}
+        {flash=='on'&&<TouchableOpacity onPress={() => {setFlash(flash=='off'?'on':'off')}} style={styles.flashButton}><IonIonIcon name="ios-flash"  color="rgba(255,255,255,0.8)" size={30} /></TouchableOpacity>}
+        {recordAudio && <TouchableOpacity onPress={() => {setRecordAudio(!recordAudio)}} style={styles.volumeButton}><IonIonIcon name="ios-volume-off"  color="rgba(255,255,255,0.8)" size={30} /></TouchableOpacity>}
+        {!recordAudio && <TouchableOpacity onPress={() => {setRecordAudio(!recordAudio)}} style={styles.volumeButton}><IonIonIcon name="ios-volume-off-outline"  color="rgba(255,255,255,0.8)" size={30} /></TouchableOpacity>}
         </>
         }
     </View>
@@ -152,9 +165,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: "5%",
     left: "5%"
-  }
+  },
+  volumeButton: {
+    position: 'absolute',
+    bottom: "15%",
+    right: "5%"
+  },
 });
 
 export default CameraScreen;
 
-// zoom, filters, audio
+// zoom, filters

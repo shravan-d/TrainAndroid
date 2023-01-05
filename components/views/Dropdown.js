@@ -17,8 +17,9 @@ const Dropdown = ({value, setValue, header, dropdownItems}) => {
             setOpen={setOpen}
             setValue={setValue}
             setItems={setItems}
-            showTickIcon={false}
+            showTickIonIcon={false}
             placeholder="All"
+            closeOnBackPressed={true}
             style={{
               backgroundColor: "rgba(0,0,0,0)",
               borderBottomColor: '#D4AF37',
@@ -33,7 +34,7 @@ const Dropdown = ({value, setValue, header, dropdownItems}) => {
             }}
             labelStyle={{
             }}
-            arrowIconStyle={{
+            arrowIonIconStyle={{
               position: 'absolute',
               right: "5%",
               top: "-27%"

@@ -12,9 +12,9 @@ import Dropdown from '../views/Dropdown';
 import MenuBar from '../views/MenuBar';
 import NavBar from '../views/NavBar';
 import {ScrollView} from 'react-native-gesture-handler';
-import IonIcon from 'react-native-vector-icons/Ionicons';
+import IonIonIcon from 'react-native-vector-icons/Ionicons';
 import RoutineCard from '../views/RoutineCard';
-import Icon from 'react-native-vector-icons/Ionicons';
+import IonIcon from 'react-native-vector-icons/Ionicons';
 import {useNavigation} from '@react-navigation/native';
 
 var screenHeight = Dimensions.get('window').height;
@@ -77,7 +77,7 @@ const RoutineScreen = () => {
     <View style={styles.container}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        style={styles.exerciseContainer}>
+        style={[styles.contentContainer, modalVisible?{opacity: 0.5}:{}]}>
         <View style={styles.myRoutineContainer}>
           <ImageBackground
             source={overlays[0]}
@@ -90,7 +90,7 @@ const RoutineScreen = () => {
             <View style={styles.createCard}>
               <Text style={styles.createCardText}>Create New Routine</Text>
               <TouchableOpacity onPress={() => setModalVisible(true)}>
-                <IonIcon
+                <IonIonIcon
                   name="ios-add-circle-outline"
                   color="rgba(10,10,10,0.7)"
                   size={40}
@@ -116,7 +116,7 @@ const RoutineScreen = () => {
                     setRating(1);
                   }}
                   style={styles.starTouch}>
-                  <Icon
+                  <IonIcon
                     name="star"
                     size={18}
                     color={rating > 0 ? '#D4AF37' : 'white'}
@@ -127,7 +127,7 @@ const RoutineScreen = () => {
                     setRating(2);
                   }}
                   style={styles.starTouch}>
-                  <Icon
+                  <IonIcon
                     name="star"
                     size={18}
                     color={rating > 1 ? '#D4AF37' : 'white'}
@@ -138,7 +138,7 @@ const RoutineScreen = () => {
                     setRating(3);
                   }}
                   style={styles.starTouch}>
-                  <Icon
+                  <IonIcon
                     name="star"
                     size={18}
                     color={rating > 2 ? '#D4AF37' : 'white'}
@@ -149,7 +149,7 @@ const RoutineScreen = () => {
                     setRating(4);
                   }}
                   style={styles.starTouch}>
-                  <Icon
+                  <IonIcon
                     name="star"
                     size={18}
                     color={rating > 3 ? '#D4AF37' : 'white'}
@@ -160,7 +160,7 @@ const RoutineScreen = () => {
                     setRating(5);
                   }}
                   style={styles.starTouch}>
-                  <Icon
+                  <IonIcon
                     name="star"
                     size={18}
                     color={rating > 4 ? '#D4AF37' : 'white'}
@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     height: screenHeight,
     backgroundColor: 'black',
   },
-  exerciseContainer: {
+  contentContainer: {
     width: '100%',
     maxHeight: 0.94 * screenHeight,
   },

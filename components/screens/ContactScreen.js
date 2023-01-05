@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect} from 'react';
 import {StyleSheet, ImageBackground, View, Text, TextInput, ScrollView, TouchableOpacity, FlatList, Dimensions} from 'react-native';
-import IonIcon from 'react-native-vector-icons/Ionicons';
+import IonIonIcon from 'react-native-vector-icons/Ionicons';
 import ContactCard from '../views/ContactCard';
 import MenuBar from '../views/MenuBar';
 import NavBar from '../views/NavBar';
@@ -80,7 +80,7 @@ const ContactScreen = ({ route }) => {
           <>
           <Text style={styles.header}>TrainShots</Text>
           <TouchableOpacity onPress={() => {setOpenSearch(!openSearch)}} style={styles.searchButton}>
-            <IonIcon name="ios-search-outline" color="rgba(255,255,255,0.8)" size={24} />
+            <IonIonIcon name="ios-search-outline" color="rgba(255,255,255,0.8)" size={24} />
           </TouchableOpacity>
           </>
           }
@@ -105,8 +105,8 @@ const ContactScreen = ({ route }) => {
           </ScrollView>
           <TouchableOpacity onPress={() => {navigation.navigate('CameraScreen');}} style={styles.addButton}>
             <>
-              {!sendCapture && <IonIcon name="ios-add-outline" color="rgba(255,255,255,0.8)" size={30} />}
-              {sendCapture && <IonIcon name="send-sharp" color="rgba(255,255,255,0.8)" size={30} />}
+              {!sendCapture && <IonIonIcon name="ios-add-outline" color="rgba(255,255,255,0.8)" size={30} />}
+              {sendCapture && <IonIonIcon name="send-sharp" color="rgba(255,255,255,0.8)" size={30} />}
             </>
           </TouchableOpacity>
         </View>

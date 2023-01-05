@@ -5,7 +5,7 @@ import Dropdown from '../views/Dropdown';
 import MenuBar from '../views/MenuBar';
 import NavBar from '../views/NavBar';
 import { ScrollView } from 'react-native-gesture-handler';
-import IonIcon from 'react-native-vector-icons/Ionicons';
+import IonIonIcon from 'react-native-vector-icons/Ionicons';
 
 var screenHeight = Dimensions.get('window').height;
 var screenWidth = Dimensions.get('window').width;
@@ -23,6 +23,7 @@ const ExerciseGuide = () => {
     {label: 'Abs', value: 'Abs'},
   ];
 
+  const [showFavorites, setShowFavorites] = useState(false);
   const [search, setSearch] = useState('');
   const [openSearch, setOpenSearch] = useState(false)
   const [muscleGroup, setMuscleGroup] = useState(null);
@@ -42,12 +43,12 @@ const ExerciseGuide = () => {
     setFilteredExerciseList(exerciseList);
   }, [muscleGroup]);
 
-  const [headerHeightRatio, setHeaderHeightRatio] = useState(0.3);
+  const [headerHeightRatio, setHeaderHeightRatio] = useState(0.32);
   const scrollE = (e) => {
     if (e.nativeEvent.contentOffset.y > 50)
       setHeaderHeightRatio(0.175)
     if (e.nativeEvent.contentOffset.y < 50)
-      setHeaderHeightRatio(0.3)
+      setHeaderHeightRatio(0.32)
   }
 
   const searchFilterFunction = (text) => {
@@ -70,7 +71,7 @@ const ExerciseGuide = () => {
       <View style={styles.topBar}>
           {!openSearch &&
           <TouchableOpacity onPress={() => {setOpenSearch(!openSearch)}} style={styles.searchButton}>
-            <IonIcon name="ios-search-outline" color="rgba(255,255,255,0.8)" size={24} />
+            <IonIonIcon name="ios-search-outline" color="rgba(255,255,255,0.8)" size={24} />
           </TouchableOpacity>
           }
           {openSearch &&
@@ -86,8 +87,14 @@ const ExerciseGuide = () => {
         </View>
       <View style={[styles.headerContainer, {height: headerHeightRatio*screenHeight}]}>
       <ImageBackground source={overlays[0]} imageStyle={{opacity:0.08}} style={styles.overlay}>
-        <View  style={{marginTop: "15%"}} >
+        <View  style={{marginTop: "16%"}} >
           <Dropdown value={muscleGroup} setValue={setMuscleGroup} header={"What muscle group would you like to workout today?"} dropdownItems={dropdownItems}/>      
+        </View>
+        <View style={styles.favouritesContainer}>
+          <Text style={styles.text}>Show favorites</Text>
+          <TouchableOpacity onPress={() => setShowFavorites(!showFavorites)}>
+          <IonIonIcon name="heart" size={18} color={showFavorites ? '#D4AF37' : 'white'} />
+          </TouchableOpacity>
         </View>
         <View><Text style={styles.groupHeader}>{muscleGroup}</Text></View>
       </ImageBackground>
@@ -111,7 +118,14 @@ const styles = StyleSheet.create({
     height: screenHeight,
     backgroundColor: "black"
   },
-  headerContainer: {
+  favouritesContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: '5%'
+  },
+  text: {
+    color: 'white',
+    fontFamily: 'Montserrat-Regular'
   },
   exerciseContainer: {
     width: "100%",
@@ -121,12 +135,13 @@ const styles = StyleSheet.create({
     color: "white",
     textAlign: "center",
     fontFamily: 'Montserrat-Bold',
-    fontSize: 28,
-    marginTop: "8%"
+    fontSize: 24,
+    marginTop: "4%"
   },
   topBar: {
     position: 'absolute',
-    width: "100%",
+    width: "85%",
+    alignSelf: 'flex-end',
     height: 0.07*screenHeight,
     backgroundColor: "rgba(0,0,0,0)",
     lineHeight: "7%",
@@ -152,4 +167,4 @@ const styles = StyleSheet.create({
 
 export default ExerciseGuide;
 
-// flicker on scroll(animation), favorites, pagination
+// flicker on scroll(animation), pagination

@@ -14,7 +14,7 @@ import Dropdown from '../views/Dropdown';
 import MenuBar from '../views/MenuBar';
 import NavBar from '../views/NavBar';
 import {ScrollView} from 'react-native-gesture-handler';
-import IonIcon from 'react-native-vector-icons/Ionicons';
+import IonIonIcon from 'react-native-vector-icons/Ionicons';
 import Video, {LoadError, OnLoadData} from 'react-native-video';
 import {useIsFocused} from '@react-navigation/core';
 import {useIsForeground} from '../hooks/useIsAppForeground';
@@ -55,21 +55,20 @@ const ExerciseDetailScreen = ({ route }) => {
 
   const onVideoBuffer = param => {
     setIsLoading(param.isBuffering);
-    console.log(isLoading);
+    console.log(param)
+    // console.log(isLoading);
   };
 
   const loadingView = () => {
     if (isLoading)
       return (
         <ActivityIndicator
-          color="blue"
+          color="rgba(250,250,250,0.8)"
           size="large"
           style={{
-            flex: 1,
-            justifyContent: 'center',
-            backgroundColor: 'red',
-            width: 100,
-            height: 100,
+            position: 'absolute',
+            alignSelf: 'center',
+            top: '45%'
           }}
         />
       );
@@ -93,7 +92,6 @@ const ExerciseDetailScreen = ({ route }) => {
         style={styles.exerciseContainer}>
         <ImageBackground source={bg} imageStyle={{opacity: 0.4}}>
           <View>
-            {/* {loadingView()} */}
             <Video
               source={source}
               style={{height: 0.5 * screenHeight}}
@@ -112,6 +110,7 @@ const ExerciseDetailScreen = ({ route }) => {
               onBuffer={onVideoBuffer}
               onError={onMediaLoadError}
             />
+            {loadingView()}
             {buttonsRequired && (
               <>
               <View style={styles.controlButtonContainer}>
@@ -272,7 +271,6 @@ const styles = StyleSheet.create({
   },
   controlButton_: {
     padding: 10,
-    // backgroundColor: 'red', 
     backgroundColor: 'rgba(240,240,240,0.2)',
     justifyContent: 'center',
     alignItems: 'center'
@@ -281,4 +279,4 @@ const styles = StyleSheet.create({
 
 export default ExerciseDetailScreen;
 
-// related, buffering indicator, fix prev button
+// related, onBuffer, fix prev button

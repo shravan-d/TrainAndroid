@@ -13,7 +13,7 @@ import MenuBar from '../views/MenuBar';
 import NavBar from '../views/NavBar';
 import {ScrollView} from 'react-native-gesture-handler';
 import RoutineCard from '../views/RoutineCard';
-import Icon from 'react-native-vector-icons/Ionicons';
+import IonIcon from 'react-native-vector-icons/Ionicons';
 import {useNavigation} from '@react-navigation/native';
 import RoutineDayCard from '../views/RoutineDayCard';
 import DropDownPicker from 'react-native-dropdown-picker';
@@ -24,11 +24,9 @@ var screenWidth = Dimensions.get('window').width;
 const RoutineDetailScreen = ({ route }) => {
   var bg = require('../../assets/media/bg.png');
   overlays = require('../../assets/media/ig4.jpg');
-  const navigation = useNavigation();
-  const [cardPress, setCardPress] = useState(false);
   const {routineId, self} = route.params
   const [inMyList, setInMyList] = useState(self);
-  let routineName = 'Workout Program 1'
+  const [routineName, setRoutineName] = useState('Workout Program 1');
   const [newWorkoutName, setNewWorkoutName] = useState('');
 
   const [dayList, setDayList] = useState([
@@ -45,18 +43,42 @@ const RoutineDetailScreen = ({ route }) => {
     setModalVisible(false);
   }
 
+  let dropdownItems = [
+    {value: 'ch', label: 'Chest'},
+    {value: 'ba', label: 'Back'},
+    {value: 'lg', label: 'Legs'},
+    {value: 'tr', label: 'Triceps'},
+    {value: 2, label: 'Bench Press', parent: 'ch'},
+    {value: 3, label: "Pull Ups", parent: 'ba'}, 
+    {value: 4, label: "Machine Chest Flys", parent: 'ch'}, 
+    {value: 5, label: "Lunges", parent: 'lg'}, 
+    {value: 7, label: "Tricep Bench Dips", parent: 'tr'}, 
+    {value: 1, label: "Incline Dumbell Press", parent: 'ch'}, 
+  ];
+  const [open, setOpen] = useState(false);
+  const [items, setItems] = useState(dropdownItems);
+  const [exerciseName, setExerciseName] = useState(null);
+  const [newExercises, setNewExercises] = useState([]);
+
+  const addExercise = (item) => {
+    const found = newExercises.some(el => el.id == item.value);
+    if (!found) {
+      setNewExercises([...newExercises, {name: item.label, id: item.value}])
+    }
+  }
+
   useEffect(() => {}, []); 
   return (
     <View style={styles.container}>
     <ImageBackground source={overlays} imageStyle={{opacity: 0.07}} style={styles.overlay}>
-      <ScrollView showsVerticalScrollIndicator={false} style={styles.exerciseContainer}>
-          <Text style={styles.header}>{routineName}</Text>
+      <ScrollView showsVerticalScrollIndicator={false} style={[styles.contentContainer, modalVisible?{opacity: 0.5}:{}]}>
+          <TextInput  style={styles.headerTextInputStyle}  maxLength={20} onChangeText={(text) => setRoutineName(text)} value={routineName} cursorColor={"rgba(0,0,0,1)"}/>
           <View style={styles.addListContainer}>
             <TouchableOpacity onPress={() => {setInMyList(!inMyList)}}>
               <View style={styles.addListContainer_}>
               <Text style={styles.addListText}>{inMyList?'Remove this routine from your list':'Add this routine to your list'}</Text>
-              {!inMyList&&<Icon name="ios-add-outline" color="rgba(250,250,250,1)" size={20} />}
-              {inMyList&&<Icon name="ios-close-outline" color="rgba(250,250,250,1)" size={20} />}
+              {!inMyList&&<IonIcon name="ios-add-outline" color="rgba(250,250,250,1)" size={20} />}
+              {inMyList&&<IonIcon name="ios-close-outline" color="rgba(250,250,250,1)" size={20} />}
               </View>
             </TouchableOpacity>
           </View>
@@ -67,28 +89,87 @@ const RoutineDetailScreen = ({ route }) => {
           <View style={styles.createDayContainer}>
             <Text style={styles.createCardText}>Add New Workout</Text>
             <TouchableOpacity onPress={() => setModalVisible(!modalVisible)}>
-              <Icon name="ios-add-circle-outline" color="rgba(10,10,10,0.7)" size={40} />
+              <IonIcon name="ios-add-circle-outline" color="rgba(10,10,10,0.7)" size={40} />
             </TouchableOpacity>
           </View>
           }
-          <Modal
-            animationType="fade"
-            transparent={true}
-            visible={modalVisible}
-            onRequestClose={() => {
-              setModalVisible(!modalVisible);
-            }}
+          <Modal animationType="fade" transparent={true} visible={modalVisible}
+            onRequestClose={() => { setModalVisible(!modalVisible); }}
           >
             <View style={styles.centeredView}>
               <View style={styles.modalView}>
                 <Text style={{fontFamily: 'Montserrat-Regular'}}>Enter the name of your workout</Text>
                 <TextInput  style={styles.textInputStyle}  maxLength={20} onChangeText={(text) => setNewWorkoutName(text)} value={newWorkoutName} cursorColor={"rgba(0,0,0,1)"}/>
-                
+                <DropDownPicker
+                  open={open}
+                  value={exerciseName}
+                  items={items}
+                  searchable={true}
+                  setOpen={setOpen}
+                  setValue={setExerciseName}
+                  setItems={setItems}
+                  categorySelectable={false}
+                  onSelectItem={(item) => {addExercise(item)}}
+                  showTickIonIcon={false}
+                  placeholder="Select exercies to add"
+                  searchPlaceholder="Type exercise name"
+                  style={{
+                    backgroundColor: "rgba(0,0,0,0)",
+                    borderColor: 'white',
+                    borderBottomColor: '#D4AF37',
+                    marginBottom: '5%'
+                  }}
+                  dropDownContainerStyle={{
+                    backgroundColor: "rgba(250,250,250,1)",
+                    borderColor: '#D4AF37',
+                    borderTopColor: '#dfdfdf',
+                  }}
+                  placeholderStyle={{
+                    textAlign: 'center'
+                  }}
+                  labelStyle={{
+                    textAlign: 'center'
+                  }}
+                  textStyle={{
+                    fontFamily: 'Montserrat-Regular',
+                    color: 'black'
+                  }}
+                  arrowIonIconStyle={{
+                    position: 'absolute',
+                    right: "5%",
+                    top: "-27%"
+                  }}
+                  searchContainerStyle={{
+                    borderBottomColor: "#dfdfdf"
+                  }}
+                  listItemLabelStyle={{
+                    color: "#000"
+                  }}
+                  listParentLabelStyle={{
+                    fontWeight: "bold"
+                  }}
+                  listParentContainerStyle={{
+                    borderBottomColor: '#dfdfdf',
+                    borderBottomWidth: 1
+                  }}
+                  searchTextInputStyle={{
+                    borderWidth: 0,
+                    textAlign: 'center'
+                  }}
+                />
+                <View style={styles.exerciseContainer}>
+                {newExercises.map((exercise, index) => (
+                    <View style={{marginBottom: '2%', width: '30%', flexDirection: 'row'}}>
+                        <Text style={{fontFamily: 'Montserrat-Bold', marginRight: '3%'}}>{index+1}</Text>
+                        <Text style={{fontFamily: 'Montserrat-Regular'}}>{exercise.name}</Text>
+                    </View>
+                ))}
+                </View>
                 <View style={{flexDirection: 'row'}}>
                 <Pressable style={[styles.button, {backgroundColor: 'rgba(20,20,20,0.8)'}]} onPress={() => setModalVisible(!modalVisible)}>
                   <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Cancel</Text>
                 </Pressable>
-                <Pressable style={[styles.button, {backgroundColor: 'gold'}]} onPress={() => createNewRoutine()}>
+                <Pressable style={[styles.button, {backgroundColor: '#D4AF37'}]} onPress={() => createNewRoutine()}>
                   <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Save</Text>
                 </Pressable>
                 </View>
@@ -109,14 +190,7 @@ const styles = StyleSheet.create({
     height: screenHeight,
     backgroundColor: 'black',
   },
-  header: {
-    color: "white",
-    textAlign: "center",
-    fontFamily: 'Montserrat-Bold',
-    fontSize: 20,
-    marginBottom: "4%"
-  },
-  exerciseContainer: {
+  contentContainer: {
     width: '100%',
     maxHeight: 0.94 * screenHeight,
     marginTop: 0.07 * screenHeight,
@@ -151,8 +225,8 @@ const styles = StyleSheet.create({
     color: 'white',
     marginRight: '5%'
   },
-
   textInputStyle: {
+    paddingVertical: 2,
     marginVertical: '5%',
     fontFamily: 'Montserrat-Regular',
     color: 'black',
@@ -160,7 +234,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(20,20,20,0.1)',
     borderRadius: 8
   },
-
   centeredView: {
     flex: 1,
     justifyContent: "center",
@@ -183,13 +256,30 @@ const styles = StyleSheet.create({
     elevation: 5
   },
   button: {
-    borderRadius: 2,
-    padding: 8,
+    borderRadius: 3,
+    padding: 5,
     elevation: 2,
     marginHorizontal: 15
+  },
+  exerciseContainer: {
+    flexDirection: 'row', 
+    flexWrap: 'wrap', 
+    justifyContent: 'space-evenly',
+    marginBottom: '5%'
+  },
+  headerTextInputStyle: {
+    paddingVertical: 2,
+    color: "white",
+    textAlign: "center",
+    fontFamily: 'Montserrat-Bold',
+    fontSize: 20,
+    marginBottom: "4%",
+    color: 'white',
+    textDecorationColor: '',
+    backgroundColor: 'rgba(20,20,20,0.1)',
   },
 });
 
 export default RoutineDetailScreen;
 
-// dropdown search to add exercise
+// Reorder position

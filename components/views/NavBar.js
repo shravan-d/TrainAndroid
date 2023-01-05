@@ -70,11 +70,3 @@ const styles = StyleSheet.create({
 });
 
 export default NavBar;
-
-        {/* <Button
-            onPress={() => {setShowSidebar(!showSidebar)}}
-            title=""
-            color="rgba(0,0,0,0)"
-        /> 
-        <View style = {styles.menuLine}></View>
-        <View style = {styles.menuLine}></View>     */}

@@ -13,7 +13,7 @@ import MenuBar from '../views/MenuBar';
 import NavBar from '../views/NavBar';
 import {ScrollView} from 'react-native-gesture-handler';
 import RoutineCard from '../views/RoutineCard';
-import Icon from 'react-native-vector-icons/Ionicons';
+import IonIcon from 'react-native-vector-icons/Ionicons';
 import {useNavigation} from '@react-navigation/native';
 
 var screenHeight = Dimensions.get('window').height;
@@ -34,21 +34,21 @@ const RoutineDayCard = ({ day }) => {
             <View style={styles.cardContent}>
                 <View style={styles.cardText}>
                 <Text style={styles.cardHeader}>{day.name}</Text>
-                <TouchableOpacity onPress={() => {setMarkComplete(!markComplete)}} style={styles.moreIcon}>
+                <TouchableOpacity onPress={() => {setMarkComplete(!markComplete)}} style={styles.moreIonIcon}>
                     <View style={styles.cardMoretext}>
                     <Text style={{fontFamily: 'Montserrat-Italic',fontSize: 11,marginRight: '2%', }}>
                         Mark as complete
                     </Text>
-                    <Icon name="checkmark-circle" size={14} color={markComplete?"#D4AF37":'white'} style={!markComplete?{borderColor: '#D4AF37', borderRadius: 100, borderWidth: 0.2}:{}} />
+                    <IonIcon name="checkmark-circle" size={14} color={markComplete?"#D4AF37":'white'} style={!markComplete?{borderColor: '#D4AF37', borderRadius: 100, borderWidth: 0.2}:{}} />
                     </View>
                 </TouchableOpacity>
                 </View>
-                <TouchableOpacity onPress={() => {setCardPress(!cardPress)}} style={styles.moreIcon}>
+                <TouchableOpacity onPress={() => {setCardPress(!cardPress)}} style={styles.moreIonIcon}>
                 <View style={styles.cardMoretext}>
                 <Text style={{fontFamily: 'Montserrat-Regular',fontSize: 14, marginRight: '2%', }}>
                     Expand
                 </Text>
-                <Icon name="arrow-down" size={18} color="#D4AF37" />
+                <IonIcon name="arrow-down" size={18} color="#D4AF37" />
                 </View>
             </TouchableOpacity>
             </View>
@@ -57,12 +57,12 @@ const RoutineDayCard = ({ day }) => {
             <View style={styles.cardContent}>
                 <View style={styles.cardText}>
                 <Text style={styles.cardHeader}>{day.name}</Text>
-                <TouchableOpacity onPress={() => {setCardPress(!cardPress)}} style={styles.moreIcon}>
+                <TouchableOpacity onPress={() => {setCardPress(!cardPress)}} style={styles.moreIonIcon}>
                     <View style={styles.cardMoretext}>
                     <Text style={{fontFamily: 'Montserrat-Regular',fontSize: 14, marginRight: '2%', }}>
                         Shrink
                     </Text>
-                    <Icon name="arrow-up" size={18} color="#D4AF37" />
+                    <IonIcon name="arrow-up" size={18} color="#D4AF37" />
                     </View>
                 </TouchableOpacity>
                 </View>
@@ -76,12 +76,12 @@ const RoutineDayCard = ({ day }) => {
                 </View>
                 <TouchableOpacity onPress={() => {navigation.navigate('ExerciseDetailScreen', 
                 {exerciseIdList: day.exerciseIds , currIdx: 0})
-                }} style={styles.moreIcon}>
+                }} style={styles.moreIonIcon}>
                     <View style={styles.cardMoretext}>
                     <Text style={{fontFamily: 'Montserrat-Regular',fontSize: 14, marginRight: '2%', }}>
                         Start day's workout
                     </Text>
-                    <Icon name="arrow-forward" size={18} color="#D4AF37" />
+                    <IonIcon name="arrow-forward" size={18} color="#D4AF37" />
                     </View>
                 </TouchableOpacity>
             </View>
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   exerciseContainer: {
     flexDirection: 'row', 
     flexWrap: 'wrap', 
-    justifyContent: 'space-between',
+    justifyContent: 'space-evenly',
     marginTop: '2%'
   },
   cardText: {
