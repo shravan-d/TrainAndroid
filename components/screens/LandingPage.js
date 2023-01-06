@@ -1,9 +1,15 @@
 import React from 'react';
-import {StyleSheet, View, Text, ImageBackground} from 'react-native';
+import {StyleSheet, View, Text, ImageBackground, Dimensions, StatusBar} from 'react-native';
 import MenuBar from '../views/MenuBar';
 import NavBar from '../views/NavBar';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import ExerciseGuide from './ExerciseGuide';
+
+var windowHeight = Dimensions.get('window').height;
+var windowWidth = Dimensions.get('window').width;
+var screenHeight = Dimensions.get('screen').height;
+var screenWidth = Dimensions.get('screen').width;
+var statusHeight = StatusBar.currentHeight;
 
 const LandingPage = () => {
   var bg = require ('../../assets/media/bg.png');
@@ -22,7 +28,7 @@ const LandingPage = () => {
 const styles = StyleSheet.create({
     container: {
       width: "100%",
-      height: "100%",
+      height: '100%'
     },
     background: {
       width: "100%",

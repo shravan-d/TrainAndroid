@@ -17,7 +17,7 @@ const Dropdown = ({value, setValue, header, dropdownItems}) => {
             setOpen={setOpen}
             setValue={setValue}
             setItems={setItems}
-            showTickIonIcon={false}
+            showTickIcon={false}
             placeholder="All"
             closeOnBackPressed={true}
             style={{
@@ -31,8 +31,6 @@ const Dropdown = ({value, setValue, header, dropdownItems}) => {
             textStyle={{
               textAlign: 'center',
               fontFamily: 'Montserrat-Regular',
-            }}
-            labelStyle={{
             }}
             arrowIonIconStyle={{
               position: 'absolute',

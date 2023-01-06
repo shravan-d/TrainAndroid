@@ -87,14 +87,12 @@ const ExerciseDetailScreen = ({ route }) => {
     console.log(currIdx)
   return (
     <View style={styles.container}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        style={styles.exerciseContainer}>
+      <ScrollView showsVerticalScrollIndicator={false} style={styles.exerciseContainer}>
         <ImageBackground source={bg} imageStyle={{opacity: 0.4}}>
-          <View>
+          <View style={{height: 0.5*screenHeight}}>
             <Video
               source={source}
-              style={{height: 0.5 * screenHeight}}
+              style={{height: '100%'}}
               paused={isVideoPaused}
               resizeMode="cover"
               muted={true}
@@ -177,7 +175,7 @@ const ExerciseDetailScreen = ({ route }) => {
             <View style={styles.steps}>
               <Text style={styles.subHeader}>Common Mistakes to Avoid</Text>
               {exerciseMistakes.map((item, index) => (
-                <View style={{flexDirection: 'row', marginBottom: '2%'}}>
+                <View key={index} style={{flexDirection: 'row', marginBottom: '2%'}}>
                   <Text style={styles.counter}>{index + 1}</Text>
                   <Text style={styles.subtext}>{item}.</Text>
                 </View>
@@ -214,12 +212,12 @@ const ExerciseDetailScreen = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    height: screenHeight,
+    height: '100%',
     backgroundColor: 'black',
   },
   exerciseContainer: {
     width: '100%',
-    maxHeight: 0.94 * screenHeight,
+    maxHeight: '94%'
   },
   contentContainer: {
     marginTop: '2%',
@@ -247,8 +245,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   mgImage: {
-    width: 0.14 * screenWidth,
-    height: 0.07 * screenHeight,
+    width: 55,
+    height: 55,
   },
   subtext: {
     color: 'white',

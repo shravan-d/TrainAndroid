@@ -70,9 +70,9 @@ const RoutineDetailScreen = ({ route }) => {
   useEffect(() => {}, []); 
   return (
     <View style={styles.container}>
-    <ImageBackground source={overlays} imageStyle={{opacity: 0.07}} style={styles.overlay}>
-      <ScrollView showsVerticalScrollIndicator={false} style={[styles.contentContainer, modalVisible?{opacity: 0.5}:{}]}>
-          <TextInput  style={styles.headerTextInputStyle}  maxLength={20} onChangeText={(text) => setRoutineName(text)} value={routineName} cursorColor={"rgba(0,0,0,1)"}/>
+      <ScrollView showsVerticalScrollIndicator={false} style={[styles.contentContainer, modalVisible?{opacity: 0.5}:{}]}> 
+      <ImageBackground source={overlays} imageStyle={{opacity: 0.07}} style={styles.overlay}>
+          <TextInput editable={self} style={styles.headerTextInputStyle}  maxLength={20} onChangeText={(text) => setRoutineName(text)} value={routineName} cursorColor={"rgba(0,0,0,1)"}/>
           <View style={styles.addListContainer}>
             <TouchableOpacity onPress={() => {setInMyList(!inMyList)}}>
               <View style={styles.addListContainer_}>
@@ -83,7 +83,7 @@ const RoutineDetailScreen = ({ route }) => {
             </TouchableOpacity>
           </View>
           {dayList.map((day, index) => (
-            <RoutineDayCard day={day} />
+            <RoutineDayCard key={index} day={day} />
           ))}
           {inMyList &&
           <View style={styles.createDayContainer}>
@@ -99,7 +99,7 @@ const RoutineDetailScreen = ({ route }) => {
             <View style={styles.centeredView}>
               <View style={styles.modalView}>
                 <Text style={{fontFamily: 'Montserrat-Regular'}}>Enter the name of your workout</Text>
-                <TextInput  style={styles.textInputStyle}  maxLength={20} onChangeText={(text) => setNewWorkoutName(text)} value={newWorkoutName} cursorColor={"rgba(0,0,0,1)"}/>
+                <TextInput autoCapitalize='sentences' style={styles.textInputStyle}  maxLength={20} onChangeText={(text) => setNewWorkoutName(text)} value={newWorkoutName} cursorColor={"rgba(0,0,0,1)"}/>
                 <DropDownPicker
                   open={open}
                   value={exerciseName}
@@ -110,7 +110,7 @@ const RoutineDetailScreen = ({ route }) => {
                   setItems={setItems}
                   categorySelectable={false}
                   onSelectItem={(item) => {addExercise(item)}}
-                  showTickIonIcon={false}
+                  showTickIcon={false}
                   placeholder="Select exercies to add"
                   searchPlaceholder="Type exercise name"
                   style={{
@@ -159,7 +159,7 @@ const RoutineDetailScreen = ({ route }) => {
                 />
                 <View style={styles.exerciseContainer}>
                 {newExercises.map((exercise, index) => (
-                    <View style={{marginBottom: '2%', width: '30%', flexDirection: 'row'}}>
+                    <View key={index} style={{marginBottom: '2%', width: '30%', flexDirection: 'row'}}>
                         <Text style={{fontFamily: 'Montserrat-Bold', marginRight: '3%'}}>{index+1}</Text>
                         <Text style={{fontFamily: 'Montserrat-Regular'}}>{exercise.name}</Text>
                     </View>
@@ -176,8 +176,8 @@ const RoutineDetailScreen = ({ route }) => {
               </View>
             </View>
           </Modal>
-      </ScrollView>
       </ImageBackground>
+      </ScrollView>
       <NavBar />
       <MenuBar currentScreenId={1} />
     </View>
@@ -187,13 +187,13 @@ const RoutineDetailScreen = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    height: screenHeight,
+    height: '100%',
     backgroundColor: 'black',
   },
   contentContainer: {
     width: '100%',
-    maxHeight: 0.94 * screenHeight,
-    marginTop: 0.07 * screenHeight,
+    maxHeight: '86%',
+    marginTop: '15%'
   },
   createDayContainer: {
     width: '100%',
@@ -256,8 +256,8 @@ const styles = StyleSheet.create({
     elevation: 5
   },
   button: {
-    borderRadius: 3,
-    padding: 5,
+    borderRadius: 2,
+    padding: 7,
     elevation: 2,
     marginHorizontal: 15
   },

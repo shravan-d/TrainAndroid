@@ -117,12 +117,12 @@ const ChatScreen = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <ImageBackground source={bg} style={styles.background}>
-        <View style={{ flex: 1 }}>
         <View style={styles.nameBar}>
             <Text style={styles.name}>{contactName}</Text>
             {contactNewShot && <View style={styles.viewShot}><Text style={styles.viewShotText}>View Shot</Text></View>}
         </View>
+        <ImageBackground source={bg} style={styles.background}>
+        <View style={styles.contentContainer}>
         <GiftedChat
             messages={messages}
             onSend={messages => onSend(messages)}
@@ -146,15 +146,15 @@ const ChatScreen = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    height: screenHeight,
+    height: '100%',
+    backgroundColor: 'black'
   },
-  background: {
-    width: "100%",
-    height: screenHeight
+  contentContainer: {
+    height: '96%'
   },
   nameBar: {
     width: screenWidth,
-    height: 0.07*screenHeight,
+    height: '7%',
     backgroundColor: "rgba(30,30,30,0.8)",
     justifyContent: 'space-between',
     flexDirection: 'row',
@@ -168,8 +168,8 @@ const styles = StyleSheet.create({
   },
   viewShot: {
     backgroundColor: "#D4AF37",
-    width: 0.25*screenWidth,
-    height: 0.05*screenHeight,
+    width: '25%',
+    height: '70%',
     borderRadius: 20,
     borderColor: "mediumorchid",
     borderWidth: 1,
@@ -186,4 +186,4 @@ const styles = StyleSheet.create({
 export default ChatScreen;
 
 
-//input box size when long message, input box no show when keyboard active
+//input box size when long message, input box no show when keyboard active (check num of lines for text input)

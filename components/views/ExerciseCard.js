@@ -10,11 +10,11 @@ const ExerciseCard = ({ exercise }) => {
   const navigation = useNavigation();
   const [favorite, setFavorite] = useState(true);
   const [cardPress, setCardPress] = useState(false);
-  const exerciseSteps = exercise.steps.split(".").slice(0,2);
+  const exerciseSteps = exercise.steps.split(".");
   var defaultIonIcon = require ('../../assets/media/logo1.png');
   let image = exercise.image?{uri: exercise.image}:defaultIonIcon;
   return (
-    <View style={[styles.container, cardPress?{height:0.25*screenHeight}:{height:0.12*screenHeight}]}>
+    <View style={[styles.container, cardPress?{minHeight:0.25*screenHeight}:{height:0.12*screenHeight}]}>
       {!cardPress && 
         <View style={styles.smallCard}>
           <View style={styles.cardContent}>
@@ -37,14 +37,17 @@ const ExerciseCard = ({ exercise }) => {
             <View style={styles.cardContent}>
                 <View style={styles.cardImageContent}>
                     <Text style={styles.bigCardHeader}>{exercise.name}</Text>
-                    <View style={styles.bigCardImage}><Image style={{width:"90%", height: "100%", borderRadius: 5,}} source={image}/></View>
+                    <View style={styles.bigCardImage}><Image style={{width:"90%", height: 0.15*screenHeight, borderRadius: 5,}} source={image}/></View>
                 </View>
                 <View style={styles.bigCardText}>
                   <View style={styles.bigCardText2}>
-                      { exerciseSteps.map((item)=> <Text style={styles.bigCardSubtext}>{item}.</Text>) }
+                      { exerciseSteps.map((item, index)=> <Text key={index} style={styles.bigCardSubtext}>{item}.</Text>) }
                   </View>
                   <TouchableOpacity onPress={() =>navigation.navigate('ExerciseDetailScreen', {exerciseIdList: [exercise.id], currIdx: 0})} style={{paddingBottom: 10}}>
-                  <Text style={{fontFamily: 'Montserrat-Italic', marginTop: '5%'}}>Click to read more</Text>
+                  <View style={styles.cardMoretext}>
+                  <Text style={{fontFamily: 'Montserrat-Italic'}}>Show exercise details</Text>
+                  <IonIcon name="arrow-forward" size={18} color="#D4AF37" />
+                  </View>
                   </TouchableOpacity>
                 </View>
             </View>
@@ -78,7 +81,6 @@ const styles = StyleSheet.create({
     marginLeft: "1%",
   },
   cardText: {
-    // marginLeft: "2%",
     marginTop: "5%"
   },
   cardHeader: {
@@ -91,24 +93,22 @@ const styles = StyleSheet.create({
     marginTop: "4%"
   },
   bigCard: {
-    height: "100%",
+    // height: "100%",
     backgroundColor: "rgba(255,255,255,0.95)",
     borderRadius: 5,
   },
   cardImageContent:{
-    flex: 1,
     flexBasis: "40%",
     flexGrow: 0,
     flexShrink: 0,
     marginLeft: "1%",
-    height: "90%",
     alignSelf: 'center',
     flexDirection: 'column',
-    justifyContent: 'space-evenly'
+    marginBottom: '5%'
   },
   bigCardImage: {
-    height: "65%",
-    width: "100%",
+    // height: "65%",
+    // width: "100%",
   },
   bigCardText: {
     marginTop: "3%",
@@ -121,6 +121,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-Italic',
     fontSize: 18,
     marginLeft: "2%",
+    marginVertical: '5%'
   },
   bigCardSubtext: {
     fontFamily: 'Montserrat-Regular',
@@ -140,7 +141,11 @@ const styles = StyleSheet.create({
     right: 10,
     bottom: 15,
     paddingLeft: 10
-  }
+  },
+  cardMoretext: {
+    marginTop: '3%',
+    flexDirection: 'row',
+  },
 });
 
 export default ExerciseCard;

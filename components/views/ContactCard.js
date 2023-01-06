@@ -45,7 +45,7 @@ const ContactCard = ({ contact, highlight }) => {
             <View style={styles.contactImage}>
                 <Image style={[styles.image, highlight?{borderColor: 'rgba(212, 175, 55, 1)', borderWidth: 1}:{}]} source={image} />
             </View>
-            <View style={styles.contactText}>
+            <View>
                 <Text style={styles.contactName}>{contact.name}</Text>
                 <View style={{flexDirection: "row"}}><View style={[styles.newDot, newShot?{backgroundColor:"rgba(212, 175, 55, 1)"}:newMsg?{backgroundColor:"green"}:{width:0}]}></View><Text style={styles.contactMsg}>{subText}</Text></View>
             </View>
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     width: "100%", 
     height: "100%",
     borderRadius: 0.18*screenWidth,
-},
+  },
   contactTime: {
     marginLeft: 'auto',
     marginRight: "2%"

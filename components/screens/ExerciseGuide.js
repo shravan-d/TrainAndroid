@@ -43,12 +43,12 @@ const ExerciseGuide = () => {
     setFilteredExerciseList(exerciseList);
   }, [muscleGroup]);
 
-  const [headerHeightRatio, setHeaderHeightRatio] = useState(0.32);
+  const [headerHeight, setHeaderHeight] = useState('32%');
   const scrollE = (e) => {
     if (e.nativeEvent.contentOffset.y > 50)
-      setHeaderHeightRatio(0.175)
+      setHeaderHeight('18%')
     if (e.nativeEvent.contentOffset.y < 50)
-      setHeaderHeightRatio(0.32)
+      setHeaderHeight('32%')
   }
 
   const searchFilterFunction = (text) => {
@@ -82,12 +82,13 @@ const ExerciseGuide = () => {
             onSubmitEditing = {() => {setOpenSearch(!openSearch); setSearch('')}}
             value={search}
             cursorColor={"rgba(255,255,255,1)"}
+            underlineColorAndroid="rgba(0,0,0,0)"
           />
           } 
-        </View>
-      <View style={[styles.headerContainer, {height: headerHeightRatio*screenHeight}]}>
+      </View>
+      <View style={[styles.headerContainer, {height: headerHeight}]}>
       <ImageBackground source={overlays[0]} imageStyle={{opacity:0.08}} style={styles.overlay}>
-        <View  style={{marginTop: "16%"}} >
+        <View style={{marginTop: "15%"}} >
           <Dropdown value={muscleGroup} setValue={setMuscleGroup} header={"What muscle group would you like to workout today?"} dropdownItems={dropdownItems}/>      
         </View>
         <View style={styles.favouritesContainer}>
@@ -99,7 +100,7 @@ const ExerciseGuide = () => {
         <View><Text style={styles.groupHeader}>{muscleGroup}</Text></View>
       </ImageBackground>
       </View>
-      <ScrollView showsVerticalScrollIndicator={false} style={[styles.exerciseContainer, {maxHeight: (0.91-headerHeightRatio)*screenHeight,}]}  onScroll={scrollE} scrollEventThrottle={16}> 
+      <ScrollView showsVerticalScrollIndicator={false} style={[styles.exerciseContainer, {maxHeight: headerHeight=='32%'?'59%':'73%'}]}  onScroll={scrollE} scrollEventThrottle={16}> 
       <ImageBackground source={bg} style={styles.background}>
         {filteredExerciseList.map((exercise) => (
           <ExerciseCard key={exercise.id} exercise={exercise}/>
@@ -115,13 +116,16 @@ const ExerciseGuide = () => {
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    height: screenHeight,
+    height: '100%',
     backgroundColor: "black"
+  },
+  headerContainer: {
+    justifyContent: 'space-between',
   },
   favouritesContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginTop: '5%'
+    marginTop: '6%'
   },
   text: {
     color: 'white',
@@ -129,23 +133,22 @@ const styles = StyleSheet.create({
   },
   exerciseContainer: {
     width: "100%",
-    marginTop: "5%"
+    marginTop: '5%',
   },
   groupHeader: {
     color: "white",
     textAlign: "center",
     fontFamily: 'Montserrat-Bold',
     fontSize: 24,
-    marginTop: "4%"
+    marginTop: "6%"
   },
   topBar: {
     position: 'absolute',
-    width: "85%",
+    width: 0.85*screenWidth,
     alignSelf: 'flex-end',
-    height: 0.07*screenHeight,
+    height: '7%',
     backgroundColor: "rgba(0,0,0,0)",
     lineHeight: "7%",
-    marginBottom: "5%",
     zIndex: 1,
     elevation: 1,
   },
@@ -155,12 +158,14 @@ const styles = StyleSheet.create({
     top: "25%",
   },
   textInputStyle: {
-    marginTop: 0.011*screenHeight,
+    marginTop: '3%',
     marginLeft: 50+0.04*screenWidth,
     fontFamily: 'Montserrat-Regular',
-    fontSize: 18,
+    paddingVertical: 5,
+    fontSize: 14,
+    textDecorationColor: 'rgba(0,0,0,0)',
     color: 'white',
-    backgroundColor: 'rgba(20,20,20,0.6)',
+    backgroundColor: 'rgba(250,250,250,0.1)',
     borderRadius: 20
   }
 });

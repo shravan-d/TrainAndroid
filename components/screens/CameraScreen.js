@@ -16,6 +16,7 @@ const CameraScreen = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [cameraPos, setCameraPos] = useState(true);
   const [flash, setFlash] = useState('off');
+  const [videoTime, setVideoTime] = useState(0);
 
   const photoOptions = useMemo(
     () => ({
@@ -39,6 +40,7 @@ const CameraScreen = () => {
 
   const startRecording = useCallback(() => {
     try {
+      increment();
       if (camera.current == null) throw new Error('Camera ref is null!');
       camera.current.startRecording({
         flash: flash,
@@ -53,21 +55,28 @@ const CameraScreen = () => {
         },
       });
       setIsRecording(true);
+      
     } catch (e) {
       console.error('failed to start recording!', e, 'camera');
     }
   }, [camera, flash, onMediaCaptured, isRecording]);
-
 
   const stopRecording = useCallback(async () => {
     try {
         if (camera.current == null) throw new Error('Camera ref is null!');
         await camera.current.stopRecording();
         setIsRecording(false);
+        clearInterval(timer.current);
+        setTimeout(() => {setVideoTime(0)}, 1000);
     } catch (e) {
       console.error('failed to stop recording!', e);
     }
   }, [camera]);
+
+  const timer = useRef(null);
+  const increment = () => {
+    timer.current = setInterval(() => setVideoTime(prev => prev + 1), 1000);
+  }
 
   const onMediaCaptured = useCallback(
     (media, type) => {
@@ -82,7 +91,7 @@ const CameraScreen = () => {
   const getCamPermission = async () => {
     let status = await Camera.getCameraPermissionStatus();
     if (status !== 'authorized') {
-        await Camera.requestMicrophonePermission();
+        await Camera.requestCameraPermission();
     }
     setCamPerm(status);
   }   
@@ -90,10 +99,9 @@ const CameraScreen = () => {
   const getMicPermission = async () => {
     let status = await Camera.getMicrophonePermissionStatus();
     if (status !== 'authorized') {
-        await Camera.requestCameraPermission();
+        await Camera.requestMicrophonePermission();
     }
     setMicrophonePermission(status);
-    console.log(status)
   } 
   const devices = useCameraDevices()
   const device = cameraPos? devices.back : devices.front
@@ -134,6 +142,7 @@ const CameraScreen = () => {
         {flash=='on'&&<TouchableOpacity onPress={() => {setFlash(flash=='off'?'on':'off')}} style={styles.flashButton}><IonIonIcon name="ios-flash"  color="rgba(255,255,255,0.8)" size={30} /></TouchableOpacity>}
         {recordAudio && <TouchableOpacity onPress={() => {setRecordAudio(!recordAudio)}} style={styles.volumeButton}><IonIonIcon name="ios-volume-off"  color="rgba(255,255,255,0.8)" size={30} /></TouchableOpacity>}
         {!recordAudio && <TouchableOpacity onPress={() => {setRecordAudio(!recordAudio)}} style={styles.volumeButton}><IonIonIcon name="ios-volume-off-outline"  color="rgba(255,255,255,0.8)" size={30} /></TouchableOpacity>}
+        {isRecording && <View style={styles.timeContainer}><Text style={{fontSize: 20, fontFamily: 'Montserrat-Italic'}}>{videoTime}</Text></View>}       
         </>
         }
     </View>
@@ -171,6 +180,19 @@ const styles = StyleSheet.create({
     bottom: "15%",
     right: "5%"
   },
+  timeContainer: {
+    position: 'absolute',
+    top: "5%",
+    right: "5%",
+    width: 25,
+    height: 30,
+    backgroundColor: "rgba(255,255,255,0.1)",
+    borderColor: "rgba(255,255,255,0.5)",
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 3
+  }
 });
 
 export default CameraScreen;

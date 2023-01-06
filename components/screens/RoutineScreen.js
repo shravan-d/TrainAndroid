@@ -1,12 +1,6 @@
 import {React, useEffect, useState} from 'react';
-import {
-  StyleSheet,
-  ImageBackground,
-  View,
-  Text,
-  Dimensions,
-  TouchableOpacity,
-  TextInput, Modal, Pressable
+import { 
+  StyleSheet, ImageBackground, View, Text, Dimensions, TouchableOpacity, TextInput, Modal, Pressable
 } from 'react-native';
 import Dropdown from '../views/Dropdown';
 import MenuBar from '../views/MenuBar';
@@ -75,9 +69,7 @@ const RoutineScreen = () => {
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        style={[styles.contentContainer, modalVisible?{opacity: 0.5}:{}]}>
+      <ScrollView showsVerticalScrollIndicator={false} style={[styles.contentContainer, modalVisible?{opacity: 0.5}:{}]}>
         <View style={styles.myRoutineContainer}>
           <ImageBackground
             source={overlays[0]}
@@ -184,12 +176,12 @@ const RoutineScreen = () => {
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
               <Text style={{fontFamily: 'Montserrat-Regular'}}>Enter the name of your routine</Text>
-              <TextInput  style={styles.textInputStyle}  maxLength={20} onChangeText={(text) => setNewRoutineName(text)} value={newRoutineName} cursorColor={"rgba(0,0,0,1)"}/>
+              <TextInput autoCapitalize='words' style={styles.textInputStyle}  maxLength={20} onChangeText={(text) => setNewRoutineName(text)} value={newRoutineName} cursorColor={"rgba(0,0,0,1)"}/>
               <View style={{flexDirection: 'row'}}>
               <Pressable style={[styles.button, {backgroundColor: 'rgba(20,20,20,0.8)'}]} onPress={() => setModalVisible(!modalVisible)}>
                 <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Cancel</Text>
               </Pressable>
-              <Pressable style={[styles.button, {backgroundColor: 'gold'}]} onPress={() => createNewRoutine()}>
+              <Pressable style={[styles.button, {backgroundColor: '#D4AF37'}]} onPress={() => createNewRoutine()}>
                 <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Continue</Text>
               </Pressable>
               </View>
@@ -206,19 +198,19 @@ const RoutineScreen = () => {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    height: screenHeight,
+    height: '100%',
     backgroundColor: 'black',
   },
   contentContainer: {
     width: '100%',
-    maxHeight: 0.94 * screenHeight,
+    maxHeight: '94%',
   },
   routinesContainer: {
-    marginTop: 0.04 * screenHeight,
+    marginTop: '5%',
     minHeight: 0.4 * screenHeight,
   },
   myRoutineContainer: {
-    marginTop: 0.08 * screenHeight,
+    marginTop: '15%',
   },
   header: {
     fontFamily: 'Montserrat-Bold',
@@ -263,13 +255,13 @@ const styles = StyleSheet.create({
   },
   textInputStyle: {
     marginVertical: '5%',
+    paddingVertical: 2,
     fontFamily: 'Montserrat-Regular',
     color: 'black',
     width: 180,
     backgroundColor: 'rgba(20,20,20,0.1)',
     borderRadius: 8
   },
-
   centeredView: {
     flex: 1,
     justifyContent: "center",
@@ -293,7 +285,7 @@ const styles = StyleSheet.create({
   },
   button: {
     borderRadius: 2,
-    padding: 10,
+    padding: 7,
     elevation: 2,
     marginHorizontal: 15
   },

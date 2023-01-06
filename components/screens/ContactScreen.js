@@ -73,8 +73,7 @@ const ContactScreen = ({ route }) => {
     }, [isFocused]);
 
   return (
-    <View style={styles.container}>
-      <ImageBackground source={bg} style={styles.background}>
+    <View style={styles.container}>  
         <View style={styles.topBar}>
           {!openSearch &&
           <>
@@ -92,10 +91,12 @@ const ContactScreen = ({ route }) => {
             onSubmitEditing = {() => {setOpenSearch(!openSearch); setSearch('')}}
             value={search}
             cursorColor={"rgba(255,255,255,1)"}
+            underlineColorAndroid={"rgba(0,0,0,0)"}
           />
           } 
         </View>
         <View style={styles.contactContainer}>
+        <ImageBackground source={bg} style={styles.background}>
           <ScrollView>
             {filteredContactList.map((contact) => (
                 <TouchableOpacity key={contact.id} onPress={() => onCardPress(contact.id)}>
@@ -109,10 +110,11 @@ const ContactScreen = ({ route }) => {
               {sendCapture && <IonIonIcon name="send-sharp" color="rgba(255,255,255,0.8)" size={30} />}
             </>
           </TouchableOpacity>
+          
+        </ImageBackground>
         </View>
         <NavBar />
         <MenuBar currentScreenId={2} />
-      </ImageBackground>
     </View>
   );
 };
@@ -120,30 +122,29 @@ const ContactScreen = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    height: screenHeight,
-  },
-  background: {
-    width: "100%",
-    height: screenHeight
+    height: '100%',
+    backgroundColor: 'black'
   },
   contactContainer: {
-    height: 0.83*screenHeight
+    height: '86%',
+    marginTop: '15%'
   },
   topBar: {
-    width: "100%",
-    height: 0.08*screenHeight,
-    backgroundColor: "rgba(0,0,0,0.8)",
-    lineHeight: "7%",
     borderBottomColor: "#D4AF37",
     borderBottomWidth: 1,
-    marginBottom: "5%"
+    position: 'absolute',
+    width: 0.85*screenWidth,
+    alignSelf: 'flex-end',
+    height: 53,
+    lineHeight: "7%",
+    zIndex: 1,
+    elevation: 1,
   },
   header: {
     fontFamily: 'Montserrat-Italic',
     fontSize: 20,
     color: "white",
     marginTop: "4%",
-    marginLeft: 50
   },
   searchButton: {
     position: 'absolute',
@@ -169,12 +170,14 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   textInputStyle: {
-    marginTop: 0.011*screenHeight,
+    marginTop: '3%',
     marginLeft: 50+0.04*screenWidth,
     fontFamily: 'Montserrat-Regular',
-    fontSize: 18,
+    paddingVertical: 5,
+    fontSize: 14,
+    textDecorationColor: 'rgba(0,0,0,0)',
     color: 'white',
-    backgroundColor: 'rgba(20,20,20,0.6)',
+    backgroundColor: 'rgba(250,250,250,0.1)',
     borderRadius: 20
   }
 });
