@@ -43,18 +43,18 @@ const ContactCard = ({ contact, highlight }) => {
     <View style={styles.container}>
         <View style={styles.cardContainer}>
             <View style={styles.contactImage}>
-                <Image style={[styles.image, highlight?{borderColor: 'rgba(212, 175, 55, 1)', borderWidth: 1}:{}]} source={image} />
+                <Image style={[styles.image, highlight?{borderColor: '#D4AF37', borderWidth: 1}:{}]} source={image} />
             </View>
             <View>
                 <Text style={styles.contactName}>{contact.name}</Text>
-                <View style={{flexDirection: "row"}}><View style={[styles.newDot, newShot?{backgroundColor:"rgba(212, 175, 55, 1)"}:newMsg?{backgroundColor:"green"}:{width:0}]}></View><Text style={styles.contactMsg}>{subText}</Text></View>
+                <View style={{flexDirection: "row"}}><View style={[styles.newDot, newShot?{backgroundColor:"#D4AF37"}:newMsg?{backgroundColor:"green"}:{width:0}]}></View><Text style={styles.contactMsg}>{subText}</Text></View>
             </View>
             <View style={styles.contactTime}>
                 <Text style={styles.contactTime_}>{timeDisplay}</Text>
                 {contact.streak > 0 && 
                 <View style={{flexDirection: "row", justifyContent: 'center', marginTop: "6%"}}>
                   <Text style={{color: "white", fontFamily: 'Montserrat-Italic', marginRight:'8%'}}>{contact.streak}</Text>
-                  <IonIonIcon name="ios-fitness-sharp" color="rgba(212, 175, 55, 1)" size={18} />
+                  <IonIonIcon name="ios-fitness-sharp" color="#D4AF37" size={18} />
                 </View>
                 }
             </View>
@@ -94,17 +94,17 @@ const styles = StyleSheet.create({
   },
   contactName: {
     fontFamily: 'Montserrat-Regular',
-    color: "rgba(255,255,255,0.9)",
+    color: "white",
     fontSize: 18,
   },
   contactMsg: {
     fontFamily: 'Montserrat-Italic',
-    color: "rgba(255,255,255,0.8)",
+    color: "rgba(250,250,250,0.8)",
     fontSize: 14,
   },
   contactTime_: {
     fontFamily: 'Montserrat-Regular',
-    color: "rgba(255,255,255,0.7)",
+    color: "rgba(250,250,250,0.8)",
     fontSize: 14,
   },
   newDot: {

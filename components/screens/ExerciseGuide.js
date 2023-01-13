@@ -68,10 +68,11 @@ const ExerciseGuide = () => {
 
   return (
     <View style={styles.container}>
+    <ImageBackground source={overlays[0]} imageStyle={{opacity:0.08}} style={{height: '100%'}}>
       <View style={styles.topBar}>
           {!openSearch &&
           <TouchableOpacity onPress={() => {setOpenSearch(!openSearch)}} style={styles.searchButton}>
-            <IonIonIcon name="ios-search-outline" color="rgba(255,255,255,0.8)" size={24} />
+            <IonIonIcon name="ios-search-outline" color="rgba(250,250,250,0.8)" size={24} />
           </TouchableOpacity>
           }
           {openSearch &&
@@ -81,14 +82,13 @@ const ExerciseGuide = () => {
             onChangeText={(text) => searchFilterFunction(text)}
             onSubmitEditing = {() => {setOpenSearch(!openSearch); setSearch('')}}
             value={search}
-            cursorColor={"rgba(255,255,255,1)"}
+            cursorColor='white'
             underlineColorAndroid="rgba(0,0,0,0)"
           />
           } 
       </View>
       <View style={[styles.headerContainer, {height: headerHeight}]}>
-      <ImageBackground source={overlays[0]} imageStyle={{opacity:0.08}} style={styles.overlay}>
-        <View style={{marginTop: "15%"}} >
+        <View >
           <Dropdown value={muscleGroup} setValue={setMuscleGroup} header={"What muscle group would you like to workout today?"} dropdownItems={dropdownItems}/>      
         </View>
         <View style={styles.favouritesContainer}>
@@ -98,9 +98,9 @@ const ExerciseGuide = () => {
           </TouchableOpacity>
         </View>
         <View><Text style={styles.groupHeader}>{muscleGroup}</Text></View>
-      </ImageBackground>
+      
       </View>
-      <ScrollView showsVerticalScrollIndicator={false} style={[styles.exerciseContainer, {maxHeight: headerHeight=='32%'?'59%':'73%'}]}  onScroll={scrollE} scrollEventThrottle={16}> 
+      <ScrollView showsVerticalScrollIndicator={false} style={[styles.exerciseContainer, {maxHeight: headerHeight=='32%'?'54%':'68%'}]}  onScroll={scrollE} scrollEventThrottle={16}> 
       <ImageBackground source={bg} style={styles.background}>
         {filteredExerciseList.map((exercise) => (
           <ExerciseCard key={exercise.id} exercise={exercise}/>
@@ -109,6 +109,7 @@ const ExerciseGuide = () => {
       </ScrollView>
       <NavBar />
       <MenuBar currentScreenId={0}/>
+      </ImageBackground>
     </View>
   );
 };
@@ -120,6 +121,7 @@ const styles = StyleSheet.create({
     backgroundColor: "black"
   },
   headerContainer: {
+    marginTop: '15%',
     justifyContent: 'space-between',
   },
   favouritesContainer: {
@@ -133,7 +135,6 @@ const styles = StyleSheet.create({
   },
   exerciseContainer: {
     width: "100%",
-    marginTop: '5%',
   },
   groupHeader: {
     color: "white",
@@ -146,11 +147,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 0.85*screenWidth,
     alignSelf: 'flex-end',
-    height: '7%',
+    height: 55,
     backgroundColor: "rgba(0,0,0,0)",
     lineHeight: "7%",
-    zIndex: 1,
-    elevation: 1,
+    zIndex: 0,
+    elevation: 0,
   },
   searchButton: {
     position: 'absolute',
@@ -159,11 +160,10 @@ const styles = StyleSheet.create({
   },
   textInputStyle: {
     marginTop: '3%',
-    marginLeft: 50+0.04*screenWidth,
+    // marginLeft: 50+0.04*screenWidth,
     fontFamily: 'Montserrat-Regular',
     paddingVertical: 5,
     fontSize: 14,
-    textDecorationColor: 'rgba(0,0,0,0)',
     color: 'white',
     backgroundColor: 'rgba(250,250,250,0.1)',
     borderRadius: 20

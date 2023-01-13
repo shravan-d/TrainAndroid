@@ -72,8 +72,3 @@ const App = () => {
 const styles = StyleSheet.create({});
 
 export default App;
-
-// Phase 1 UI -> Similar look among all screens(common colors, sizes, margins), chat screen issues, border abpve sidebar
-// Phase 2 UI -> Settings, Login, Homepage, Animation, Blog posts, Loading in between screens, Ads, IOS
-// Phase 1 BE -> Authentication, DB setup, BE queries for guides, DB for messaging, BE for messaging
-// Phase 2 BE -> User roles

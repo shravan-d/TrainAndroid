@@ -74,12 +74,13 @@ const ContactScreen = ({ route }) => {
 
   return (
     <View style={styles.container}>  
+    <ImageBackground source={bg} style={{height: '100%'}}>
         <View style={styles.topBar}>
           {!openSearch &&
           <>
           <Text style={styles.header}>TrainShots</Text>
           <TouchableOpacity onPress={() => {setOpenSearch(!openSearch)}} style={styles.searchButton}>
-            <IonIonIcon name="ios-search-outline" color="rgba(255,255,255,0.8)" size={24} />
+            <IonIonIcon name="ios-search-outline" color="rgba(250,250,250,0.8)" size={24} />
           </TouchableOpacity>
           </>
           }
@@ -90,13 +91,12 @@ const ContactScreen = ({ route }) => {
             onChangeText={(text) => searchFilterFunction(text)}
             onSubmitEditing = {() => {setOpenSearch(!openSearch); setSearch('')}}
             value={search}
-            cursorColor={"rgba(255,255,255,1)"}
-            underlineColorAndroid={"rgba(0,0,0,0)"}
+            cursorColor='white'
+            underlineColorAndroid="transparent"
           />
           } 
         </View>
         <View style={styles.contactContainer}>
-        <ImageBackground source={bg} style={styles.background}>
           <ScrollView>
             {filteredContactList.map((contact) => (
                 <TouchableOpacity key={contact.id} onPress={() => onCardPress(contact.id)}>
@@ -104,17 +104,16 @@ const ContactScreen = ({ route }) => {
                 </TouchableOpacity>
             ))}
           </ScrollView>
-          <TouchableOpacity onPress={() => {navigation.navigate('CameraScreen');}} style={styles.addButton}>
+        <TouchableOpacity onPress={() => {navigation.navigate('CameraScreen');}} style={styles.addButton}>
             <>
-              {!sendCapture && <IonIonIcon name="ios-add-outline" color="rgba(255,255,255,0.8)" size={30} />}
-              {sendCapture && <IonIonIcon name="send-sharp" color="rgba(255,255,255,0.8)" size={30} />}
+              {!sendCapture && <IonIonIcon name="ios-add-outline" color="rgba(250,250,250,0.8)" size={30} />}
+              {sendCapture && <IonIonIcon name="send-sharp" color="rgba(250,250,250,0.8)" size={30} />}
             </>
           </TouchableOpacity>
-          
-        </ImageBackground>
         </View>
         <NavBar />
         <MenuBar currentScreenId={2} />
+        </ImageBackground>
     </View>
   );
 };
@@ -135,10 +134,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 0.85*screenWidth,
     alignSelf: 'flex-end',
-    height: 53,
+    height: 55,
     lineHeight: "7%",
-    zIndex: 1,
-    elevation: 1,
+    zIndex: 0,
+    elevation: 0,
   },
   header: {
     fontFamily: 'Montserrat-Italic',
@@ -171,11 +170,9 @@ const styles = StyleSheet.create({
   },
   textInputStyle: {
     marginTop: '3%',
-    marginLeft: 50+0.04*screenWidth,
     fontFamily: 'Montserrat-Regular',
     paddingVertical: 5,
     fontSize: 14,
-    textDecorationColor: 'rgba(0,0,0,0)',
     color: 'white',
     backgroundColor: 'rgba(250,250,250,0.1)',
     borderRadius: 20

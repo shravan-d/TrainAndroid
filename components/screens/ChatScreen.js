@@ -76,10 +76,10 @@ const ChatScreen = ({ route }) => {
   }, [])
 
   const renderInputToolbar = (props) => {
-    return <InputToolbar {...props} containerStyle={{borderRadius: 25, minHeight: 0.06*screenHeight}} textInputStyle={{marginLeft: "4%", color: "rgba(10,10,10,1)", fontFamily:'Montserrat-Regular'}} />
+    return <InputToolbar {...props} containerStyle={{borderRadius: 25, minHeight: '6%'}} textInputStyle={{marginLeft: "4%", color: "black", fontFamily:'Montserrat-Regular'}} />
   }
   const renderSend = (props) => {
-    return <Send {...props} disabled={!props.text} textStyle={{alignSelf: 'center', color:"#D4AF37", fontFamily: 'Montserrat-Bold', marginEnd: "4%"}}/>
+    return <Send {...props} disabled={!props.text} textStyle={{alignSelf: 'center', color:"#D4AF37", fontFamily: 'Montserrat-Bold', marginEnd: "5%"}}/>
   }
 
   const renderTime = (props) => {
@@ -100,11 +100,11 @@ const ChatScreen = ({ route }) => {
       <Bubble
         {...props}
         wrapperStyle={{ 
-            right: { backgroundColor: 'rgba(250,250,250,1)' },
-            left: { backgroundColor: 'rgba(255,255,255,1)' } }}
+            right: { backgroundColor: 'white' },
+            left: { backgroundColor: 'white' } }}
         textStyle={{
-          right: { color: 'rgba(20,20,20,0.9)', fontFamily: 'Montserrat-Regular', fontSize: 12 },
-          left: { color: 'rgba(30,30,30,0.9)', fontFamily: 'Montserrat-Regular', fontSize: 12 }
+          right: { color: 'black', fontFamily: 'Montserrat-Regular', fontSize: 12 },
+          left: { color: 'black', fontFamily: 'Montserrat-Regular', fontSize: 12 }
         }}
         containerToPreviousStyle={{
             left: { borderColor: 'mediumorchid', borderWidth: 1 },
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
   name: {
     fontFamily: 'Montserrat-Bold',
     fontSize: 20,
-    color: "rgba(250,250,250,0.8)",
+    color: "white",
     marginLeft: "5%"
   },
   viewShot: {

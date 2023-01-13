@@ -116,7 +116,7 @@ const ExerciseDetailScreen = ({ route }) => {
                     {exerciseIdList: exerciseIdList , currIdx: currIdx-1})
                   }} disabled={currIdx==0}>
                 <View style={styles.controlButton_}>
-                  <Text style={{fontFamily: 'Montserrat-Regular', color: 'gold'}}>Previous Exercise</Text>
+                  <Text style={{fontFamily: 'Montserrat-Regular', color: '#D4AF37'}}>Previous Exercise</Text>
                 </View>
                 </TouchableOpacity>
               </View>
@@ -125,7 +125,7 @@ const ExerciseDetailScreen = ({ route }) => {
                     {exerciseIdList: exerciseIdList , currIdx: currIdx+1})
                   }} disabled={currIdx==exerciseIdList.length}>
                 <View style={styles.controlButton_}>
-                  <Text style={{fontFamily: 'Montserrat-Regular', color: 'gold'}}>Next Exercise</Text>
+                  <Text style={{fontFamily: 'Montserrat-Regular', color: '#D4AF37'}}>Next Exercise</Text>
                 </View>
                 </TouchableOpacity>
               </View>
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: '4%',
   },
   counter: {
-    color: 'rgba(212, 175, 55, 0.7)',
+    color: '#D4AF37',
     position: 'relative',
     fontSize: 20,
   },
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
   },
   controlButton_: {
     padding: 10,
-    backgroundColor: 'rgba(240,240,240,0.2)',
+    backgroundColor: 'rgba(30,30,30,0.8)',
     justifyContent: 'center',
     alignItems: 'center'
   }

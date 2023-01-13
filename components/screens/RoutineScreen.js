@@ -69,12 +69,12 @@ const RoutineScreen = () => {
 
   return (
     <View style={styles.container}>
+      <ImageBackground
+            source={overlays[0]}
+            imageStyle={{opacity: 0.12}} style={{height: '100%'}}>
       <ScrollView showsVerticalScrollIndicator={false} style={[styles.contentContainer, modalVisible?{opacity: 0.5}:{}]}>
         <View style={styles.myRoutineContainer}>
-          <ImageBackground
-            source={overlays[0]}
-            imageStyle={{opacity: 0.1}}
-            style={styles.overlay}>
+          
             <Text style={styles.header}>My Routines</Text>
             {myRoutineList.map(routine => (
               <RoutineCard key={routine.id} routine={routine} self={true} />
@@ -84,12 +84,11 @@ const RoutineScreen = () => {
               <TouchableOpacity onPress={() => setModalVisible(true)}>
                 <IonIonIcon
                   name="ios-add-circle-outline"
-                  color="rgba(10,10,10,0.7)"
+                  color="rgba(30,30,30,0.8)"
                   size={40}
                 />
               </TouchableOpacity>
             </View>
-          </ImageBackground>
         </View>
         <View style={styles.routinesContainer}>
           <ImageBackground source={bg} style={styles.background}>
@@ -178,7 +177,7 @@ const RoutineScreen = () => {
               <Text style={{fontFamily: 'Montserrat-Regular'}}>Enter the name of your routine</Text>
               <TextInput autoCapitalize='words' style={styles.textInputStyle}  maxLength={20} onChangeText={(text) => setNewRoutineName(text)} value={newRoutineName} cursorColor={"rgba(0,0,0,1)"}/>
               <View style={{flexDirection: 'row'}}>
-              <Pressable style={[styles.button, {backgroundColor: 'rgba(20,20,20,0.8)'}]} onPress={() => setModalVisible(!modalVisible)}>
+              <Pressable style={[styles.button, {backgroundColor: 'rgba(30,30,30,0.8)'}]} onPress={() => setModalVisible(!modalVisible)}>
                 <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Cancel</Text>
               </Pressable>
               <Pressable style={[styles.button, {backgroundColor: '#D4AF37'}]} onPress={() => createNewRoutine()}>
@@ -191,6 +190,7 @@ const RoutineScreen = () => {
       </ScrollView>
       <NavBar />
       <MenuBar currentScreenId={1} />
+          </ImageBackground>
     </View>
   );
 };
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-Regular',
     color: 'black',
     width: 180,
-    backgroundColor: 'rgba(20,20,20,0.1)',
+    backgroundColor: 'rgba(0,0,0,0.1)',
     borderRadius: 8
   },
   centeredView: {
@@ -268,13 +268,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalView: {
-    backgroundColor: "rgba(250,250,250,1)",
+    backgroundColor: "white",
     borderRadius: 10,
     borderColor: 'mediumorchid',
     borderWidth: 1,
     padding: 25,
     alignItems: "center",
-    shadowColor: "gold",
+    shadowColor: "#D4AF37",
     shadowOffset: {
       width: 4,
       height: 4

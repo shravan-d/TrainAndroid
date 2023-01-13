@@ -166,7 +166,7 @@ const RoutineDetailScreen = ({ route }) => {
                 ))}
                 </View>
                 <View style={{flexDirection: 'row'}}>
-                <Pressable style={[styles.button, {backgroundColor: 'rgba(20,20,20,0.8)'}]} onPress={() => setModalVisible(!modalVisible)}>
+                <Pressable style={[styles.button, {backgroundColor: 'rgba(30,30,30,0.8)'}]} onPress={() => setModalVisible(!modalVisible)}>
                   <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Cancel</Text>
                 </Pressable>
                 <Pressable style={[styles.button, {backgroundColor: '#D4AF37'}]} onPress={() => createNewRoutine()}>
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-Regular',
     color: 'black',
     width: 180,
-    backgroundColor: 'rgba(20,20,20,0.1)',
+    backgroundColor: 'rgba(0,0,0,0.1)',
     borderRadius: 8
   },
   centeredView: {
@@ -240,13 +240,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalView: {
-    backgroundColor: "rgba(250,250,250,1)",
+    backgroundColor: "white",
     borderRadius: 10,
     borderColor: 'mediumorchid',
     borderWidth: 1,
     padding: 25,
     alignItems: "center",
-    shadowColor: "gold",
+    shadowColor: "#D4AF37",
     shadowOffset: {
       width: 4,
       height: 4
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
     marginBottom: "4%",
     color: 'white',
     textDecorationColor: '',
-    backgroundColor: 'rgba(20,20,20,0.1)',
+    backgroundColor: 'rgba(0,0,0,0.1)',
   },
 });
 
