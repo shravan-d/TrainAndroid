@@ -1,5 +1,5 @@
 import {NavigationContainer} from '@react-navigation/native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {StyleSheet, useColorScheme, View, Text} from 'react-native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import LandingPage from './components/screens/LandingPage';
@@ -11,9 +11,23 @@ import CameraScreen from './components/screens/CameraScreen';
 import RoutineScreen from './components/screens/RoutineScreen';
 import ExerciseDetailScreen from './components/screens/ExerciseDetailScreen';
 import RoutineDetailScreen from './components/screens/RoutineDetailScreen';
+import LoginScreen from './components/screens/LoginScreen';
+import SignupScreen from './components/screens/SignupScreen';
+import { supabase } from './supabaseClient';
+import { DebugScreen } from './components/screens/DebugScreen';
+import AccountScreen from './components/screens/AcoountScreen';
 
 const Stack = createNativeStackNavigator();
 const App = () => {
+  const [auth, setAuth] = useState(false);
+
+  useEffect(()=>{
+    // setAuth(supabase.auth.session());
+    supabase.auth.onAuthStateChange((event, session) => {
+      console.log(session);
+      setAuth(session);
+    })
+  }, [])
   return (
     <>
       <NavigationContainer>
@@ -61,6 +75,28 @@ const App = () => {
           <Stack.Screen
             name="RoutineDetailScreen"
             component={RoutineDetailScreen}
+            options={{headerShown: false}}
+          />
+          <Stack.Screen
+            name="LoginScreen"
+            component={LoginScreen}
+            options={{headerShown: false}}
+          />
+          <Stack.Screen
+            name="SignupScreen"
+            component={SignupScreen}
+            options={{headerShown: false}}
+          />
+          <Stack.Screen
+            name="AccountScreen"
+            component={AccountScreen}
+            options={{headerShown: false}}
+          />
+
+
+          <Stack.Screen
+            name="DebugScreen"
+            component={DebugScreen}
             options={{headerShown: false}}
           />
         </Stack.Navigator>

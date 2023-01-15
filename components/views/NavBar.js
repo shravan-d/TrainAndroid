@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import {StyleSheet, ImageBackground, View, Button, TouchableOpacity, Text} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
 
 const NavBar = () => {
   const [showSidebar, setShowSidebar] = useState(false);
+  const navigation = useNavigation();
   return (
     <View style={styles.container}>
         <View style = {styles.navButton}>
@@ -14,7 +16,20 @@ const NavBar = () => {
             </TouchableOpacity>
         </View>
         { showSidebar && 
-            <View style={styles.sidebar}></View>
+            <View style={styles.sidebar}>
+              <TouchableOpacity onPress={() => {navigation.navigate('DebugScreen')}} 
+              style={[styles.sidebarButton, {marginTop: 50}]}>
+                <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Debug</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => {navigation.navigate('AccountScreen')}} 
+              style={styles.sidebarButton}>
+                <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Account</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => {navigation.navigate('LoginScreen')}} 
+              style={[styles.sidebarButton, {marginBottom: 20, marginTop: 'auto'}]}>
+                <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Login / Sign Up</Text>
+              </TouchableOpacity>
+            </View>
         }
     </View>
   );
@@ -25,7 +40,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     marginTop: "1%",
     width: "40%",
-    height: "94%",
+    height: "93%",
     backgroundColor: "rgba(0,0,0,0)",
   },
   navButton: {
@@ -59,14 +74,21 @@ const styles = StyleSheet.create({
     position: "absolute",
     height : "100%",
     width: "100%",
-    backgroundColor: "black"
+    backgroundColor: "rgba(10,10,10,1)"
   },
   button: {
     margin: 5,
     width: 50,
     height: 40,
     zIndex: 2,
-  }   
+  },
+  sidebarButton: {
+    width: '100%',
+    paddingLeft: 10,
+    paddingVertical: 8,
+    borderBottomColor: 'rgba(250,250,250,0.05)',
+    borderBottomWidth: 1
+  }
 });
 
 export default NavBar;

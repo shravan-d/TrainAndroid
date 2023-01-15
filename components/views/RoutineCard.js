@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
   cardHeader: {
     fontFamily: 'Montserrat-Italic',
     fontSize: 18,
-    color: 'rgba(20,20,20,0.9)',
+    color: 'rgba(20,20,20,0.8)',
   },
   cardSubtextContainer: {
     flexDirection: 'row',

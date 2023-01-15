@@ -13,7 +13,6 @@ var statusHeight = StatusBar.currentHeight;
 
 const LandingPage = () => {
   var bg = require ('../../assets/media/bg.png');
-  const Drawer = createDrawerNavigator();
   return (
     <View style={styles.container}>
     <ImageBackground source={bg} style={styles.background}>
