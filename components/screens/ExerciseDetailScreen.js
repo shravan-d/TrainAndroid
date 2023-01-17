@@ -166,7 +166,7 @@ const ExerciseDetailScreen = ({ route }) => {
             <View style={styles.steps}>
               <Text style={styles.subHeader}>Steps</Text>
               {exerciseSteps.map((item, index) => (
-                <View style={{flexDirection: 'row', marginBottom: '2%'}}>
+                <View key={index} style={{flexDirection: 'row', marginBottom: '2%'}}>
                   <Text style={styles.counter}>{index + 1}</Text>
                   <Text style={styles.subtext}>{item}.</Text>
                 </View>

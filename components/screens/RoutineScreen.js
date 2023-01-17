@@ -174,7 +174,7 @@ const RoutineScreen = () => {
         >
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
-              <Text style={{fontFamily: 'Montserrat-Regular'}}>Enter the name of your routine</Text>
+              <Text style={{fontFamily: 'Montserrat-Regular', color: 'black'}}>Enter the name of your routine</Text>
               <TextInput autoCapitalize='words' style={styles.textInputStyle}  maxLength={20} onChangeText={(text) => setNewRoutineName(text)} value={newRoutineName} cursorColor={"rgba(0,0,0,1)"}/>
               <View style={{flexDirection: 'row'}}>
               <Pressable style={[styles.button, {backgroundColor: 'rgba(30,30,30,0.8)'}]} onPress={() => setModalVisible(!modalVisible)}>

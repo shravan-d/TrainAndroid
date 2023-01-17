@@ -98,7 +98,7 @@ const RoutineDetailScreen = ({ route }) => {
           >
             <View style={styles.centeredView}>
               <View style={styles.modalView}>
-                <Text style={{fontFamily: 'Montserrat-Regular'}}>Enter the name of your workout</Text>
+                <Text style={{fontFamily: 'Montserrat-Regular', color: 'black'}}>Enter the name of your workout</Text>
                 <TextInput autoCapitalize='sentences' style={styles.textInputStyle}  maxLength={20} onChangeText={(text) => setNewWorkoutName(text)} value={newWorkoutName} cursorColor={"rgba(0,0,0,1)"}/>
                 <DropDownPicker
                   open={open}
@@ -205,6 +205,7 @@ const styles = StyleSheet.create({
   createCardText: {
     fontFamily: 'Montserrat-Regular',
     fontSize: 18,
+    color: 'black'
   },
   addListContainer: {
     flexDirection: 'row',

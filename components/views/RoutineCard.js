@@ -90,6 +90,7 @@ const RoutineCard = ({routine, self}) => {
                     fontFamily: 'Montserrat-Regular',
                     fontSize: 14,
                     marginRight: '2%',
+                    color: 'black'
                   }}>
                   {self ? 'Start Now' : 'Show More'}
                 </Text>

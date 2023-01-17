@@ -78,7 +78,7 @@ const SignupScreen = () => {
         <TouchableOpacity style={{width: '75%'}} onPress={(e) => signUpWithEmail(e)}>
           <View style={styles.loginButton}>
             {loading && <ActivityIndicator color="rgba(250,250,250,0.8)" />}
-            {!loading && <Text style={{fontFamily: 'Montserrat-Regular'}}>Create Account</Text>}
+            {!loading && <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Create Account</Text>}
           </View>
         </TouchableOpacity>
       </View>

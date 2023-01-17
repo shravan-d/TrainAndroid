@@ -43,6 +43,10 @@ const Dropdown = ({value, setValue, header, dropdownItems}) => {
 };
 
 const styles = StyleSheet.create({
+    dropdown: {
+      zIndex: 0,
+      elevation: 0,
+    },
     dropdownHeader: {
         color: 'white',
         textAlign: 'center',

@@ -45,7 +45,7 @@ const ExerciseCard = ({ exercise }) => {
                   </View>
                   <TouchableOpacity onPress={() =>navigation.navigate('ExerciseDetailScreen', {exerciseIdList: [exercise.id], currIdx: 0})} style={{paddingBottom: 10}}>
                   <View style={styles.cardMoretext}>
-                  <Text style={{fontFamily: 'Montserrat-Italic'}}>Show exercise details</Text>
+                  <Text style={{fontFamily: 'Montserrat-Italic', color: 'black'}}>Show exercise details</Text>
                   <IonIcon name="arrow-forward" size={18} color="#D4AF37" />
                   </View>
                   </TouchableOpacity>
@@ -86,11 +86,13 @@ const styles = StyleSheet.create({
   cardHeader: {
     fontFamily: 'Montserrat-Italic',
     fontSize: 18,
+    color: 'black'
   },
   cardSubtext: {
     fontFamily: 'Montserrat-Regular',
     fontSize: 14,
-    marginTop: "4%"
+    marginTop: "4%",
+    color: 'black'
   },
   bigCard: {
     // height: "100%",
@@ -121,13 +123,15 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-Italic',
     fontSize: 18,
     marginLeft: "2%",
-    marginVertical: '5%'
+    marginVertical: '5%',
+    color: 'black'
   },
   bigCardSubtext: {
     fontFamily: 'Montserrat-Regular',
     fontSize: 14,
     marginTop: "4%",
-    marginRight: "6%"
+    marginRight: "6%",
+    color: 'black'
   },
   expandArrow: {
     backgroundColor: "rgba(0,0,0,0)",

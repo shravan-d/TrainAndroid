@@ -89,7 +89,7 @@ const LoginScreen = () => {
         <TouchableOpacity style={{width: '75%'}} onPress={(e) => signInWithEmail(e)}>
           <View style={styles.loginButton}>
             {loading && <ActivityIndicator color="rgba(250,250,250,0.8)" />}
-            {!loading && <Text style={{fontFamily: 'Montserrat-Regular'}}>Login</Text>}
+            {!loading && <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Login</Text>}
           </View>
         </TouchableOpacity>
       </View>

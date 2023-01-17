@@ -36,7 +36,7 @@ const RoutineDayCard = ({ day }) => {
                 <Text style={styles.cardHeader}>{day.name}</Text>
                 <TouchableOpacity onPress={() => {setMarkComplete(!markComplete)}} style={styles.moreIonIcon}>
                     <View style={styles.cardMoretext}>
-                    <Text style={{fontFamily: 'Montserrat-Italic',fontSize: 11,marginRight: '2%', }}>
+                    <Text style={{fontFamily: 'Montserrat-Italic',fontSize: 11,marginRight: '2%', color: 'black' }}>
                         Mark as complete
                     </Text>
                     <IonIcon name="checkmark-circle" size={14} color={markComplete?"#D4AF37":'white'} style={!markComplete?{borderColor: '#D4AF37', borderRadius: 100, borderWidth: 0.2}:{}} />
@@ -45,7 +45,7 @@ const RoutineDayCard = ({ day }) => {
                 </View>
                 <TouchableOpacity onPress={() => {setCardPress(!cardPress)}} style={styles.moreIonIcon}>
                 <View style={styles.cardMoretext}>
-                <Text style={{fontFamily: 'Montserrat-Regular',fontSize: 14, marginRight: '2%', }}>
+                <Text style={{fontFamily: 'Montserrat-Regular',fontSize: 14, marginRight: '2%', color: 'black' }}>
                     Expand
                 </Text>
                 <IonIcon name="arrow-down" size={18} color="#D4AF37" />
@@ -59,7 +59,7 @@ const RoutineDayCard = ({ day }) => {
                 <Text style={styles.cardHeader}>{day.name}</Text>
                 <TouchableOpacity onPress={() => {setCardPress(!cardPress)}} style={styles.moreIonIcon}>
                     <View style={styles.cardMoretext}>
-                    <Text style={{fontFamily: 'Montserrat-Regular',fontSize: 14, marginRight: '2%', }}>
+                    <Text style={{fontFamily: 'Montserrat-Regular',fontSize: 14, marginRight: '2%', color: 'black'}}>
                         Shrink
                     </Text>
                     <IonIcon name="arrow-up" size={18} color="#D4AF37" />
@@ -68,9 +68,9 @@ const RoutineDayCard = ({ day }) => {
                 </View>
                 <View style={styles.exerciseContainer}>
                 {exercises.map((exercise, index) => (
-                    <View style={{marginBottom: '1%', width: '30%', flexDirection: 'row'}}>
-                        <Text style={{fontFamily: 'Montserrat-Bold', marginRight: '3%'}}>{index+1}</Text>
-                        <Text style={{fontFamily: 'Montserrat-Regular'}}>{exercise.name}</Text>
+                    <View key={index} style={{marginBottom: '1%', width: '30%', flexDirection: 'row'}}>
+                        <Text style={{fontFamily: 'Montserrat-Bold', marginRight: '3%', color: 'black'}}>{index+1}</Text>
+                        <Text style={{fontFamily: 'Montserrat-Regular', color: 'black'}}>{exercise.name}</Text>
                     </View>
                 ))}
                 </View>
@@ -78,7 +78,7 @@ const RoutineDayCard = ({ day }) => {
                 {exerciseIdList: day.exerciseIds , currIdx: 0})
                 }} style={styles.moreIonIcon}>
                     <View style={styles.cardMoretext}>
-                    <Text style={{fontFamily: 'Montserrat-Regular',fontSize: 14, marginRight: '2%', }}>
+                    <Text style={{fontFamily: 'Montserrat-Regular',fontSize: 14, marginRight: '2%', color: 'black' }}>
                         Start day's workout
                     </Text>
                     <IonIcon name="arrow-forward" size={18} color="#D4AF37" />
@@ -113,6 +113,7 @@ const styles = StyleSheet.create({
   cardHeader: {
     fontFamily: 'Montserrat-Italic',
     fontSize: 18,
+    color: 'black'
   },
   cardMoretext: {
     marginTop: '3%',

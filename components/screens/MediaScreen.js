@@ -1,5 +1,5 @@
 import { React, useState, useCallback, useMemo } from 'react';
-import {StyleSheet, Image, View, TouchableOpacity, Alert, PermissionsAndroid} from 'react-native';
+import {StyleSheet, Image, View, TouchableOpacity, Alert, PermissionsAndroid, ActivityIndicator} from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import { CameraRoll } from "@react-native-camera-roll/camera-roll";
 import { useNavigation } from '@react-navigation/native';

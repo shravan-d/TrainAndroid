@@ -122,12 +122,13 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     marginTop: '15%',
-    justifyContent: 'space-between',
   },
   favouritesContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginTop: '6%'
+    marginTop: '10%',
+    zIndex: -1,
+    elevation: -1,
   },
   text: {
     color: 'white',
@@ -141,7 +142,9 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontFamily: 'Montserrat-Bold',
     fontSize: 24,
-    marginTop: "6%"
+    zIndex: -1,
+    elevation: -1,
+    marginTop: '10%'
   },
   topBar: {
     position: 'absolute',
