@@ -5,7 +5,7 @@ import Dropdown from '../views/Dropdown';
 import MenuBar from '../views/MenuBar';
 import NavBar from '../views/NavBar';
 import { ScrollView } from 'react-native-gesture-handler';
-import IonIonIcon from 'react-native-vector-icons/Ionicons';
+import IonIcon from 'react-native-vector-icons/Ionicons';
 
 var screenHeight = Dimensions.get('window').height;
 var screenWidth = Dimensions.get('window').width;
@@ -72,10 +72,11 @@ const ExerciseGuide = () => {
       <View style={styles.topBar}>
           {!openSearch &&
           <TouchableOpacity onPress={() => {setOpenSearch(!openSearch)}} style={styles.searchButton}>
-            <IonIonIcon name="ios-search-outline" color="rgba(250,250,250,0.8)" size={24} />
+            <IonIcon name="ios-search-outline" color="rgba(250,250,250,0.8)" size={24} />
           </TouchableOpacity>
           }
           {openSearch &&
+          <>
           <TextInput 
             style={styles.textInputStyle} 
             maxLength={10}
@@ -85,6 +86,10 @@ const ExerciseGuide = () => {
             cursorColor='white'
             underlineColorAndroid="rgba(0,0,0,0)"
           />
+          <TouchableOpacity onPress={() => {setOpenSearch(!openSearch)}} style={styles.closeButton}>
+            <IonIcon name="close-outline" color="rgba(250,250,250,0.8)" size={24} />
+          </TouchableOpacity>
+          </>
           } 
       </View>
       <View style={[styles.headerContainer, {height: headerHeight}]}>
@@ -94,7 +99,7 @@ const ExerciseGuide = () => {
         <View style={styles.favouritesContainer}>
           <Text style={styles.text}>Show favorites</Text>
           <TouchableOpacity onPress={() => setShowFavorites(!showFavorites)}>
-          <IonIonIcon name="heart" size={18} color={showFavorites ? '#D4AF37' : 'white'} />
+          <IonIcon name="heart" size={18} color={showFavorites ? '#D4AF37' : 'white'} />
           </TouchableOpacity>
         </View>
         <View><Text style={styles.groupHeader}>{muscleGroup}</Text></View>
@@ -155,6 +160,11 @@ const styles = StyleSheet.create({
     lineHeight: "7%",
     zIndex: 0,
     elevation: 0,
+  },
+  closeButton: {
+    position: 'absolute',
+    right: "3%",
+    top: "30%",
   },
   searchButton: {
     position: 'absolute',

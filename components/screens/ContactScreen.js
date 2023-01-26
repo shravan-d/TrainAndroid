@@ -1,11 +1,13 @@
 import React, { useState, useCallback, useEffect} from 'react';
 import {StyleSheet, ImageBackground, View, Text, TextInput, ScrollView, TouchableOpacity, FlatList, Dimensions} from 'react-native';
-import IonIonIcon from 'react-native-vector-icons/Ionicons';
+import IonIcon from 'react-native-vector-icons/Ionicons';
 import ContactCard from '../views/ContactCard';
 import MenuBar from '../views/MenuBar';
 import NavBar from '../views/NavBar';
 import { useNavigation } from '@react-navigation/native';
 import { useIsFocused } from '@react-navigation/native';
+import UserCard from '../views/UserCard';
+import { supabase } from '../../supabaseClient';
 
 const screenHeight = Dimensions.get("window").height
 const screenWidth = Dimensions.get("window").width
@@ -15,7 +17,7 @@ const ContactScreen = ({ route }) => {
   const isFocused = useIsFocused()
   const { path, type, sendCapture } = route.params;
   var bg = require ('../../assets/media/bg.png');
-  const [contactList, setContactList] = useState([
+  let tempContacts = [
     {id: 1, name: 'Ana', lastMessageTime: '2022-12-28 12:43', image: 'https://w0.peakpx.com/wallpaper/128/436/HD-wallpaper-ana-de-armas-beauty-girls.jpg', newShot: false, newMsg: true, lastSeen: '6 hours', streak: 6},
     {id: 2, name: 'Margot', lastMessageTime: '2022-12-28 3:12', image: 'https://i.pinimg.com/564x/77/8f/82/778f8218b0fef7d5c9ee5b5caa61cb43--face-beauty-womens-beauty.jpg', newShot: true, newMsg: true, lastSeen: '1 hour', streak: 132},
     {id: 3, name: 'Sam', lastMessageTime: '2022-12-27 17:36', image: 'https://static.toiimg.com/thumb/msid-91347515,width-900,height-1200,resizemode-6.cms', newShot: true, newdMsg: false, lastSeen: '12 hours', streak: 0},
@@ -24,11 +26,21 @@ const ContactScreen = ({ route }) => {
     {id: 77, name: 'Odegard', lastMessageTime: '2022-08-16 10:07', image: 'https://i.pinimg.com/originals/e7/36/a6/e736a6763a56c2a4d2eceee29249f48b.png', newShot: false, newdMsg: false, lastSeen: '12 days', streak: 0},
     {id: 11, name: 'Kaipulla', lastMessageTime: '2021-12-27 17:36', image: 'https://i1.sndcdn.com/artworks-000614414847-dxnict-t500x500.jpg', newShot: true, newdMsg: false, lastSeen: '12 hours', streak: 0},
     {id: 14, name: 'Dakota', lastMessageTime: '2022-12-26 10:07', image: 'https://w0.peakpx.com/wallpaper/335/551/HD-wallpaper-dakota-johnson-red-girl-actress-tattoo-face-lips-woman.jpg', newShot: false, newdMsg: false, lastSeen: '12 days', streak: 0},
-  ])
-
-  const [search, setSearch] = useState('');
+  ];
+  let tempUsers = [
+    {id: '1', username: 'sasuke1', displayName: 'Sasuke', avatar_url: null},
+    {id: '2', username: 'light69', displayName: 'Yagami', avatar_url: 'https://otakukart.com/wp-content/uploads/2021/01/deathhhh.jpg'},
+    {id: '26', username: 'light69', displayName: 'Yagami', avatar_url: 'https://otakukart.com/wp-content/uploads/2021/01/deathhhh.jpg'},
+    {id: '24', username: 'light69', displayName: 'Yagami', avatar_url: 'https://otakukart.com/wp-content/uploads/2021/01/deathhhh.jpg'},
+    {id: '21', username: 'light69', displayName: 'Yagami', avatar_url: 'https://otakukart.com/wp-content/uploads/2021/01/deathhhh.jpg'},
+    {id: '22', username: 'light69', displayName: 'Yagami', avatar_url: 'https://otakukart.com/wp-content/uploads/2021/01/deathhhh.jpg'}
+  ]
+  const [contactList, setContactList] = useState(tempContacts);
   const [filteredContactList, setFilteredContactList] = useState(contactList);
+  const [userList, setUserList] = useState([]);
+  const [search, setSearch] = useState('');
   const [openSearch, setOpenSearch] = useState(false)
+  const [openUserSearch, setOpenUserSearch] = useState(false)
 
   contactList.sort(function(a, b) {return (new Date(a.lastMessageTime) > new Date(b.lastMessageTime))?-1:1;});
 
@@ -46,57 +58,102 @@ const ContactScreen = ({ route }) => {
       setSearch(text);
     }
   }
+  const searchUsers = async (text) => {
+    if (text) {
+      setSearch(text);
+      const {data, error} = await supabase.from('profiles').select().like('username', text+'%');
+      if (error) console.error(error.message)
+      else setUserList(data)
+    } else {
+      setUserList([])
+      setSearch(text);
+    }
+  }
   
   const [selectedContacts, setSelectedContacts] = useState([]);
 
-  const onCardPress = 
-    (id) => {
-      if (sendCapture){
-          const index = selectedContacts.indexOf(id);
-          if (index > -1) { 
-            setSelectedContacts(oldArray => oldArray.filter((old_id)=> {return old_id != id}));
-            console.log(selectedContacts)
-          } else
-            setSelectedContacts(oldArray => [...oldArray, id] )
-      } else {
-        navigation.navigate('ChatScreen', {
-          contactId: id,
-          contactName: contactList.find(x => x.id == id).name,
-          contactImage: contactList.find(x => x.id == id).image,
-          contactNewShot: contactList.find(x => x.id == id).newShot,
-        });
-      }
-    };
+  const onCardPress = (id) => {
+    if (sendCapture){
+        const index = selectedContacts.indexOf(id);
+        if (index > -1) { 
+          setSelectedContacts(oldArray => oldArray.filter((old_id)=> {return old_id != id}));
+        } else
+          setSelectedContacts(oldArray => [...oldArray, id] )
+    } else {
+      navigation.navigate('ChatScreen', {
+        contactId: id,
+        contactName: contactList.find(x => x.id == id).name,
+        contactImage: contactList.find(x => x.id == id).image,
+        contactNewShot: contactList.find(x => x.id == id).newShot,
+      });
+      setOpenUserSearch(false);
+    }
+  };
   
-    useEffect(() => { 
-      setSelectedContacts([]);
-    }, [isFocused]);
+  useEffect(() => { 
+    setSelectedContacts([]);
+  }, [isFocused]);
 
   return (
     <View style={styles.container}>  
     <ImageBackground source={bg} style={{height: '100%'}}>
         <View style={styles.topBar}>
-          {!openSearch &&
+          {!openSearch && !openUserSearch &&
           <>
           <Text style={styles.header}>TrainShots</Text>
+          <TouchableOpacity onPress={() => {setOpenUserSearch(!openUserSearch)}} style={[styles.searchButton, {marginRight: '7%'}]}>
+            <IonIcon name="ios-add-outline" color="rgba(250,250,250,0.8)" size={24} />
+          </TouchableOpacity>
           <TouchableOpacity onPress={() => {setOpenSearch(!openSearch)}} style={styles.searchButton}>
-            <IonIonIcon name="ios-search-outline" color="rgba(250,250,250,0.8)" size={24} />
+            <IonIcon name="ios-search-outline" color="rgba(250,250,250,0.8)" size={24} />
           </TouchableOpacity>
           </>
           }
-          {openSearch &&
+          {openUserSearch &&
+          <>
           <TextInput 
             style={styles.textInputStyle} 
-            maxLength={10}
+            maxLength={20}
+            onChangeText={(text) => searchUsers(text)}
+            onSubmitEditing = {() => {setOpenUserSearch(!openUserSearch); setSearch('')}}
+            value={search}
+            cursorColor='white'
+            underlineColorAndroid="transparent"
+          />
+          <TouchableOpacity onPress={() => {setOpenUserSearch(!openUserSearch)}} style={styles.closeButton}>
+            <IonIcon name="close-outline" color="rgba(250,250,250,0.8)" size={24} />
+          </TouchableOpacity>
+          </>
+          } 
+          {openSearch &&
+          <>
+          <TextInput 
+            style={styles.textInputStyle} 
+            maxLength={20}
             onChangeText={(text) => searchFilterFunction(text)}
             onSubmitEditing = {() => {setOpenSearch(!openSearch); setSearch('')}}
             value={search}
             cursorColor='white'
             underlineColorAndroid="transparent"
           />
+          <TouchableOpacity onPress={() => {setOpenSearch(!openSearch)}} style={styles.closeButton}>
+            <IonIcon name="close-outline" color="rgba(250,250,250,0.8)" size={24} />
+          </TouchableOpacity>
+          </>
           } 
         </View>
-        <View style={styles.contactContainer}>
+        {openUserSearch &&
+        <View style={styles.userContainer}>
+          <ScrollView>
+            {userList.map((user) => (
+                <TouchableOpacity key={user.id} onPress={() => createNewChat(user.id)}>
+                  <UserCard user={user} />
+                </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+        }
+        <View style={[styles.contactContainer, openUserSearch?{height: '58%'}:{height: '86%', marginTop:'15%'}]}>
           <ScrollView>
             {filteredContactList.map((contact) => (
                 <TouchableOpacity key={contact.id} onPress={() => onCardPress(contact.id)}>
@@ -106,8 +163,8 @@ const ContactScreen = ({ route }) => {
           </ScrollView>
         <TouchableOpacity onPress={() => {navigation.navigate('CameraScreen');}} style={styles.addButton}>
             <>
-              {!sendCapture && <IonIonIcon name="ios-add-outline" color="rgba(250,250,250,0.8)" size={30} />}
-              {sendCapture && <IonIonIcon name="send-sharp" color="rgba(250,250,250,0.8)" size={30} />}
+              {!sendCapture && <IonIcon name="camera-outline" color="rgba(250,250,250,0.8)" size={30} />}
+              {sendCapture && <IonIcon name="send-sharp" color="rgba(250,250,250,0.8)" size={30} />}
             </>
           </TouchableOpacity>
         </View>
@@ -124,9 +181,13 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: 'black'
   },
+  userContainer: {
+    marginTop: '15%',
+    height: 210,
+  },
   contactContainer: {
-    height: '86%',
-    marginTop: '15%'
+    // height: '86%',
+    // marginTop: '15%'
   },
   topBar: {
     borderBottomColor: "#D4AF37",
@@ -149,6 +210,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: "3%",
     top: "25%",
+  },
+  closeButton: {
+    position: 'absolute',
+    right: "3%",
+    top: "30%",
   },
   addButton: {
     position: 'absolute',

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import {StyleSheet, View, Text, ImageBackground, TouchableOpacity, TextInput, ActivityIndicator} from 'react-native';
+import {StyleSheet, View, Text, ImageBackground, TouchableOpacity, TextInput, ActivityIndicator, Linking} from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import {useNavigation} from '@react-navigation/native';
+import {Link, useNavigation} from '@react-navigation/native';
 import { supabase } from '../../supabaseClient';
 
 const LoginScreen = () => {
@@ -11,16 +11,36 @@ const LoginScreen = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [loginLinkReceived, setLoginLinkReceived] = useState(false);
+  const [showErrorMessage, setShowErrorMessage] = useState(false)
+
+  const validateEmail = (email) => {
+    return email.match(
+      /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    );
+  };
 
   async function signInWithEmail(e) {
     e.preventDefault();
-    setLoading(true)
+    if(!validateEmail(email)){
+      setShowErrorMessage(true);
+      return;
+    }
+    setShowErrorMessage(false);
+    setLoading(true);
     const res = await supabase.auth.signInWithPassword({
       email: email,
       password: password,
     })
-
-    if (res.error) console.error(res.error.message)
+    if(res.data.session){
+      console.log('Login successful');
+      navigation.navigate('Home')
+    }
+    if (res.error){
+      console.error(res.error.message)
+      if(res.error.message==='Invalid login credentials'){
+        setShowErrorMessage(true)
+      }
+    }
     setLoading(false)
   }
 
@@ -38,15 +58,24 @@ const LoginScreen = () => {
     }
   }
 
+  const signInWithProvider = async (provider) => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: provider,
+    })
+    await Linking.openURL(data.url)
+    if (error) console.error(error.message)
+    navigation.navigate('Home')
+  }
+
   return (
     <View style={styles.container}>
     <ImageBackground source={bg} style={styles.background}>
       <View style={styles.contentContainer}>
+        {/* <TouchableOpacity style={{width:40, height:40, backgroundColor:'red'}} onPress={()=>{navigation.navigate('DebugScreen')}} /> */}
         <Text style={styles.header}>Log in to your fitness account</Text>
-        {loginLinkReceived && <Text style={{fontFamily: 'Montserrat-Italic', color: 'white', position:'absolute', bottom: '20%'}}>Check your email for the login link</Text>}
         <View style={styles.loginContainer}>
           <TextInput 
-            style={styles.textInputStyle}
+            style={[styles.textInputStyle, showErrorMessage?{borderBottomColor: 'red'}:{borderBottomColor: '#D4AF37'}]}
             onChangeText={(text) => setEmail(text)}
             onSubmitEditing = {() => {setEmail('')}}
             keyboardType='email-address'
@@ -57,7 +86,7 @@ const LoginScreen = () => {
             placeholderTextColor={'rgba(250,250,250,0.3)'}
           />
           <TextInput 
-            style={styles.textInputStyle}
+            style={[styles.textInputStyle, showErrorMessage?{borderBottomColor: 'red'}:{borderBottomColor: '#D4AF37'}]}
             onChangeText={(text) => setPassword(text)}
             onSubmitEditing = {() => {setPassword('')}}
             value={password}
@@ -75,7 +104,7 @@ const LoginScreen = () => {
           </View>
           <Text style={{fontFamily: 'Montserrat-Regular', fontSize: 12, color: 'rgba(250,250,250,0.8)', textAlign: 'center', margin: '2%'}}>Or</Text>
           <View style={styles.socialsContainer}>
-            <TouchableOpacity><FontAwesome name='google' size={16} color='white' /></TouchableOpacity>
+            <TouchableOpacity onPress={()=>signInWithProvider('google')}><FontAwesome name='google' size={16} color='white' /></TouchableOpacity>
             <TouchableOpacity><FontAwesome name='facebook' size={16} color='white' /></TouchableOpacity>
             <TouchableOpacity><FontAwesome name='spotify' size={16} color='white' /></TouchableOpacity>
           </View>
@@ -92,6 +121,8 @@ const LoginScreen = () => {
             {!loading && <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Login</Text>}
           </View>
         </TouchableOpacity>
+        {loginLinkReceived && <Text style={{fontFamily: 'Montserrat-Regular', color: 'white', marginTop: 10}}>Check your email for the login link</Text>}
+        {showErrorMessage && <Text style={{fontFamily: 'Montserrat-Regular', color: 'white', marginTop: 10}}>Please check your credentials</Text>}
       </View>
     </ImageBackground>
     </View>
@@ -134,7 +165,6 @@ const styles = StyleSheet.create({
       fontSize: 14,
       color: 'white',
       backgroundColor: 'rgba(20,20,20,0.2)',
-      borderBottomColor: '#D4AF37',
       borderBottomWidth: 1,
       borderTopEndRadius: 10,
       width: '100%'

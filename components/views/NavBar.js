@@ -1,10 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {StyleSheet, ImageBackground, View, Button, TouchableOpacity, Text} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
+import { AuthContext } from '../../App';
+import { supabase } from '../../supabaseClient';
 
 const NavBar = () => {
   const [showSidebar, setShowSidebar] = useState(false);
   const navigation = useNavigation();
+  const user = useContext(AuthContext);
+
+  const signOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) console.error('Login failed: ', error.message);
+    setShowSidebar(false);
+    navigation.navigate('LoginScreen');
+  }
   return (
     <View style={styles.container}>
         <View style = {styles.navButton}>
@@ -21,14 +31,24 @@ const NavBar = () => {
               style={[styles.sidebarButton, {marginTop: 50}]}>
                 <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Debug</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => {navigation.navigate('AccountScreen')}} 
+              {user &&
+              <TouchableOpacity onPress={() => {setShowSidebar(false); navigation.navigate('AccountScreen')}} 
               style={styles.sidebarButton}>
                 <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Account</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => {navigation.navigate('LoginScreen')}} 
+              }
+              {user &&
+              <TouchableOpacity onPress={() => signOut()} 
+              style={[styles.sidebarButton, {marginBottom: 20, marginTop: 'auto'}]}>
+                <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Sign Out</Text>
+              </TouchableOpacity>
+              }
+              {!user &&
+              <TouchableOpacity onPress={() => {setShowSidebar(false); navigation.navigate('LoginScreen')}} 
               style={[styles.sidebarButton, {marginBottom: 20, marginTop: 'auto'}]}>
                 <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Login / Sign Up</Text>
               </TouchableOpacity>
+              }
             </View>
         }
     </View>

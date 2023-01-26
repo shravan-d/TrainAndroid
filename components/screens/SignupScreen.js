@@ -15,12 +15,24 @@ const SignupScreen = () => {
   async function signUpWithEmail(event) {
     event.preventDefault();
     setLoading(true)
-    const res = await supabase.auth.signUp({
+    let username = displayName.toLowerCase();
+    const res = await supabase.from('profiles').select('username').like('username', username+'%');
+    if(res.data.length > 0) username = username + res.data.length.toString();
+    const {data, error} = await supabase.auth.signUp({
       email: email,
-      password: password,
+      password: password,  
+      options: {
+        data: {
+          display_name: displayName,
+          avatar_url: 'assets/media/ig5.jpg',
+          username: username
+        }
+      }  
     })
-    console.log(res)
-    if (res.error) console.error(res.error.message)
+    if(data.user){
+      console.log('Created User'); 
+    }
+    if (error) console.error(error.message)
     setLoading(false)
   }
 

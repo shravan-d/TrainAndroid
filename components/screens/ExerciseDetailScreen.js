@@ -55,8 +55,6 @@ const ExerciseDetailScreen = ({ route }) => {
 
   const onVideoBuffer = param => {
     setIsLoading(param.isBuffering);
-    console.log(param)
-    // console.log(isLoading);
   };
 
   const loadingView = () => {
@@ -84,7 +82,6 @@ const ExerciseDetailScreen = ({ route }) => {
   );
   const exerciseSteps = exerciseDetails.steps.split('.');
   const exerciseMistakes = exerciseDetails.mistakes.split('.');
-    console.log(currIdx)
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} style={styles.exerciseContainer}>

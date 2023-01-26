@@ -1,6 +1,6 @@
 import {NavigationContainer} from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
-import {StyleSheet, useColorScheme, View, Text} from 'react-native';
+import {StyleSheet, Linking, View, Text} from 'react-native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import LandingPage from './components/screens/LandingPage';
 import ExerciseGuide from './components/screens/ExerciseGuide';
@@ -15,22 +15,23 @@ import LoginScreen from './components/screens/LoginScreen';
 import SignupScreen from './components/screens/SignupScreen';
 import { supabase } from './supabaseClient';
 import { DebugScreen } from './components/screens/DebugScreen';
-import AccountScreen from './components/screens/AcoountScreen';
+import AccountScreen from './components/screens/AccountScreen';
 
 const Stack = createNativeStackNavigator();
+export const AuthContext = React.createContext(null);
 const App = () => {
   const [auth, setAuth] = useState(false);
 
   useEffect(()=>{
-    // setAuth(supabase.auth.session());
+    setAuth(supabase.auth.getSession());
     supabase.auth.onAuthStateChange((event, session) => {
-      console.log(session);
       setAuth(session);
     })
   }, [])
   return (
-    <>
+    <AuthContext.Provider value={auth?.user}>
       <NavigationContainer>
+        {auth?.user?
         <Stack.Navigator>
           <Stack.Screen
             name="Home"
@@ -100,8 +101,33 @@ const App = () => {
             options={{headerShown: false}}
           />
         </Stack.Navigator>
+        :
+        <Stack.Navigator>
+          <Stack.Screen
+            name="LoginScreen"
+            component={LoginScreen}
+            options={{headerShown: false}}
+          />
+          <Stack.Screen
+            name="SignupScreen"
+            component={SignupScreen}
+            options={{headerShown: false}}
+          />
+          <Stack.Screen
+            name="Home"
+            component={LandingPage}
+            options={{headerShown: false}}
+          />
+
+          <Stack.Screen
+            name="DebugScreen"
+            component={DebugScreen}
+            options={{headerShown: false}}
+          />
+        </Stack.Navigator>
+        }
       </NavigationContainer>
-    </>
+    </AuthContext.Provider>
   );
 };
 

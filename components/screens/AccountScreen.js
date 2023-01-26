@@ -1,22 +1,26 @@
-import React, { useEffect, useState } from 'react';
-import {StyleSheet, View, Text, ImageBackground, TouchableOpacity, TextInput, Dimensions, ScrollView} from 'react-native';
+import React, { useEffect, useState, useContext } from 'react';
+import {StyleSheet, View, Text, ImageBackground, Image, TouchableOpacity, TextInput, Dimensions, ScrollView, ActivityIndicator} from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { supabase } from '../../supabaseClient';
 import {useNavigation} from '@react-navigation/native';
+import { AuthContext } from '../../App';
 
 var screenHeight = Dimensions.get('screen').height;
 
 const AccountScreen = () => {
   const navigation = useNavigation();
   var bg = require ('../../assets/media/bg.png');
+  const user = useContext(AuthContext);
 
-  const [email, setEmail] = useState('');
+  const [avatar, setAvatar] = useState(user?.user_metadata.avatar_url)
+  const [email, setEmail] = useState(user?.email);
+  const [displayName, setDisplayName] = useState(user?.user_metadata.display_name);
+  const [username, setUsername] = useState(user?.user_metadata.username);
   const [password, setPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
-  const [username, setUsername] = useState('');
   const [showPasswordContainer, setShowPasswordContainer] = useState(false);
   const [monthActiveData, setMonthActiveData] = useState([]);
+  const [updating, setUpdating] = useState(-1);
   var days = ["2018-10-28", "2018-10-29", "2018-10-30", "2018-11-3", "2018-11-4"];
   
   const setActiveList = () => {
@@ -44,10 +48,33 @@ const AccountScreen = () => {
     setMonthActiveData(months);
   }
 
+  const updateUserData = async () => {
+    if(email===user.email&&username===user.user_metadata.username&&displayName===user.user_metadata.display_name){
+      return;
+    }
+    setUpdating(0);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        email: email,
+        options: {
+          data: { username: username, display_name: displayName }
+        }
+      })
+      if (error) throw error;
+      setUpdating(1);
+    }
+    catch (error) {
+      console.error(error.message);
+      setUpdating(-2);
+    }
+    finally {
+      console.log('Updated')
+      // setUpdating(1);
+    }
+  }
+  var defaultIonIcon = require ('../../assets/media/logo.png');
+  let image = avatar?{uri: avatar}:defaultIonIcon;
   useEffect(()=>{
-    setUsername('zero');
-    setEmail('test@test.com');
-    setDisplayName('Zero');
     setActiveList();
   },[])
 
@@ -56,12 +83,18 @@ const AccountScreen = () => {
     <ImageBackground source={bg} style={styles.background}>
       <ScrollView style={styles.contentContainer}>
         <Text style={styles.header}>Account Details</Text>
+          <View style={styles.contactImage}>
+            <TouchableOpacity onPress={() => {console.log('Press')}}>
+              <Image style={styles.image} source={image} />
+            </TouchableOpacity>
+          </View>
           <View style={styles.field}>
             <Text style={{fontFamily: 'Montserrat-Italic', color: 'white'}}>Email: </Text>
             <TextInput 
             style={[styles.textInputStyle, {marginLeft: 'auto', marginRight: 10}]}
             onChangeText={(text) => setEmail(text)}
             onSubmitEditing = {() => {setEmail('')}}
+            // editable={false}//Change if can be updated
             keyboardType='email-address'
             value={email}
             cursorColor='white'
@@ -130,9 +163,15 @@ const AccountScreen = () => {
                         {showPasswordContainer?'Cancel':'Change Password'}</Text>
                 </View>
             </TouchableOpacity>
-            <TouchableOpacity style={{width: '40%', marginLeft: 'auto', marginRight: 10}}>
+            <TouchableOpacity 
+            disabled={updating!=-1}
+            onPress={()=>updateUserData()}
+            style={{width: '40%', marginLeft: 'auto', marginRight: 10}}>
                 <View style={styles.buttonContainer}>
-                    <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Save Changes</Text>
+                    {updating==-1&&<Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Save Changes</Text>}
+                    {updating==1&&<Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Changes Saved</Text>}
+                    {updating==-2&&<Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Unable to save</Text>}
+                    {updating==-0&&<ActivityIndicator color="rgba(250,250,250,0.8)" />}
                 </View>
             </TouchableOpacity>
         </View>
@@ -169,13 +208,24 @@ const styles = StyleSheet.create({
       flex: 1,
       paddingTop: '15%',
     },
+    contactImage: {
+      width: 80,
+      height: 80,
+      borderRadius: 80,
+      alignSelf: 'center',
+      marginBottom: '3%'
+    },
+    image: {
+      width: "100%", 
+      height: "100%",
+      borderRadius: 80,
+    },
     header: {
       fontFamily: 'Montserrat-Regular',
       color: "#D4AF37",
       fontWeight: "600",
       textAlign: "center",
       fontSize: 20,
-      marginBottom: '5%'
     },
     field: {
       flexDirection: 'row',
