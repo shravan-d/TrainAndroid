@@ -36,9 +36,9 @@ const ContactCard = ({ contact, highlight }) => {
     getTime();
   }, [contact]);
   
-  var defaultIonIcon = require ('../../assets/media/logo.png');
-  let image = contact.image?{uri: contact.image}:defaultIonIcon;
-  let subText = newShot? "New training shot": (newMsg ? "New message" : "Last seen "+contact.lastSeen+" ago");
+  var defaultIcon = require ('../../assets/media/logo.png');
+  let image = contact.user.avatar_url?{uri: 'https://mhtzqkkrssrxagqjbpdd.supabase.co/storage/v1/object/public/avatars/'+contact.user.avatar_url}:defaultIcon;
+  let subText = newShot? "New training shot": (newMsg ? "New message" : contact.user.username);
   return (
     <View style={styles.container}>
         <View style={styles.cardContainer}>
@@ -46,7 +46,7 @@ const ContactCard = ({ contact, highlight }) => {
                 <Image style={[styles.image, highlight?{borderColor: '#D4AF37', borderWidth: 1}:{}]} source={image} />
             </View>
             <View>
-                <Text style={styles.contactName}>{contact.name}</Text>
+                <Text style={styles.contactName}>{contact.user.display_name}</Text>
                 <View style={{flexDirection: "row"}}><View style={[styles.newDot, newShot?{backgroundColor:"#D4AF37"}:newMsg?{backgroundColor:"green"}:{width:0}]}></View><Text style={styles.contactMsg}>{subText}</Text></View>
             </View>
             <View style={styles.contactTime}>

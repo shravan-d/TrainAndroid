@@ -24,13 +24,14 @@ const SignupScreen = () => {
       options: {
         data: {
           display_name: displayName,
-          avatar_url: 'assets/media/ig5.jpg',
+          avatar_url: null,
           username: username
         }
       }  
     })
     if(data.user){
       console.log('Created User'); 
+      navigation.navigate('Home');
     }
     if (error) console.error(error.message)
     setLoading(false)

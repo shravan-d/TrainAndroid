@@ -1,6 +1,6 @@
 import {NavigationContainer} from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
-import {StyleSheet, Linking, View, Text} from 'react-native';
+import {StyleSheet, Linking, View, Text, ActivityIndicator} from 'react-native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import LandingPage from './components/screens/LandingPage';
 import ExerciseGuide from './components/screens/ExerciseGuide';
@@ -16,22 +16,55 @@ import SignupScreen from './components/screens/SignupScreen';
 import { supabase } from './supabaseClient';
 import { DebugScreen } from './components/screens/DebugScreen';
 import AccountScreen from './components/screens/AccountScreen';
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const Stack = createNativeStackNavigator();
 export const AuthContext = React.createContext(null);
 const App = () => {
-  const [auth, setAuth] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [auth, setAuth] = useState(null);
 
   useEffect(()=>{
-    setAuth(supabase.auth.getSession());
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setAuth(session)
+      setLoading(false)
+    })
     supabase.auth.onAuthStateChange((event, session) => {
       setAuth(session);
     })
   }, [])
+  if(loading){
+    return (
+      <ActivityIndicator color={'white'} size={40}/>
+    )
+  } else
   return (
     <AuthContext.Provider value={auth?.user}>
       <NavigationContainer>
-        {auth?.user?
+        {!auth?
+        <Stack.Navigator>
+          <Stack.Screen
+            name="LoginScreen"
+            component={LoginScreen}
+            options={{headerShown: false}}
+          />
+          <Stack.Screen
+            name="SignupScreen"
+            component={SignupScreen}
+            options={{headerShown: false}}
+          />
+          <Stack.Screen
+            name="Home"
+            component={LandingPage}
+            options={{headerShown: false}}
+          />
+          <Stack.Screen
+            name="DebugScreen"
+            component={DebugScreen}
+            options={{headerShown: false}}
+          />
+        </Stack.Navigator>
+        :
         <Stack.Navigator>
           <Stack.Screen
             name="Home"
@@ -94,30 +127,6 @@ const App = () => {
             options={{headerShown: false}}
           />
 
-
-          <Stack.Screen
-            name="DebugScreen"
-            component={DebugScreen}
-            options={{headerShown: false}}
-          />
-        </Stack.Navigator>
-        :
-        <Stack.Navigator>
-          <Stack.Screen
-            name="LoginScreen"
-            component={LoginScreen}
-            options={{headerShown: false}}
-          />
-          <Stack.Screen
-            name="SignupScreen"
-            component={SignupScreen}
-            options={{headerShown: false}}
-          />
-          <Stack.Screen
-            name="Home"
-            component={LandingPage}
-            options={{headerShown: false}}
-          />
 
           <Stack.Screen
             name="DebugScreen"

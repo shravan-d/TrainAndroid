@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect} from 'react';
+import React, { useState, useCallback, useEffect, useContext} from 'react';
 import {StyleSheet, ImageBackground, View, Text, TextInput, ScrollView, TouchableOpacity, FlatList, Dimensions} from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import ContactCard from '../views/ContactCard';
@@ -8,6 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useIsFocused } from '@react-navigation/native';
 import UserCard from '../views/UserCard';
 import { supabase } from '../../supabaseClient';
+import { AuthContext } from '../../App';
 
 const screenHeight = Dimensions.get("window").height
 const screenWidth = Dimensions.get("window").width
@@ -16,38 +17,23 @@ const ContactScreen = ({ route }) => {
   const navigation = useNavigation();
   const isFocused = useIsFocused()
   const { path, type, sendCapture } = route.params;
+  const user = useContext(AuthContext);
   var bg = require ('../../assets/media/bg.png');
-  let tempContacts = [
-    {id: 1, name: 'Ana', lastMessageTime: '2022-12-28 12:43', image: 'https://w0.peakpx.com/wallpaper/128/436/HD-wallpaper-ana-de-armas-beauty-girls.jpg', newShot: false, newMsg: true, lastSeen: '6 hours', streak: 6},
-    {id: 2, name: 'Margot', lastMessageTime: '2022-12-28 3:12', image: 'https://i.pinimg.com/564x/77/8f/82/778f8218b0fef7d5c9ee5b5caa61cb43--face-beauty-womens-beauty.jpg', newShot: true, newMsg: true, lastSeen: '1 hour', streak: 132},
-    {id: 3, name: 'Sam', lastMessageTime: '2022-12-27 17:36', image: 'https://static.toiimg.com/thumb/msid-91347515,width-900,height-1200,resizemode-6.cms', newShot: true, newdMsg: false, lastSeen: '12 hours', streak: 0},
-    {id: 5, name: 'Murugesa', lastMessageTime: '2022-12-16 10:07', image: null, newShot: false, newdMsg: false, lastSeen: '12 days', streak: 2},
-    {id: 6, name: 'Rachel', lastMessageTime: '2022-11-27 17:36', image: 'https://c4.wallpaperflare.com/wallpaper/760/1024/879/rachel-cook-women-model-blue-eyes-face-hd-wallpaper-preview.jpg', newShot: true, newdMsg: false, lastSeen: '12 hours', streak: 1},
-    {id: 77, name: 'Odegard', lastMessageTime: '2022-08-16 10:07', image: 'https://i.pinimg.com/originals/e7/36/a6/e736a6763a56c2a4d2eceee29249f48b.png', newShot: false, newdMsg: false, lastSeen: '12 days', streak: 0},
-    {id: 11, name: 'Kaipulla', lastMessageTime: '2021-12-27 17:36', image: 'https://i1.sndcdn.com/artworks-000614414847-dxnict-t500x500.jpg', newShot: true, newdMsg: false, lastSeen: '12 hours', streak: 0},
-    {id: 14, name: 'Dakota', lastMessageTime: '2022-12-26 10:07', image: 'https://w0.peakpx.com/wallpaper/335/551/HD-wallpaper-dakota-johnson-red-girl-actress-tattoo-face-lips-woman.jpg', newShot: false, newdMsg: false, lastSeen: '12 days', streak: 0},
-  ];
-  let tempUsers = [
-    {id: '1', username: 'sasuke1', displayName: 'Sasuke', avatar_url: null},
-    {id: '2', username: 'light69', displayName: 'Yagami', avatar_url: 'https://otakukart.com/wp-content/uploads/2021/01/deathhhh.jpg'},
-    {id: '26', username: 'light69', displayName: 'Yagami', avatar_url: 'https://otakukart.com/wp-content/uploads/2021/01/deathhhh.jpg'},
-    {id: '24', username: 'light69', displayName: 'Yagami', avatar_url: 'https://otakukart.com/wp-content/uploads/2021/01/deathhhh.jpg'},
-    {id: '21', username: 'light69', displayName: 'Yagami', avatar_url: 'https://otakukart.com/wp-content/uploads/2021/01/deathhhh.jpg'},
-    {id: '22', username: 'light69', displayName: 'Yagami', avatar_url: 'https://otakukart.com/wp-content/uploads/2021/01/deathhhh.jpg'}
-  ]
-  const [contactList, setContactList] = useState(tempContacts);
+
+  const [contactList, setContactList] = useState([]);
   const [filteredContactList, setFilteredContactList] = useState(contactList);
   const [userList, setUserList] = useState([]);
   const [search, setSearch] = useState('');
   const [openSearch, setOpenSearch] = useState(false)
   const [openUserSearch, setOpenUserSearch] = useState(false)
+  const [selectedContacts, setSelectedContacts] = useState([]);
 
   contactList.sort(function(a, b) {return (new Date(a.lastMessageTime) > new Date(b.lastMessageTime))?-1:1;});
 
   const searchFilterFunction = (text) => {
     if (text) {
       const newData = contactList.filter(function (item) {
-        const itemData = item.name? item.name.toUpperCase(): ''.toUpperCase();
+        const itemData = item.user.display_name? item.user.display_name.toUpperCase(): ''.toUpperCase();
         const textData = text.toUpperCase();
         return itemData.indexOf(textData) > -1;
       });
@@ -58,10 +44,11 @@ const ContactScreen = ({ route }) => {
       setSearch(text);
     }
   }
+
   const searchUsers = async (text) => {
-    if (text) {
+    if (text!='') {
       setSearch(text);
-      const {data, error} = await supabase.from('profiles').select().like('username', text+'%');
+      const {data, error} = await supabase.from('profiles').select().like('username', text+'%').neq('id', user.id).limit(10);
       if (error) console.error(error.message)
       else setUserList(data)
     } else {
@@ -70,29 +57,60 @@ const ContactScreen = ({ route }) => {
     }
   }
   
-  const [selectedContacts, setSelectedContacts] = useState([]);
+  const createNewChat = async (secondUser) => {
+    console.log(secondUser)
+    var { data, error } = await supabase
+    .from('chat_room')
+    .insert({})
+    .select('id')
+    if(error) console.error(error)
+    var chatroomId = data[0].id;
+    var { data, error } = await supabase
+    .from('participants')
+    .insert([{chatroom_id: chatroomId, user_id: user.id}, {chatroom_id: chatroomId, user_id: secondUser.id}])
+    if(error) console.error(error)
+    navigation.navigate('ChatScreen', { secondUser: secondUser, chatroomId: chatroomId })
 
-  const onCardPress = (id) => {
+  }
+
+  const onCardPress = (contact) => {
     if (sendCapture){
-        const index = selectedContacts.indexOf(id);
+        const index = selectedContacts.indexOf(contact.user.id);
         if (index > -1) { 
-          setSelectedContacts(oldArray => oldArray.filter((old_id)=> {return old_id != id}));
+          setSelectedContacts(oldArray => oldArray.filter((old_id)=> {return old_id != contact.user.id}));
         } else
-          setSelectedContacts(oldArray => [...oldArray, id] )
+          setSelectedContacts(oldArray => [...oldArray, contact.user.id] )
     } else {
-      navigation.navigate('ChatScreen', {
-        contactId: id,
-        contactName: contactList.find(x => x.id == id).name,
-        contactImage: contactList.find(x => x.id == id).image,
-        contactNewShot: contactList.find(x => x.id == id).newShot,
-      });
+      navigation.navigate('ChatScreen', { secondUser: contact.user, chatroomId: contact.chatroomId });
       setOpenUserSearch(false);
     }
   };
+
+  const getChatrooms = async () => {
+    var tempContacts = []
+    const { data, error } = await supabase.from('participants').select('chatroom_id').eq('user_id', user.id);
+    if(error) console.error(error.message)
+    if(data){
+      for (const chatroom of data){
+        const res = await supabase.from('participants').select('user_id').eq('chatroom_id', chatroom.chatroom_id).neq('user_id', user.id)
+        if(res.error) console.error(res.error)
+        const res_ = await supabase.from('profiles').select().eq('id', res.data[0].user_id);
+        if(res_.error) console.error(res_.error)
+        var tempContact = {user: res_.data[0], chatroomId: chatroom.chatroom_id, streak: 0, lastMessageTime: '2023-1-28 12:43', newMsg: false, newShot: false, lastSeen: '6'};
+        tempContacts.push(tempContact)
+      }
+      setContactList(tempContacts);
+      setFilteredContactList(tempContacts);
+    }
+  }
   
   useEffect(() => { 
     setSelectedContacts([]);
   }, [isFocused]);
+
+  useEffect(() => {
+    getChatrooms();
+  }, [])
 
   return (
     <View style={styles.container}>  
@@ -145,9 +163,9 @@ const ContactScreen = ({ route }) => {
         {openUserSearch &&
         <View style={styles.userContainer}>
           <ScrollView>
-            {userList.map((user) => (
-                <TouchableOpacity key={user.id} onPress={() => createNewChat(user.id)}>
-                  <UserCard user={user} />
+            {userList.map((userCard) => (
+                <TouchableOpacity key={userCard.id} onPress={() => createNewChat(userCard)}>
+                  <UserCard user={userCard} />
                 </TouchableOpacity>
             ))}
           </ScrollView>
@@ -155,9 +173,10 @@ const ContactScreen = ({ route }) => {
         }
         <View style={[styles.contactContainer, openUserSearch?{height: '58%'}:{height: '86%', marginTop:'15%'}]}>
           <ScrollView>
-            {filteredContactList.map((contact) => (
-                <TouchableOpacity key={contact.id} onPress={() => onCardPress(contact.id)}>
-                  <ContactCard contact={contact} highlight={selectedContacts.includes(contact.id)} />
+            {filteredContactList.map((contact) => 
+            (
+                <TouchableOpacity key={contact.id} onPress={() => onCardPress(contact)}>
+                  <ContactCard contact={contact} highlight={selectedContacts.includes(contact.user.id)} />
                 </TouchableOpacity>
             ))}
           </ScrollView>

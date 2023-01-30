@@ -6,6 +6,9 @@ import { useNavigation } from '@react-navigation/native';
 import Video, { LoadError, OnLoadData } from 'react-native-video';
 import { useIsFocused } from '@react-navigation/core';
 import { useIsForeground } from '../hooks/useIsAppForeground';
+import { decode } from 'base64-arraybuffer'
+import ImgToBase64 from 'react-native-image-base64';
+import { supabase } from '../../supabaseClient';
 
 const requestSavePermission = async () => {
   if (Platform.OS !== 'android') return true;
@@ -28,7 +31,20 @@ const MediaScreen = ({ route }) => {
   const isForeground = useIsForeground();
   const isScreenFocused = useIsFocused();
   const isVideoPaused = !isForeground || !isScreenFocused;
+  const Buffer = require("buffer").Buffer;
 
+  const uploadImage = async () => {
+    var base64Data = await ImgToBase64.getBase64String(`file://${path}`);
+    const buf = Buffer.from(base64Data, 'base64');
+    const { data, error } = await supabase
+      .storage
+      .from('avatars')
+      .upload('public/avatar2.jpg', buf, {
+        contentType: 'image/jpeg',
+        upsert: true,
+      })
+    console.log(data, error)
+  }
   
   const onSavePressed = useCallback(async () => {
     try {

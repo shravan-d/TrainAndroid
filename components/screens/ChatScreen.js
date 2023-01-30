@@ -1,78 +1,52 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import {StyleSheet, ScrollView, ImageBackground, KeyboardAvoidingView, View, TextInput, Text, Dimensions} from 'react-native';
+import React, { useEffect, useState, useCallback, useContext } from 'react';
+import {StyleSheet, ScrollView, ImageBackground, KeyboardAvoidingView, View, TextInput, Text, Dimensions, TouchableHighlight} from 'react-native';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 import { GiftedChat, Bubble, InputToolbar, Time, Send, Composer} from 'react-native-gifted-chat'
+import { AuthContext } from '../../App';
+import { supabase } from '../../supabaseClient';
 
 const screenHeight = Dimensions.get("window").height
 const screenWidth = Dimensions.get("window").width
 
 const ChatScreen = ({ route }) => {
   var bg = require ('../../assets/media/bg.png');
+  const user = useContext(AuthContext);
   const [messages, setMessages] = useState([]);
-  const {contactId, contactName, contactImage, contactNewShot } = route.params;
-  let currentUser = {_id: 0, name: "Shravan", avatar: null}
+  const { secondUser, chatroomId } = route.params;
 
-  messages.sort(function(a, b) {return (new Date(a.createdAt) > new Date(b.createdAt))?-1:1});
-  useEffect(() => {
-    // fetch and set messages to current user from contactId
-    let user = {
-        _id: contactId,
-        name: contactName,
-        avatar: contactImage
+  const getMessages = async () => {
+    const { data, error } = await supabase.from('messages').select().eq('chatroom_id', chatroomId);
+    if(error) console.error(error.message)
+    if(data){
+      var messages = [];
+      var secondUser_ = {
+        _id: secondUser.id,
+        name: secondUser.display_name,
+        avatar: 'https://mhtzqkkrssrxagqjbpdd.supabase.co/storage/v1/object/public/avatars/' +  secondUser.avatar_url
+      }
+      var user_ = {
+        _id: user.id,
+        name: user.display_name,
+        avatar: 'https://mhtzqkkrssrxagqjbpdd.supabase.co/storage/v1/object/public/avatars/' +  user.avatar_url
+      }
+      for(const message of data){
+        var sender = message.sender_id==user.id?user_:secondUser_;
+        var tempMessage = {_id: message.id, text: message.content, createdAt: message.sent_at, user: sender};
+        messages.push(tempMessage);
+      }
+      messages.sort(function(a, b) {return (new Date(a.createdAt) > new Date(b.createdAt))?-1:1});
+      setMessages(messages)
     }
-    setMessages([
-      {
-        _id: 1,
-        text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum pellentesque mauris et lectus ullamcorper, ut imperdiet ex varius. Vestibulum nec nunc dictum, rutrum eros sagittis, varius magna',
-        createdAt: new Date("2022-12-29T12:35:20"),
-        user: user
-      },
-      {
-        _id: 8,
-        text: 'Sed dapibus iaculis turpis, et finibus urna',
-        createdAt: new Date("2022-12-29T10:35:20"),
-        user: currentUser
-      },
-      {
-        _id: 2,
-        text: 'Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.',
-        createdAt: new Date("2022-12-28T03:59:20"),
-        user: user
-      },
-      {
-        _id: 3,
-        text: 'Maecenas varius nulla vel tellus porta vulputate',
-        createdAt: new Date(),
-        user: user
-      },
-      {
-        _id: 4,
-        text: ' Nulla facilisi',
-        createdAt: new Date(),
-        user: user
-      },
-      {
-        _id: 5,
-        text: 'Hello developer Hello developer Hello developer Hello developer Hello developer Hello developer Hello developer Hello developer',
-        createdAt: new Date(),
-        user: currentUser
-      },
-      {
-        _id: 6,
-        text: 'No alarms and no surprises, radiohead man what a what a',
-        createdAt: new Date(),
-        user: currentUser
-      },
-      {
-        _id: 7,
-        text: 'Lorem Ipsum dolor I dont know the rest can you help me with it',
-        createdAt: new Date(),
-        user: user
-      },
-    ])
+  }
+  useEffect(() => {
+    getMessages();
   }, [])
 
-  const onSend = useCallback((messages = []) => {
-    setMessages(previousMessages => GiftedChat.append(previousMessages, messages))
+  const onSend = useCallback(async (message = []) => {
+    var newMessage = {sender_id: message[0].user._id, chatroom_id: chatroomId, content: message[0].text, sent_at: message[0].createdAt}
+    const { data, error } = await supabase.from('messages').insert(newMessage);
+    if(error) console.error(error.message)
+    else setMessages(previousMessages => GiftedChat.append(previousMessages, message))
   }, [])
 
   const renderInputToolbar = (props) => {
@@ -114,24 +88,23 @@ const ChatScreen = ({ route }) => {
     );
   }
 
-
   return (
     <View style={styles.container}>
         <View style={styles.nameBar}>
-            <Text style={styles.name}>{contactName}</Text>
-            {contactNewShot && <View style={styles.viewShot}><Text style={styles.viewShotText}>View Shot</Text></View>}
+            <Text style={styles.name}>{secondUser.display_name}</Text>
+            {/* {contactNewShot && <View style={styles.viewShot}><Text style={styles.viewShotText}>View Shot</Text></View>} */}
         </View>
         <ImageBackground source={bg} style={styles.background}>
         <View style={styles.contentContainer}>
         <GiftedChat
             messages={messages}
             onSend={messages => onSend(messages)}
-            user={{_id: 0,}}
+            user={{_id: user.id,}}
             renderInputToolbar = {renderInputToolbar}
             renderBubble={renderBubble}
             renderTime={renderTime}
             renderSend={renderSend}
-            showUserAvatar={true}
+            // showUserAvatar={true}
             multiline
             alwaysShowSend
             scrollToBottom
@@ -154,7 +127,7 @@ const styles = StyleSheet.create({
   },
   nameBar: {
     width: screenWidth,
-    height: '7%',
+    height: 55,
     backgroundColor: "rgba(30,30,30,0.8)",
     justifyContent: 'space-between',
     flexDirection: 'row',

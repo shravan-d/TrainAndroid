@@ -2,11 +2,11 @@ import {React, useState} from 'react';
 import {StyleSheet, View, Text} from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 
-const Dropdown = ({value, setValue, header, dropdownItems}) => {
+const Dropdown = ({value, setValue, header, dropdownItems, elevation}) => {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState(dropdownItems);
   return (
-    <View style={styles.dropdown}>
+    <View style={[styles.dropdown, {zIndex: elevation, elevation: elevation}]}>
         <Text style={styles.dropdownHeader}>{header}</Text>
           <DropDownPicker
             listMode="SCROLLVIEW"
@@ -27,6 +27,7 @@ const Dropdown = ({value, setValue, header, dropdownItems}) => {
             dropDownContainerStyle={{
               backgroundColor: "rgba(0,0,0,1)",
               borderBottomColor: '#D4AF37',
+              maxHeight: '100%'
             }}
             textStyle={{
               textAlign: 'center',
@@ -43,10 +44,6 @@ const Dropdown = ({value, setValue, header, dropdownItems}) => {
 };
 
 const styles = StyleSheet.create({
-    dropdown: {
-      zIndex: 0,
-      elevation: 0,
-    },
     dropdownHeader: {
         color: 'white',
         textAlign: 'center',

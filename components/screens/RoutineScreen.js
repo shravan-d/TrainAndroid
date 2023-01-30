@@ -98,6 +98,7 @@ const RoutineScreen = () => {
               setValue={setExperience}
               header={'How experienced are you with working out?'}
               dropdownItems={dropdownItems}
+              elevation={1}
             />
             <View style={styles.ratingContainer}>
               <Text style={styles.ratingText}>Minimum Rating</Text>

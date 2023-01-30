@@ -94,7 +94,7 @@ const ExerciseGuide = () => {
       </View>
       <View style={[styles.headerContainer, {height: headerHeight}]}>
         <View >
-          <Dropdown value={muscleGroup} setValue={setMuscleGroup} header={"What muscle group would you like to workout today?"} dropdownItems={dropdownItems}/>      
+          <Dropdown value={muscleGroup} setValue={setMuscleGroup} header={"What muscle group would you like to workout today?"} dropdownItems={dropdownItems} elevation={0}/>      
         </View>
         <View style={styles.favouritesContainer}>
           <Text style={styles.text}>Show favorites</Text>

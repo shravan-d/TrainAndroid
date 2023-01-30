@@ -1,18 +1,26 @@
 import React, { useEffect, useState, useContext } from 'react';
-import {StyleSheet, View, Text, ImageBackground, Image, TouchableOpacity, TextInput, Dimensions, ScrollView, ActivityIndicator} from 'react-native';
+import {StyleSheet, View, Text, Modal, ImageBackground, Image, TouchableOpacity, TextInput, Dimensions, ScrollView, ActivityIndicator} from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { supabase } from '../../supabaseClient';
 import {useNavigation} from '@react-navigation/native';
 import { AuthContext } from '../../App';
+import ImgToBase64 from 'react-native-image-base64';
+import { CameraRoll } from "@react-native-camera-roll/camera-roll";
+import DropDownPicker from 'react-native-dropdown-picker';
+import Dropdown from '../views/Dropdown';
 
 var screenHeight = Dimensions.get('screen').height;
+var screenWidth = Dimensions.get('screen').width;
 
 const AccountScreen = () => {
   const navigation = useNavigation();
   var bg = require ('../../assets/media/bg.png');
   const user = useContext(AuthContext);
-
+  var defaultIcon = 'public/logo.png';
+  
   const [avatar, setAvatar] = useState(user?.user_metadata.avatar_url)
+  const [newAvatar, setNewAvatar] = useState(null);
+  const [image, setImage] = useState(defaultIcon)
   const [email, setEmail] = useState(user?.email);
   const [displayName, setDisplayName] = useState(user?.user_metadata.display_name);
   const [username, setUsername] = useState(user?.user_metadata.username);
@@ -22,7 +30,23 @@ const AccountScreen = () => {
   const [monthActiveData, setMonthActiveData] = useState([]);
   const [updating, setUpdating] = useState(-1);
   var days = ["2018-10-28", "2018-10-29", "2018-10-30", "2018-11-3", "2018-11-4"];
-  
+  const Buffer = require("buffer").Buffer;
+
+  const uploadImage = async () => {
+    var filename = 'public/avatar'+user.id.toString()+'.jpg';
+    var base64Data = await ImgToBase64.getBase64String(newAvatar);
+    const buf = Buffer.from(base64Data, 'base64');
+    const { data, error } = await supabase
+      .storage
+      .from('avatars')
+      .upload(filename, buf, {
+        contentType: 'image/jpeg',
+        upsert: true,
+      })
+    if (error) console.error(error.message)
+    else return data.path;
+  }
+
   const setActiveList = () => {
     let currentMonth =  new Date()
     let monthUpto = 10;
@@ -49,42 +73,97 @@ const AccountScreen = () => {
   }
 
   const updateUserData = async () => {
-    if(email===user.email&&username===user.user_metadata.username&&displayName===user.user_metadata.display_name){
+    if(username===user.user_metadata.username&&displayName===user.user_metadata.display_name&&avatar===newAvatar){
       return;
     }
     setUpdating(0);
     try {
-      const { error } = await supabase.auth.updateUser({
-        email: email,
-        options: {
-          data: { username: username, display_name: displayName }
-        }
-      })
+      var newData = {};
+      if(username!==user.user_metadata.username){
+        newData.username = username;
+      }
+      if(displayName!==user.user_metadata.display_name){
+        newData.display_name = displayName;
+      }
+      if(newAvatar){
+        var avatar_url = await uploadImage();
+        if(avatar_url) newData.avatar_url = avatar_url;
+        else throw { message: 'RLS' };
+        setAvatar(avatar_url);
+      }
+      const { error } = await supabase.auth.updateUser({ data: newData })
+      newData.updated_at = Date.now();
+      const { profileError } = await supabase.from('profiles').update(newData).eq('id', user.id)
       if (error) throw error;
+      if (profileError) throw profileError;
       setUpdating(1);
     }
     catch (error) {
       console.error(error.message);
       setUpdating(-2);
     }
-    finally {
-      console.log('Updated')
-      // setUpdating(1);
-    }
   }
-  var defaultIonIcon = require ('../../assets/media/logo.png');
-  let image = avatar?{uri: avatar}:defaultIonIcon;
+
+  const [showGallery, setShowGallery] = useState(false);
+  const [galleryImages, setGalleryImages] = useState([]);
+  const [albumNames, setAlbumNames] = useState([]);
+  const [value, setValue] = useState(null);
+
+  const getPhotos = (albumName) => {
+    var data = {
+      first: 30,
+      assetType: 'Photos'
+    }
+    if(albumName){
+      data.groupTypes = 'Album';
+      data.groupName = albumName;
+    }
+    CameraRoll.getPhotos(data)
+    .then(r => setGalleryImages(r.edges));
+  }
+
+  const getAlbums = () => {
+    CameraRoll.getAlbums({
+      assetType: 'Photos',
+    })
+    .then(r => {
+      var data = [];
+      r.map(a => { data.push({label: a.title, value: a.title} ) })
+      setAlbumNames(data)
+    })
+  }
+
+  const setNewAvatarFunc = (idx) => {
+    setNewAvatar(galleryImages.at(idx).node.image.uri);
+    setImage({uri: galleryImages.at(idx).node.image.uri})
+    setShowGallery(false);
+  }
+
   useEffect(()=>{
     setActiveList();
   },[])
 
+  useEffect(() => {
+    if(avatar){
+      const { data } = supabase
+      .storage
+      .from('avatars')
+      .getPublicUrl(avatar)
+      if (data) setImage({uri: data.publicUrl});
+    }
+  }, [avatar])
+
+  useEffect(() => {
+    getPhotos(value);
+  }, [value])
+  
   return (
     <View style={styles.container}>
     <ImageBackground source={bg} style={styles.background}>
       <ScrollView style={styles.contentContainer}>
         <Text style={styles.header}>Account Details</Text>
           <View style={styles.contactImage}>
-            <TouchableOpacity onPress={() => {console.log('Press')}}>
+            <TouchableOpacity onPress={() => {setShowGallery(!showGallery);getPhotos();getAlbums()}}>
               <Image style={styles.image} source={image} />
             </TouchableOpacity>
           </View>
@@ -94,7 +173,7 @@ const AccountScreen = () => {
             style={[styles.textInputStyle, {marginLeft: 'auto', marginRight: 10}]}
             onChangeText={(text) => setEmail(text)}
             onSubmitEditing = {() => {setEmail('')}}
-            // editable={false}//Change if can be updated
+            editable={false}
             keyboardType='email-address'
             value={email}
             cursorColor='white'
@@ -189,7 +268,30 @@ const AccountScreen = () => {
             </View>
           ))}
         </View>
+        <Modal
+        animationType="fade"
+        transparent={true}
+        visible={showGallery}
+        onRequestClose={() => {setShowGallery(!showGallery)}}
+        >
+          <View style={styles.centeredView}>
+            <Text style={styles.header}>Pick your new avatar</Text>
+            <Dropdown value={value} setValue={setValue} header={''} dropdownItems={albumNames} elevation={1} />
+            <ScrollView>
+            <View style={styles.imageGrid}>
+            {galleryImages.map((p, idx) => 
+            (
+              <TouchableOpacity key={idx} onPress={() => setNewAvatarFunc(idx)}>
+                <Image style={{width: 0.3333*screenWidth, height: 0.3333*screenWidth}} source={{uri: p.node.image.uri}} />
+              </TouchableOpacity>
+            )
+            )}
+            </View>
+            </ScrollView>
+          </View>
+        </Modal>
       </ScrollView>
+      
     </ImageBackground>
     </View>
   );
@@ -213,7 +315,9 @@ const styles = StyleSheet.create({
       height: 80,
       borderRadius: 80,
       alignSelf: 'center',
-      marginBottom: '3%'
+      marginVertical: '3%',
+      borderWidth: 0.3,
+      borderColor: '#D4AF37'
     },
     image: {
       width: "100%", 
@@ -274,7 +378,20 @@ const styles = StyleSheet.create({
       margin: 1,
       borderRadius: 2,
       backgroundColor: 'rgba(20,20,20,0.8)'
-    }
+    },
+    centeredView: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      paddingTop: 50,
+      backgroundColor: 'black'
+    },
+    imageGrid: {
+      marginTop: '5%',
+      backgroundColor: "white",
+      flexDirection: 'row',
+      flexWrap: 'wrap'
+    },
 });
 
 export default AccountScreen;

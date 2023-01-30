@@ -7,7 +7,7 @@ const screenWidth = Dimensions.get("window").width
 
 const UserCard = ({ user }) => {
   var defaultIcon = require ('../../assets/media/logo.png');
-  let image = user.avatar_url?{uri: user.avatar_url}:defaultIcon;
+  let image = user.avatar_url?{uri: 'https://mhtzqkkrssrxagqjbpdd.supabase.co/storage/v1/object/public/avatars/'+user.avatar_url}:defaultIcon;
   return (
     <View style={styles.container}>
         <View style={styles.cardContainer}>
