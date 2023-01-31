@@ -1,3 +1,4 @@
+import { useIsFocused, useFocusEffect } from '@react-navigation/native';
 import React, { useEffect, useState, useCallback, useContext } from 'react';
 import {StyleSheet, ScrollView, ImageBackground, KeyboardAvoidingView, View, TextInput, Text, Dimensions, TouchableHighlight} from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
@@ -14,21 +15,22 @@ const ChatScreen = ({ route }) => {
   const [messages, setMessages] = useState([]);
   const { secondUser, chatroomId } = route.params;
 
+  var secondUser_ = {
+    _id: secondUser.id,
+    name: secondUser.display_name,
+    avatar: 'https://mhtzqkkrssrxagqjbpdd.supabase.co/storage/v1/object/public/avatars/' +  secondUser.avatar_url
+  }
+  var user_ = {
+    _id: user.id,
+    name: user.display_name,
+    avatar: 'https://mhtzqkkrssrxagqjbpdd.supabase.co/storage/v1/object/public/avatars/' +  user.avatar_url
+  }
+
   const getMessages = async () => {
     const { data, error } = await supabase.from('messages').select().eq('chatroom_id', chatroomId);
     if(error) console.error(error.message)
     if(data){
       var messages = [];
-      var secondUser_ = {
-        _id: secondUser.id,
-        name: secondUser.display_name,
-        avatar: 'https://mhtzqkkrssrxagqjbpdd.supabase.co/storage/v1/object/public/avatars/' +  secondUser.avatar_url
-      }
-      var user_ = {
-        _id: user.id,
-        name: user.display_name,
-        avatar: 'https://mhtzqkkrssrxagqjbpdd.supabase.co/storage/v1/object/public/avatars/' +  user.avatar_url
-      }
       for(const message of data){
         var sender = message.sender_id==user.id?user_:secondUser_;
         var tempMessage = {_id: message.id, text: message.content, createdAt: message.sent_at, user: sender};
@@ -38,8 +40,41 @@ const ChatScreen = ({ route }) => {
       setMessages(messages)
     }
   }
+
+  const updateReadMsg = async () => {
+    const { data, error } = await supabase.from('participants').update({ sent_unread_msg: false })
+      .eq('user_id', secondUser.id).eq('chatroom_id', chatroomId);
+    if(error) console.error(error.message)
+  }
+
+  const updateReceivedMsg = (message) => {
+    if(message.sender_id==secondUser.id){
+      var tempMessage = {_id: message.id, text: message.content, createdAt: message.sent_at, user: secondUser_};
+      setMessages(previousMessages => GiftedChat.append(previousMessages, tempMessage))
+    }
+  }
+
+  useEffect(() => {
+    if (user?.id === null) return
+    const channel = supabase
+      .channel('table-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `chatroom_id=eq.${chatroomId}`
+        },
+        (payload) => updateReceivedMsg(payload.new)
+      )
+      .subscribe()
+  }, [])
+
+
   useEffect(() => {
     getMessages();
+    updateReadMsg();
   }, [])
 
   const onSend = useCallback(async (message = []) => {

@@ -58,22 +58,26 @@ const ContactScreen = ({ route }) => {
   }
   
   const createNewChat = async (secondUser) => {
-    console.log(secondUser)
-    var { data, error } = await supabase
-    .from('chat_room')
-    .insert({})
-    .select('id')
-    if(error) console.error(error)
-    var chatroomId = data[0].id;
-    var { data, error } = await supabase
-    .from('participants')
-    .insert([{chatroom_id: chatroomId, user_id: user.id}, {chatroom_id: chatroomId, user_id: secondUser.id}])
-    if(error) console.error(error)
-    navigation.navigate('ChatScreen', { secondUser: secondUser, chatroomId: chatroomId })
-
+    var chatExists = contactList.filter(ele => ele.user.id==secondUser.id);
+    if(chatExists.length > 0) {
+      navigation.navigate('ChatScreen', { secondUser: secondUser, chatroomId: chatExists[0].chatroomId });
+      setOpenUserSearch(false);
+    } else {
+      var { data, error } = await supabase
+      .from('chat_room')
+      .insert({})
+      .select('id')
+      if(error) console.error(error)
+      var chatroomId = data[0].id;
+      var { data, error } = await supabase
+      .from('participants')
+      .insert([{chatroom_id: chatroomId, user_id: user.id}, {chatroom_id: chatroomId, user_id: secondUser.id}])
+      if(error) console.error(error)
+      navigation.navigate('ChatScreen', { secondUser: secondUser, chatroomId: chatroomId })
+    }
   }
 
-  const onCardPress = (contact) => {
+  const onCardPress = (contact, idx) => {
     if (sendCapture){
         const index = selectedContacts.indexOf(contact.user.id);
         if (index > -1) { 
@@ -81,6 +85,9 @@ const ContactScreen = ({ route }) => {
         } else
           setSelectedContacts(oldArray => [...oldArray, contact.user.id] )
     } else {
+      // var tempContacts = [...contactList.slice(0, idx), {...contactList[idx], newMsg: false}, ...contactList.slice(idx+1)];
+      // setContactList(tempContacts);
+      // setFilteredContactList(tempContacts);
       navigation.navigate('ChatScreen', { secondUser: contact.user, chatroomId: contact.chatroomId });
       setOpenUserSearch(false);
     }
@@ -96,7 +103,11 @@ const ContactScreen = ({ route }) => {
         if(res.error) console.error(res.error)
         const res_ = await supabase.from('profiles').select().eq('id', res.data[0].user_id);
         if(res_.error) console.error(res_.error)
-        var tempContact = {user: res_.data[0], chatroomId: chatroom.chatroom_id, streak: 0, lastMessageTime: '2023-1-28 12:43', newMsg: false, newShot: false, lastSeen: '6'};
+        const res__ = await supabase.from('participants').select('sent_unread_msg').eq('user_id', res.data[0].user_id)
+        .eq('chatroom_id', chatroom.chatroom_id);
+        if(res__.error) console.error(res__.error)
+        var tempContact = {user: res_.data[0], chatroomId: chatroom.chatroom_id, streak: 0,
+          lastMessageTime: '2023-1-28 12:43', newMsg: res__.data[0]?.sent_unread_msg, newShot: false, lastSeen: '6'};
         tempContacts.push(tempContact)
       }
       setContactList(tempContacts);
@@ -173,9 +184,8 @@ const ContactScreen = ({ route }) => {
         }
         <View style={[styles.contactContainer, openUserSearch?{height: '58%'}:{height: '86%', marginTop:'15%'}]}>
           <ScrollView>
-            {filteredContactList.map((contact) => 
-            (
-                <TouchableOpacity key={contact.id} onPress={() => onCardPress(contact)}>
+            {filteredContactList.map((contact, idx) => (
+                <TouchableOpacity key={contact.user.id} onPress={() => onCardPress(contact, idx)}>
                   <ContactCard contact={contact} highlight={selectedContacts.includes(contact.user.id)} />
                 </TouchableOpacity>
             ))}

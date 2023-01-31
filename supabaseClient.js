@@ -14,3 +14,17 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: false,
   },
 })
+
+// const channel = supabase
+//   .channel('table-db-changes')
+//   .on(
+//     'postgres_changes',
+//     {
+//       event: 'INSERT',
+//       schema: 'public',
+//       table: 'messages',
+//       // filter: `chatroom_id=${chatroomId}`
+//     },
+//     (payload) => console.log('Supabase change', payload)
+//   )
+//   .subscribe()
