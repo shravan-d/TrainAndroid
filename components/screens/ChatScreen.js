@@ -1,19 +1,21 @@
 import { useIsFocused, useFocusEffect } from '@react-navigation/native';
 import React, { useEffect, useState, useCallback, useContext } from 'react';
-import {StyleSheet, ScrollView, ImageBackground, KeyboardAvoidingView, View, TextInput, Text, Dimensions, TouchableHighlight} from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import {StyleSheet, ScrollView, ImageBackground, KeyboardAvoidingView, View, TouchableOpacity, Text, Dimensions, TouchableHighlight} from 'react-native';
 import { GiftedChat, Bubble, InputToolbar, Time, Send, Composer} from 'react-native-gifted-chat'
 import { AuthContext } from '../../App';
 import { supabase } from '../../supabaseClient';
+import { useNavigation } from '@react-navigation/native';
 
 const screenHeight = Dimensions.get("window").height
 const screenWidth = Dimensions.get("window").width
 
 const ChatScreen = ({ route }) => {
+  const navigation = useNavigation();
   var bg = require ('../../assets/media/bg.png');
   const user = useContext(AuthContext);
   const [messages, setMessages] = useState([]);
-  const { secondUser, chatroomId } = route.params;
+  const [shots, setShots] = useState([]);
+  const { secondUser, chatroomId, callback } = route.params;
 
   var secondUser_ = {
     _id: secondUser.id,
@@ -28,7 +30,6 @@ const ChatScreen = ({ route }) => {
 
   const getMessages = async () => {
     const { data, error } = await supabase.from('messages').select().eq('chatroom_id', chatroomId);
-    if(error) console.error(error.message)
     if(data){
       var messages = [];
       for(const message of data){
@@ -39,6 +40,33 @@ const ChatScreen = ({ route }) => {
       messages.sort(function(a, b) {return (new Date(a.createdAt) > new Date(b.createdAt))?-1:1});
       setMessages(messages)
     }
+    if(error) console.error(error.message)
+  }
+
+  const getShots = async () => {
+    const { data, error } = await supabase.from('shots').select('content_url')
+    .eq('receiver_id', user.id).eq('read_bool', false).eq('sender_id', secondUser.id);
+    setShots(data);
+    if(error) console.error(error.message)
+  }
+
+  const openNewShots = async () => {
+    var newShots = [];
+    for(const shot of shots){
+      const res = await supabase.storage.from('shots').createSignedUrl(shot.content_url, 60)
+      if(res.error) console.error(res.error.message)
+      var publicUrl = res.data.signedUrl
+      newShots.push({url: publicUrl});
+    }
+    const { data, error } = await supabase.from('shots').update({ read_bool: true })
+    .eq('receiver_id', user.id).eq('read_bool', false).eq('sender_id', secondUser.id);
+    if(error) console.error(error.message)
+    setShots([]);
+    navigation.navigate('MediaScreen', {
+      path: newShots[0].url,
+      shots: newShots,
+      send: false
+    });
   }
 
   const updateReadMsg = async () => {
@@ -52,6 +80,7 @@ const ChatScreen = ({ route }) => {
       var tempMessage = {_id: message.id, text: message.content, createdAt: message.sent_at, user: secondUser_};
       setMessages(previousMessages => GiftedChat.append(previousMessages, tempMessage))
     }
+    callback({chatroomId: message.chatroom_id, lastMessageTime: message.sent_at})
   }
 
   useEffect(() => {
@@ -74,6 +103,7 @@ const ChatScreen = ({ route }) => {
 
   useEffect(() => {
     getMessages();
+    getShots();
     updateReadMsg();
   }, [])
 
@@ -127,7 +157,10 @@ const ChatScreen = ({ route }) => {
     <View style={styles.container}>
         <View style={styles.nameBar}>
             <Text style={styles.name}>{secondUser.display_name}</Text>
-            {/* {contactNewShot && <View style={styles.viewShot}><Text style={styles.viewShotText}>View Shot</Text></View>} */}
+            {shots.length > 0 && 
+            <TouchableOpacity style={styles.viewShot} onPress={() => openNewShots()}>
+              <Text style={styles.viewShotText}>View Shot</Text>
+            </TouchableOpacity>}
         </View>
         <ImageBackground source={bg} style={styles.background}>
         <View style={styles.contentContainer}>
@@ -166,23 +199,25 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(30,30,30,0.8)",
     justifyContent: 'space-between',
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
+    paddingHorizontal: '5%',
+    elevation: 0,
+    zIndex: 0
   },
   name: {
     fontFamily: 'Montserrat-Bold',
     fontSize: 20,
     color: "white",
-    marginLeft: "5%"
   },
   viewShot: {
     backgroundColor: "#D4AF37",
-    width: '25%',
+    width: 110,
     height: '70%',
     borderRadius: 20,
     borderColor: "mediumorchid",
     borderWidth: 1,
-    marginRight: "5%",
-    justifyContent: 'center'
+    paddingHorizontal: "5%",
+    justifyContent: 'center',
   },
   viewShotText: {
     fontFamily: 'Montserrat-Italic',
@@ -193,5 +228,5 @@ const styles = StyleSheet.create({
 
 export default ChatScreen;
 
-
+// usereducer, sub in contact, set reducer, check if rerender is caused in chat
 //input box size when long message, input box no show when keyboard active (check num of lines for text input)

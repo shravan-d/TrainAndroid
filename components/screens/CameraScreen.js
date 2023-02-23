@@ -55,7 +55,6 @@ const CameraScreen = () => {
         },
       });
       setIsRecording(true);
-      
     } catch (e) {
       console.error('failed to start recording!', e, 'camera');
     }
@@ -75,7 +74,13 @@ const CameraScreen = () => {
 
   const timer = useRef(null);
   const increment = () => {
-    timer.current = setInterval(() => setVideoTime(prev => prev + 1), 1000);
+    var secondsPassed = 0;
+    timer.current = setInterval(() => {
+      setVideoTime(prev => prev + 1)
+      secondsPassed += 1;
+      if (secondsPassed == 10)
+        stopRecording()
+    }, 1000);
   }
 
   const onMediaCaptured = useCallback(
@@ -83,6 +88,7 @@ const CameraScreen = () => {
       navigation.navigate('MediaScreen', {
         path: media.path,
         type: type,
+        send: true
       });
     },
     [navigation],

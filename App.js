@@ -33,6 +33,7 @@ const App = () => {
       setAuth(session);
     })
   }, [])
+  
   if(loading){
     return (
       <ActivityIndicator color={'white'} size={40}/>

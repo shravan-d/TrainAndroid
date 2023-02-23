@@ -8,10 +8,12 @@ const screenWidth = Dimensions.get("window").width
 const ContactCard = ({ contact, highlight }) => {
   const [newShot, setNewShot] = useState(contact.newShot);
   const [newMsg, setNewMsg] = useState(contact.newMsg);
-  const [timeDisplay, setTimeDisplay] = useState(contact.lastMessageTime);
+  const [timeDisplay, setTimeDisplay] = useState();
+
   const getTime = () => {
     var currentDate = new Date()
     var date = new Date(contact.lastMessageTime)
+    
     if(date.getFullYear()==currentDate.getFullYear()){
         if(date.getMonth()==currentDate.getMonth()){
             if(date.getDate()==currentDate.getDate()){
@@ -23,16 +25,20 @@ const ContactCard = ({ contact, highlight }) => {
             }
         } else {
             let month = currentDate.getMonth()-date.getMonth();
-            let msg = month==1?" month ago":" months ago"
-            setTimeDisplay(String(month)+msg)
+            let msg = month==1?"Last month":String(month)+" months ago"
+            setTimeDisplay(msg)
         } 
     } else {
         let year = currentDate.getFullYear()-date.getFullYear();
-        let msg = year==1?" year ago":" years ago"
-        setTimeDisplay(String(year)+msg)
+        if(year.toString()=='NaN') year = 'Many'
+        let msg = year==1?"Last year":year.toString()+" years ago"
+        setTimeDisplay(msg)
     } 
   }
+
   useEffect(() => { 
+    setNewMsg(contact.newMsg);
+    setNewShot(contact.newShot);
     getTime();
   }, [contact]);
   

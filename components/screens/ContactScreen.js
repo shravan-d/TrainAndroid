@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useContext} from 'react';
+import React, { useState, useMemo, useEffect, useContext} from 'react';
 import {StyleSheet, ImageBackground, View, Text, TextInput, ScrollView, TouchableOpacity, FlatList, Dimensions} from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import ContactCard from '../views/ContactCard';
@@ -9,6 +9,7 @@ import { useIsFocused } from '@react-navigation/native';
 import UserCard from '../views/UserCard';
 import { supabase } from '../../supabaseClient';
 import { AuthContext } from '../../App';
+import ImgToBase64 from 'react-native-image-base64';
 
 const screenHeight = Dimensions.get("window").height
 const screenWidth = Dimensions.get("window").width
@@ -17,9 +18,10 @@ const ContactScreen = ({ route }) => {
   const navigation = useNavigation();
   const isFocused = useIsFocused()
   const { path, type, sendCapture } = route.params;
+  const mediaSource = useMemo(() => (`file://${path}`), [path]);
   const user = useContext(AuthContext);
   var bg = require ('../../assets/media/bg.png');
-
+  var newMessages = [];
   const [contactList, setContactList] = useState([]);
   const [filteredContactList, setFilteredContactList] = useState(contactList);
   const [userList, setUserList] = useState([]);
@@ -27,6 +29,7 @@ const ContactScreen = ({ route }) => {
   const [openSearch, setOpenSearch] = useState(false)
   const [openUserSearch, setOpenUserSearch] = useState(false)
   const [selectedContacts, setSelectedContacts] = useState([]);
+  const [sendScreen, setSendScreen] = useState(sendCapture);
 
   contactList.sort(function(a, b) {return (new Date(a.lastMessageTime) > new Date(b.lastMessageTime))?-1:1;});
 
@@ -77,21 +80,33 @@ const ContactScreen = ({ route }) => {
     }
   }
 
+  const getMessageCallback = (message) => {
+    var contacts = contactList.map((contact) => {
+      if(contact.chatroomId == message.chatroomId){
+        contact.newMsg = true;
+        return contact;
+      } else 
+        return contact;
+    })
+    setContactList(contacts);
+    setFilteredContactList(contacts);
+  }
+
   const onCardPress = (contact, idx) => {
-    if (sendCapture){
+    if (sendScreen){
         const index = selectedContacts.indexOf(contact.user.id);
         if (index > -1) { 
           setSelectedContacts(oldArray => oldArray.filter((old_id)=> {return old_id != contact.user.id}));
         } else
           setSelectedContacts(oldArray => [...oldArray, contact.user.id] )
     } else {
-      // var tempContacts = [...contactList.slice(0, idx), {...contactList[idx], newMsg: false}, ...contactList.slice(idx+1)];
-      // setContactList(tempContacts);
-      // setFilteredContactList(tempContacts);
-      navigation.navigate('ChatScreen', { secondUser: contact.user, chatroomId: contact.chatroomId });
+      var tempContacts = [...filteredContactList.slice(0, idx), {...contact, newMsg: false}, ...filteredContactList.slice(idx+1)];
+      setContactList(tempContacts);
+      navigation.navigate('ChatScreen', { secondUser: contact.user, chatroomId: contact.chatroomId, callback: getMessageCallback, newShots: newMessages });
       setOpenUserSearch(false);
     }
   };
+
 
   const getChatrooms = async () => {
     var tempContacts = []
@@ -106,18 +121,77 @@ const ContactScreen = ({ route }) => {
         const res__ = await supabase.from('participants').select('sent_unread_msg').eq('user_id', res.data[0].user_id)
         .eq('chatroom_id', chatroom.chatroom_id);
         if(res__.error) console.error(res__.error)
+        const res___ = await supabase.from('messages').select('sent_at').eq('sender_id', res.data[0].user_id)
+        .eq('chatroom_id', chatroom.chatroom_id).order('sent_at', {ascending: false}).limit(1);
+        if(res___.error) console.error(res___.error)
+        const shotRes = await supabase.from('shots').select('id').eq('receiver_id', user.id).eq('read_bool', false).eq('sender_id', res.data[0].user_id);
+        if(shotRes.error) console.error(shotRes.error)
         var tempContact = {user: res_.data[0], chatroomId: chatroom.chatroom_id, streak: 0,
-          lastMessageTime: '2023-1-28 12:43', newMsg: res__.data[0]?.sent_unread_msg, newShot: false, lastSeen: '6'};
+          lastMessageTime: res___.data[0]?.sent_at, newMsg: res__.data[0]?.sent_unread_msg, newShot: shotRes.data.length>0};
         tempContacts.push(tempContact)
       }
       setContactList(tempContacts);
       setFilteredContactList(tempContacts);
     }
   }
+
+  const Buffer = require("buffer").Buffer;
+  const uploadImage = async () => {
+    var count = Math.floor(Math.random() * 1000);
+    var filename = 'private/'+user.id.toString()+count.toString()+'.jpg';
+    var base64Data = await ImgToBase64.getBase64String(mediaSource);
+    const buf = Buffer.from(base64Data, 'base64');
+    const { data, error } = await supabase
+      .storage
+      .from('shots')
+      .upload(filename, buf, {
+        contentType: 'image/jpeg',
+        upsert: false,
+      })
+    if (error) console.error(error.message)
+    else return data.path;
+  }
+
+  const uploadVideo = async () => {
+    var count = Math.floor(Math.random() * 1000);
+    var filename = 'private/'+user.id.toString()+count.toString()+'.mp4';
+    let formData = new FormData();
+    formData.append(filename, {
+        name: filename,
+        uri: mediaSource.slice(7),
+        type: 'video/mp4'
+    });
+    const { data, error } = await supabase
+      .storage
+      .from('shots')
+      .upload(filename, formData, {
+        contentType: 'video/mp4',
+        upsert: false,
+      })
+    if (error) console.error(error.message)
+    else return data.path;
+  }
+
+  const sendShot = async () => {
+    var media_url = type=='photo'?await uploadImage():await uploadVideo();
+    var newShots = [];
+    for (const userId of selectedContacts){
+      newShots.push({sender_id: user.id, receiver_id: userId, content_url: media_url});
+    }
+    const { data, error } = await supabase.from('shots').insert(newShots);
+    if(error) console.error(error.message)
+    setSendScreen(false)
+    setSelectedContacts([]);
+  }
   
   useEffect(() => { 
     setSelectedContacts([]);
+    setFilteredContactList(contactList);
   }, [isFocused]);
+
+  useEffect(() => {
+    setSendScreen(sendCapture)
+  }, [sendCapture])
 
   useEffect(() => {
     getChatrooms();
@@ -190,12 +264,12 @@ const ContactScreen = ({ route }) => {
                 </TouchableOpacity>
             ))}
           </ScrollView>
-        <TouchableOpacity onPress={() => {navigation.navigate('CameraScreen');}} style={styles.addButton}>
-            <>
-              {!sendCapture && <IonIcon name="camera-outline" color="rgba(250,250,250,0.8)" size={30} />}
-              {sendCapture && <IonIcon name="send-sharp" color="rgba(250,250,250,0.8)" size={30} />}
-            </>
-          </TouchableOpacity>
+          {!sendScreen && <TouchableOpacity onPress={() => {navigation.navigate('CameraScreen');}} style={styles.addButton}>
+            <IonIcon name="camera-outline" color="rgba(250,250,250,0.8)" size={30} />
+          </TouchableOpacity>}
+          {sendScreen && selectedContacts.length > 0 && <TouchableOpacity onPress={() => sendShot()} style={styles.addButton}>
+            <IonIcon name="send-sharp" color="rgba(250,250,250,0.8)" size={30} />
+          </TouchableOpacity>}
         </View>
         <NavBar />
         <MenuBar currentScreenId={2} />
