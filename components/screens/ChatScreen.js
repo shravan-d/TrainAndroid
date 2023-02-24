@@ -1,21 +1,25 @@
-import { useIsFocused, useFocusEffect } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 import React, { useEffect, useState, useCallback, useContext } from 'react';
-import {StyleSheet, ScrollView, ImageBackground, KeyboardAvoidingView, View, TouchableOpacity, Text, Dimensions, TouchableHighlight} from 'react-native';
+import {StyleSheet, ImageBackground, KeyboardAvoidingView, View, TouchableOpacity, Text, Dimensions} from 'react-native';
 import { GiftedChat, Bubble, InputToolbar, Time, Send, Composer} from 'react-native-gifted-chat'
-import { AuthContext } from '../../App';
+import { AuthContext, NewMessageContext, NewShotContext } from '../../App';
 import { supabase } from '../../supabaseClient';
 import { useNavigation } from '@react-navigation/native';
+// import { NewMessageContext } from '../ContactScreen';
 
 const screenHeight = Dimensions.get("window").height
 const screenWidth = Dimensions.get("window").width
 
-const ChatScreen = ({ route }) => {
+const ChatScreen = () => {
   const navigation = useNavigation();
   var bg = require ('../../assets/media/bg.png');
   const user = useContext(AuthContext);
   const [messages, setMessages] = useState([]);
   const [shots, setShots] = useState([]);
-  const { secondUser, chatroomId, callback } = route.params;
+  const route = useRoute();
+  const { secondUser, chatroomId } = route.params;
+  const newMessage = useContext(NewMessageContext)
+  const newShot = useContext(NewShotContext)
 
   var secondUser_ = {
     _id: secondUser.id,
@@ -58,15 +62,15 @@ const ChatScreen = ({ route }) => {
       var publicUrl = res.data.signedUrl
       newShots.push({url: publicUrl});
     }
-    const { data, error } = await supabase.from('shots').update({ read_bool: true })
-    .eq('receiver_id', user.id).eq('read_bool', false).eq('sender_id', secondUser.id);
-    if(error) console.error(error.message)
-    setShots([]);
     navigation.navigate('MediaScreen', {
       path: newShots[0].url,
       shots: newShots,
       send: false
     });
+    const { data, error } = await supabase.from('shots').update({ read_bool: true })
+    .eq('receiver_id', user.id).eq('read_bool', false).eq('sender_id', secondUser.id);
+    if(error) console.error(error.message)
+    setShots([]);
   }
 
   const updateReadMsg = async () => {
@@ -75,31 +79,31 @@ const ChatScreen = ({ route }) => {
     if(error) console.error(error.message)
   }
 
-  const updateReceivedMsg = (message) => {
-    if(message.sender_id==secondUser.id){
-      var tempMessage = {_id: message.id, text: message.content, createdAt: message.sent_at, user: secondUser_};
+  const updateReceivedMsg = () => {
+    if (!newMessage) return;
+    if(newMessage.sender_id==secondUser.id){
+      var tempMessage = {_id: newMessage.id, text: newMessage.content, createdAt: newMessage.sent_at, user: secondUser_};
       setMessages(previousMessages => GiftedChat.append(previousMessages, tempMessage))
     }
-    callback({chatroomId: message.chatroom_id, lastMessageTime: message.sent_at})
   }
 
-  useEffect(() => {
-    if (user?.id === null) return
-    const channel = supabase
-      .channel('table-db-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `chatroom_id=eq.${chatroomId}`
-        },
-        (payload) => updateReceivedMsg(payload.new)
-      )
-      .subscribe()
-  }, [])
+  useEffect(() => {updateReceivedMsg()}, [newMessage])
 
+  const [didRender, setDidRender]=useState(false);
+
+  useEffect(()=>{
+    setDidRender(true);
+  },[]);
+
+  const updateReceivedShot = () => {
+    if (!newShot) return;
+    if (!didRender) return;
+    if (newShot.sender_id==secondUser.id){
+      setShots((shots) => [...shots, {content_url: newShot.content_url}])
+    }
+  }
+
+  useEffect(() => {updateReceivedShot()}, [newShot])
 
   useEffect(() => {
     getMessages();
@@ -108,7 +112,8 @@ const ChatScreen = ({ route }) => {
   }, [])
 
   const onSend = useCallback(async (message = []) => {
-    var newMessage = {sender_id: message[0].user._id, chatroom_id: chatroomId, content: message[0].text, sent_at: message[0].createdAt}
+    var receiver_id = message[0].user._id==user.id?secondUser.id:user.id;
+    var newMessage = {sender_id: message[0].user._id, receiver_id: receiver_id,chatroom_id: chatroomId, content: message[0].text, sent_at: message[0].createdAt}
     const { data, error } = await supabase.from('messages').insert(newMessage);
     if(error) console.error(error.message)
     else setMessages(previousMessages => GiftedChat.append(previousMessages, message))

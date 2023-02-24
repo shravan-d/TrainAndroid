@@ -1,12 +1,29 @@
-import React, { useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import {StyleSheet, View, Text, TouchableOpacity, Dimensions} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NewMessageContext } from '../../App';
 
 var screenHeight = Dimensions.get('window').height;
 var screenWidth = Dimensions.get('window').width;
 
 const MenuBar = ( { currentScreenId } ) => {
   const navigation = useNavigation();
+  const [messageBubble, setMessageBubble] = useState(false);
+  const newMessage= useContext(NewMessageContext)
+
+  const updateReceivedMsg = () => {
+    if(!newMessage) return;
+    if(!didRender) return;
+    setMessageBubble(true);
+  }
+  const [didRender, setDidRender]=useState(false);
+
+  useEffect(()=>{
+    setDidRender(true);
+  },[]);
+  
+  useEffect(() => {updateReceivedMsg()}, [newMessage])
+
   return (
     <View style={styles.container}>
         <TouchableOpacity onPress={() =>navigation.navigate('ExerciseGuide')}>
@@ -19,9 +36,11 @@ const MenuBar = ( { currentScreenId } ) => {
                 <Text style={[styles.menuText, currentScreenId==1?{color: '#D4AF37'}:{color: 'white'}]}>Routines</Text>
             </View>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() =>navigation.navigate('ContactScreen', { sendCapture: false})}>
+        <TouchableOpacity onPress={() => {setMessageBubble(false); navigation.navigate('ContactScreen', { sendCapture: false})}}>
             <View style={styles.menuButton}>
                 <Text style={[styles.menuText, currentScreenId==2?{color: '#D4AF37'}:{color: 'white'}]}>Social</Text>
+                {messageBubble && <View style={[styles.bubble, {backgroundColor: 'green'}]}></View>}
+                {/* <View style={[styles.bubble, {backgroundColor: '#D4AF37'}]}></View> */}
             </View>
         </TouchableOpacity>
     </View>
@@ -51,6 +70,15 @@ const styles = StyleSheet.create({
     menuText: {
         textAlign: 'center',
         fontFamily: 'Montserrat-Regular',
+    },
+    bubble: {
+        width: 10,
+        height: 10,
+        borderRadius: 20,
+        position: 'absolute',
+        right: 15,
+        top: '15%'
+
     }
 });
 

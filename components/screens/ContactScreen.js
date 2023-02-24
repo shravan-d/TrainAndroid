@@ -8,7 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useIsFocused } from '@react-navigation/native';
 import UserCard from '../views/UserCard';
 import { supabase } from '../../supabaseClient';
-import { AuthContext } from '../../App';
+import { AuthContext, NewMessageContext, NewShotContext } from '../../App';
 import ImgToBase64 from 'react-native-image-base64';
 
 const screenHeight = Dimensions.get("window").height
@@ -21,7 +21,7 @@ const ContactScreen = ({ route }) => {
   const mediaSource = useMemo(() => (`file://${path}`), [path]);
   const user = useContext(AuthContext);
   var bg = require ('../../assets/media/bg.png');
-  var newMessages = [];
+  
   const [contactList, setContactList] = useState([]);
   const [filteredContactList, setFilteredContactList] = useState(contactList);
   const [userList, setUserList] = useState([]);
@@ -30,6 +30,8 @@ const ContactScreen = ({ route }) => {
   const [openUserSearch, setOpenUserSearch] = useState(false)
   const [selectedContacts, setSelectedContacts] = useState([]);
   const [sendScreen, setSendScreen] = useState(sendCapture);
+  const newMessage = useContext(NewMessageContext)
+  const newShot = useContext(NewShotContext)
 
   contactList.sort(function(a, b) {return (new Date(a.lastMessageTime) > new Date(b.lastMessageTime))?-1:1;});
 
@@ -80,18 +82,6 @@ const ContactScreen = ({ route }) => {
     }
   }
 
-  const getMessageCallback = (message) => {
-    var contacts = contactList.map((contact) => {
-      if(contact.chatroomId == message.chatroomId){
-        contact.newMsg = true;
-        return contact;
-      } else 
-        return contact;
-    })
-    setContactList(contacts);
-    setFilteredContactList(contacts);
-  }
-
   const onCardPress = (contact, idx) => {
     if (sendScreen){
         const index = selectedContacts.indexOf(contact.user.id);
@@ -100,13 +90,12 @@ const ContactScreen = ({ route }) => {
         } else
           setSelectedContacts(oldArray => [...oldArray, contact.user.id] )
     } else {
-      var tempContacts = [...filteredContactList.slice(0, idx), {...contact, newMsg: false}, ...filteredContactList.slice(idx+1)];
+      var tempContacts = [...filteredContactList.slice(0, idx), {...contact, newMsg: false, newShot: false}, ...filteredContactList.slice(idx+1)];
       setContactList(tempContacts);
-      navigation.navigate('ChatScreen', { secondUser: contact.user, chatroomId: contact.chatroomId, callback: getMessageCallback, newShots: newMessages });
+      navigation.navigate('ChatScreen', { secondUser: contact.user, chatroomId: contact.chatroomId });
       setOpenUserSearch(false);
     }
   };
-
 
   const getChatrooms = async () => {
     var tempContacts = []
@@ -183,6 +172,42 @@ const ContactScreen = ({ route }) => {
     setSendScreen(false)
     setSelectedContacts([]);
   }
+  
+  const updateReceivedMsg = () => {
+    if(!newMessage) return;
+    var itemIdx = -1;
+    for (let idx = 0;idx < contactList.length; idx++){
+      if(contactList[idx].chatroomId==newMessage.chatroom_id){
+        itemIdx = idx;
+        break;
+      }
+    }
+    if(itemIdx!=-1){
+      var contacts = [...contactList.slice(0, itemIdx), {...contactList[itemIdx], newMsg: true}, ...contactList.slice(itemIdx+1)]
+      setContactList(contacts);
+      setFilteredContactList(contacts);
+    }
+  }
+
+  useEffect(() => {updateReceivedMsg()}, [newMessage])
+
+  const updateReceivedShot = () => {
+    if(!newShot) return;
+    var itemIdx = -1;
+    for (let idx = 0;idx < contactList.length; idx++){
+      if(contactList[idx].user.id==newShot.sender_id){
+        itemIdx = idx;
+        break;
+      }
+    }
+    if(itemIdx!=-1){
+      var contacts = [...contactList.slice(0, itemIdx), {...contactList[itemIdx], newShot: true}, ...contactList.slice(itemIdx+1)]
+      setContactList(contacts);
+      setFilteredContactList(contacts);
+    }
+  }
+
+  useEffect(() => {updateReceivedShot()}, [newShot])
   
   useEffect(() => { 
     setSelectedContacts([]);

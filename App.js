@@ -20,9 +20,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const Stack = createNativeStackNavigator();
 export const AuthContext = React.createContext(null);
+export const NewMessageContext = React.createContext({ newMessage: null, setNewMessage: () => {} });
+export const NewShotContext = React.createContext({ newShot: null, setNewShot: () => {} });
+
 const App = () => {
   const [loading, setLoading] = useState(true);
   const [auth, setAuth] = useState(null);
+  const [newMessage, setNewMessage] = useState(null);
+  const [newShot, setNewShot] = useState(null);
+
 
   useEffect(()=>{
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -33,6 +39,33 @@ const App = () => {
       setAuth(session);
     })
   }, [])
+
+  useEffect(() => {
+    if(!auth) return;
+    const channel = supabase
+      .channel('db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `receiver_id=eq.${auth.user.id}`
+        },
+        (payload) => setNewMessage(payload.new)
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'shots',
+          filter: `receiver_id=eq.${auth.user.id}`
+        },
+        (payload) => setNewShot(payload.new)
+      )
+      .subscribe()
+  }, [auth])
   
   if(loading){
     return (
@@ -66,6 +99,8 @@ const App = () => {
           />
         </Stack.Navigator>
         :
+        <NewShotContext.Provider value={newShot}>
+        <NewMessageContext.Provider value={newMessage}>
         <Stack.Navigator>
           <Stack.Screen
             name="Home"
@@ -135,6 +170,8 @@ const App = () => {
             options={{headerShown: false}}
           />
         </Stack.Navigator>
+        </NewMessageContext.Provider>
+        </NewShotContext.Provider>
         }
       </NavigationContainer>
     </AuthContext.Provider>
