@@ -1,5 +1,5 @@
 import {NavigationContainer} from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import {StyleSheet, Linking, View, Text, ActivityIndicator} from 'react-native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import LandingPage from './components/screens/LandingPage';
@@ -16,7 +16,8 @@ import SignupScreen from './components/screens/SignupScreen';
 import { supabase } from './supabaseClient';
 import { DebugScreen } from './components/screens/DebugScreen';
 import AccountScreen from './components/screens/AccountScreen';
-import AsyncStorage from '@react-native-async-storage/async-storage'
+import { messageStore } from './components/MessageReducer';
+import { Provider } from 'react-redux';
 
 const Stack = createNativeStackNavigator();
 export const AuthContext = React.createContext(null);
@@ -28,6 +29,12 @@ const App = () => {
   const [auth, setAuth] = useState(null);
   const [newMessage, setNewMessage] = useState(null);
   const [newShot, setNewShot] = useState(null);
+
+
+
+  useEffect(() => {
+    // messageStore.dispatch({ type: 'newMessage', payload: {name: 'test'}})
+  }, [])
 
 
   useEffect(()=>{
@@ -52,7 +59,7 @@ const App = () => {
           table: 'messages',
           filter: `receiver_id=eq.${auth.user.id}`
         },
-        (payload) => setNewMessage(payload.new)
+        (payload) => messageStore.dispatch({ type: 'newMessage', payload: payload.new})
       )
       .on(
         'postgres_changes',
@@ -62,7 +69,7 @@ const App = () => {
           table: 'shots',
           filter: `receiver_id=eq.${auth.user.id}`
         },
-        (payload) => setNewShot(payload.new)
+        (payload) => messageStore.dispatch({ type: 'newShot', payload: payload.new})
       )
       .subscribe()
   }, [auth])
@@ -99,6 +106,7 @@ const App = () => {
           />
         </Stack.Navigator>
         :
+        <Provider store={messageStore}>
         <NewShotContext.Provider value={newShot}>
         <NewMessageContext.Provider value={newMessage}>
         <Stack.Navigator>
@@ -172,6 +180,7 @@ const App = () => {
         </Stack.Navigator>
         </NewMessageContext.Provider>
         </NewShotContext.Provider>
+        </Provider>
         }
       </NavigationContainer>
     </AuthContext.Provider>

@@ -10,6 +10,7 @@ import UserCard from '../views/UserCard';
 import { supabase } from '../../supabaseClient';
 import { AuthContext, NewMessageContext, NewShotContext } from '../../App';
 import ImgToBase64 from 'react-native-image-base64';
+import { useSelector, useDispatch } from 'react-redux';
 
 const screenHeight = Dimensions.get("window").height
 const screenWidth = Dimensions.get("window").width
@@ -30,8 +31,18 @@ const ContactScreen = ({ route }) => {
   const [openUserSearch, setOpenUserSearch] = useState(false)
   const [selectedContacts, setSelectedContacts] = useState([]);
   const [sendScreen, setSendScreen] = useState(sendCapture);
-  const newMessage = useContext(NewMessageContext)
-  const newShot = useContext(NewShotContext)
+
+  // const newMessage = useContext(NewMessageContext)
+  // const newShot = useContext(NewShotContext)
+
+  const newMessage = useSelector(state => state.newMessage)
+  const hasNewMessage = useSelector(state => state.hasNewMessage)
+  const newShot = useSelector(state => state.newShot)
+  const hasNewShot = useSelector(state => state.hasNewShot)
+  const dispatch = useDispatch();
+
+
+
 
   contactList.sort(function(a, b) {return (new Date(a.lastMessageTime) > new Date(b.lastMessageTime))?-1:1;});
 
@@ -90,7 +101,7 @@ const ContactScreen = ({ route }) => {
         } else
           setSelectedContacts(oldArray => [...oldArray, contact.user.id] )
     } else {
-      var tempContacts = [...filteredContactList.slice(0, idx), {...contact, newMsg: false, newShot: false}, ...filteredContactList.slice(idx+1)];
+      var tempContacts = [...filteredContactList.slice(0, idx), {...contact, newMsg: false}, ...filteredContactList.slice(idx+1)];
       setContactList(tempContacts);
       navigation.navigate('ChatScreen', { secondUser: contact.user, chatroomId: contact.chatroomId });
       setOpenUserSearch(false);
@@ -174,7 +185,7 @@ const ContactScreen = ({ route }) => {
   }
   
   const updateReceivedMsg = () => {
-    if(!newMessage) return;
+    if(!hasNewMessage) return;
     var itemIdx = -1;
     for (let idx = 0;idx < contactList.length; idx++){
       if(contactList[idx].chatroomId==newMessage.chatroom_id){
@@ -192,7 +203,7 @@ const ContactScreen = ({ route }) => {
   useEffect(() => {updateReceivedMsg()}, [newMessage])
 
   const updateReceivedShot = () => {
-    if(!newShot) return;
+    if (!newShot) return;
     var itemIdx = -1;
     for (let idx = 0;idx < contactList.length; idx++){
       if(contactList[idx].user.id==newShot.sender_id){
@@ -201,13 +212,13 @@ const ContactScreen = ({ route }) => {
       }
     }
     if(itemIdx!=-1){
-      var contacts = [...contactList.slice(0, itemIdx), {...contactList[itemIdx], newShot: true}, ...contactList.slice(itemIdx+1)]
+      var contacts = [...contactList.slice(0, itemIdx), {...contactList[itemIdx], newShot: hasNewShot}, ...contactList.slice(itemIdx+1)]
       setContactList(contacts);
       setFilteredContactList(contacts);
     }
   }
 
-  useEffect(() => {updateReceivedShot()}, [newShot])
+  useEffect(() => {updateReceivedShot()}, [hasNewShot])
   
   useEffect(() => { 
     setSelectedContacts([]);

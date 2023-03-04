@@ -5,7 +5,7 @@ import { GiftedChat, Bubble, InputToolbar, Time, Send, Composer} from 'react-nat
 import { AuthContext, NewMessageContext, NewShotContext } from '../../App';
 import { supabase } from '../../supabaseClient';
 import { useNavigation } from '@react-navigation/native';
-// import { NewMessageContext } from '../ContactScreen';
+import { useSelector, useDispatch } from 'react-redux';
 
 const screenHeight = Dimensions.get("window").height
 const screenWidth = Dimensions.get("window").width
@@ -18,8 +18,14 @@ const ChatScreen = () => {
   const [shots, setShots] = useState([]);
   const route = useRoute();
   const { secondUser, chatroomId } = route.params;
-  const newMessage = useContext(NewMessageContext)
-  const newShot = useContext(NewShotContext)
+  // const newMessage = useContext(NewMessageContext)
+  // const newShot = useContext(NewShotContext)
+
+  const newMessage = useSelector(state => state.newMessage)
+  const hasNewMessage = useSelector(state => state.hasNewMessage)
+  const newShot = useSelector(state => state.newShot)
+  const hasNewShot = useSelector(state => state.hasNewShot)
+  const dispatch = useDispatch();
 
   var secondUser_ = {
     _id: secondUser.id,
@@ -67,6 +73,7 @@ const ChatScreen = () => {
       shots: newShots,
       send: false
     });
+    dispatch({ type: 'viewedShot' })
     const { data, error } = await supabase.from('shots').update({ read_bool: true })
     .eq('receiver_id', user.id).eq('read_bool', false).eq('sender_id', secondUser.id);
     if(error) console.error(error.message)
@@ -80,7 +87,8 @@ const ChatScreen = () => {
   }
 
   const updateReceivedMsg = () => {
-    if (!newMessage) return;
+    if (!hasNewMessage) return;
+    dispatch({ type: 'viewedMessage' })
     if(newMessage.sender_id==secondUser.id){
       var tempMessage = {_id: newMessage.id, text: newMessage.content, createdAt: newMessage.sent_at, user: secondUser_};
       setMessages(previousMessages => GiftedChat.append(previousMessages, tempMessage))
@@ -89,15 +97,8 @@ const ChatScreen = () => {
 
   useEffect(() => {updateReceivedMsg()}, [newMessage])
 
-  const [didRender, setDidRender]=useState(false);
-
-  useEffect(()=>{
-    setDidRender(true);
-  },[]);
-
   const updateReceivedShot = () => {
-    if (!newShot) return;
-    if (!didRender) return;
+    if (!hasNewShot) return;
     if (newShot.sender_id==secondUser.id){
       setShots((shots) => [...shots, {content_url: newShot.content_url}])
     }
