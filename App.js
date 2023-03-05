@@ -21,8 +21,6 @@ import { Provider } from 'react-redux';
 
 const Stack = createNativeStackNavigator();
 export const AuthContext = React.createContext(null);
-export const NewMessageContext = React.createContext({ newMessage: null, setNewMessage: () => {} });
-export const NewShotContext = React.createContext({ newShot: null, setNewShot: () => {} });
 
 const App = () => {
   const [loading, setLoading] = useState(true);
@@ -107,8 +105,6 @@ const App = () => {
         </Stack.Navigator>
         :
         <Provider store={messageStore}>
-        <NewShotContext.Provider value={newShot}>
-        <NewMessageContext.Provider value={newMessage}>
         <Stack.Navigator>
           <Stack.Screen
             name="Home"
@@ -178,8 +174,6 @@ const App = () => {
             options={{headerShown: false}}
           />
         </Stack.Navigator>
-        </NewMessageContext.Provider>
-        </NewShotContext.Provider>
         </Provider>
         }
       </NavigationContainer>

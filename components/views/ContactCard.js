@@ -8,30 +8,33 @@ const screenWidth = Dimensions.get("window").width
 const ContactCard = ({ contact, highlight }) => {
   const [newShot, setNewShot] = useState(contact.newShot);
   const [newMsg, setNewMsg] = useState(contact.newMsg);
-  const [timeDisplay, setTimeDisplay] = useState();
+  const [timeDisplay, setTimeDisplay] = useState('');
 
   const getTime = () => {
+    if(!contact.lastMessageTime)
+      return;
     var currentDate = new Date()
     var date = new Date(contact.lastMessageTime)
+    var msg = '';
     
     if(date.getFullYear()==currentDate.getFullYear()){
-        if(date.getMonth()==currentDate.getMonth()){
-            if(date.getDate()==currentDate.getDate()){
-                setTimeDisplay(String(date.getHours())+":"+String(date.getMinutes()))
-            } else if(date.getDate()==currentDate.getDate()-1){
-                setTimeDisplay("Yesterday")
-            } else {
-                setTimeDisplay(String(currentDate.getDate()-date.getDate())+" days ago")
-            }
-        } else {
-            let month = currentDate.getMonth()-date.getMonth();
-            let msg = month==1?"Last month":String(month)+" months ago"
-            setTimeDisplay(msg)
-        } 
+      if(date.getMonth()==currentDate.getMonth()){
+          if(date.getDate()==currentDate.getDate()){
+              setTimeDisplay(String(date.getHours())+":"+String(date.getMinutes()))
+          } else if(date.getDate()==currentDate.getDate()-1){
+              setTimeDisplay("Yesterday")
+          } else {
+              setTimeDisplay(String(currentDate.getDate()-date.getDate())+" days ago")
+          }
+      } else {
+          let month = currentDate.getMonth()-date.getMonth();
+          msg = month==1?"Last month":String(month)+" months ago"
+          setTimeDisplay(msg)
+      } 
     } else {
         let year = currentDate.getFullYear()-date.getFullYear();
-        if(year.toString()=='NaN') year = 'Many'
-        let msg = year==1?"Last year":year.toString()+" years ago"
+        msg = year==1?"Last year":year.toString()+" years ago"
+        if (year.toString() === 'NaN') msg = '';
         setTimeDisplay(msg)
     } 
   }
@@ -45,6 +48,7 @@ const ContactCard = ({ contact, highlight }) => {
   var defaultIcon = require ('../../assets/media/logo.png');
   let image = contact.user.avatar_url?{uri: 'https://mhtzqkkrssrxagqjbpdd.supabase.co/storage/v1/object/public/avatars/'+contact.user.avatar_url}:defaultIcon;
   let subText = newShot? "New training shot": (newMsg ? "New message" : contact.user.username);
+
   return (
     <View style={styles.container}>
         <View style={styles.cardContainer}>
@@ -56,9 +60,9 @@ const ContactCard = ({ contact, highlight }) => {
                 <View style={{flexDirection: "row"}}><View style={[styles.newDot, newShot?{backgroundColor:"#D4AF37"}:newMsg?{backgroundColor:"green"}:{width:0}]}></View><Text style={styles.contactMsg}>{subText}</Text></View>
             </View>
             <View style={styles.contactTime}>
-                <Text style={styles.contactTime_}>{timeDisplay}</Text>
+                {timeDisplay != '' && <Text style={styles.contactTime_}>{timeDisplay}</Text>}
                 {contact.streak > 0 && 
-                <View style={{flexDirection: "row", justifyContent: 'center', marginTop: "6%"}}>
+                <View style={{flexDirection: "row", justifyContent: 'center'}}>
                   <Text style={{color: "white", fontFamily: 'Montserrat-Italic', marginRight:'8%'}}>{contact.streak}</Text>
                   <IonIonIcon name="ios-fitness-sharp" color="#D4AF37" size={18} />
                 </View>
@@ -96,7 +100,8 @@ const styles = StyleSheet.create({
   },
   contactTime: {
     marginLeft: 'auto',
-    marginRight: "2%"
+    marginRight: "2%",
+    justifyContent: 'space-evenly'
   },
   contactName: {
     fontFamily: 'Montserrat-Regular',
