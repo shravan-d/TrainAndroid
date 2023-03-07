@@ -11,7 +11,7 @@ const ContactCard = ({ contact, highlight }) => {
   const [timeDisplay, setTimeDisplay] = useState('');
 
   const getTime = () => {
-    if(!contact.lastMessageTime)
+    if(contact.lastMessageTime == null)
       return;
     var currentDate = new Date()
     var date = new Date(contact.lastMessageTime)
@@ -20,7 +20,8 @@ const ContactCard = ({ contact, highlight }) => {
     if(date.getFullYear()==currentDate.getFullYear()){
       if(date.getMonth()==currentDate.getMonth()){
           if(date.getDate()==currentDate.getDate()){
-              setTimeDisplay(String(date.getHours())+":"+String(date.getMinutes()))
+              var mins = String(date.getMinutes())
+              setTimeDisplay(String(date.getHours())+":"+mins)
           } else if(date.getDate()==currentDate.getDate()-1){
               setTimeDisplay("Yesterday")
           } else {
@@ -101,7 +102,8 @@ const styles = StyleSheet.create({
   contactTime: {
     marginLeft: 'auto',
     marginRight: "2%",
-    justifyContent: 'space-evenly'
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   contactName: {
     fontFamily: 'Montserrat-Regular',

@@ -25,15 +25,6 @@ export const AuthContext = React.createContext(null);
 const App = () => {
   const [loading, setLoading] = useState(true);
   const [auth, setAuth] = useState(null);
-  const [newMessage, setNewMessage] = useState(null);
-  const [newShot, setNewShot] = useState(null);
-
-
-
-  useEffect(() => {
-    // messageStore.dispatch({ type: 'newMessage', payload: {name: 'test'}})
-  }, [])
-
 
   useEffect(()=>{
     supabase.auth.getSession().then(({ data: { session } }) => {

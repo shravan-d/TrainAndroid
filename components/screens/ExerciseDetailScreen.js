@@ -1,14 +1,5 @@
 import {React, useEffect, useState, useCallback, useMemo} from 'react';
-import {
-  StyleSheet,
-  Image,
-  ActivityIndicator,
-  ImageBackground,
-  View,
-  Text,
-  Dimensions,
-  TouchableOpacity,
-} from 'react-native';
+import { StyleSheet, Image, ActivityIndicator, ImageBackground, View, Text, Dimensions, TouchableOpacity } from 'react-native';
 import ExerciseCard from '../views/ExerciseCard';
 import Dropdown from '../views/Dropdown';
 import MenuBar from '../views/MenuBar';
@@ -19,6 +10,7 @@ import Video, {LoadError, OnLoadData} from 'react-native-video';
 import {useIsFocused} from '@react-navigation/core';
 import {useIsForeground} from '../hooks/useIsAppForeground';
 import { useNavigation } from '@react-navigation/native';
+import { supabase } from '../../supabaseClient';
 
 var screenHeight = Dimensions.get('window').height;
 var screenWidth = Dimensions.get('window').width;
@@ -31,9 +23,18 @@ const ExerciseDetailScreen = ({ route }) => {
   const isScreenFocused = useIsFocused();
   const isVideoPaused = !isForeground || !isScreenFocused;
   const [isLoading, setIsLoading] = useState(false);
-  const { exerciseIdList, currIdx } = route.params;
-  let exerciseId = exerciseIdList[currIdx];
-  let buttonsRequired = exerciseIdList.length > 1;
+  const [variation, setVariation] = useState(null);
+  const { exercise, exerciseIdList, currIdx } = route.params;
+  let buttonsRequired = exerciseIdList?.length > 1;
+  var muscleGroupDetails = [
+    {id: 1, primary_img: 'https://imgur.com/td3BZl0.jpg', secondary_img: '', label: 'Chest', value: 'Chest'},
+    {id: 2, primary_img: '', secondary_img: '', label: 'Back', value: 'Back'},
+    {id: 3, primary_img: '', secondary_img: '', label: 'Legs', value: 'Legs'},
+    {id: 4, primary_img: '', secondary_img: '', label: 'Shoulder', value: 'Shoulder'},
+    {id: 5, primary_img: '', secondary_img: 'https://imgur.com/flps7Wn.jpg', label: 'Biceps', value: 'Biceps'},
+    {id: 6, primary_img: '', secondary_img: '', label: 'Triceps', value: 'Triceps'},
+    {id: 7, primary_img: '', secondary_img: '', label: 'Abs', value: 'Abs'},
+  ];
 
   const [exerciseDetails, setExerciseDetails] = useState({
     id: 4,
@@ -73,15 +74,19 @@ const ExerciseDetailScreen = ({ route }) => {
     else return <View />;
   };
 
-  // useeffect to fetch details based on ID
-  const source = useMemo(
-    () => ({
-      uri: 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master_928.m3u8',
-    }),
-    [exerciseDetails],
-  );
-  const exerciseSteps = exerciseDetails.steps.split('.');
-  const exerciseMistakes = exerciseDetails.mistakes.split('.');
+  const source = useMemo(() => ({ uri: 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master_928.m3u8' }), [exerciseDetails]);
+  const exerciseSteps = exercise.steps.split('.');
+  const exerciseMistakes = exercise.mistakes.split('.');
+
+  const getDetails = async () => {
+    const variationRes = await supabase.from('exercises').select().eq('id', exercise.variation_id);
+    setVariation(variationRes.data[0])
+  }
+
+  useEffect(() => {
+    getDetails();
+  }, [exercise])
+
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} style={styles.exerciseContainer}>
@@ -130,11 +135,11 @@ const ExerciseDetailScreen = ({ route }) => {
             )}
           </View>
           <View style={styles.contentContainer}>
-            <Text style={styles.header}>{exerciseDetails.name}</Text>
+            <Text style={styles.header}>{exercise.exercise_name}</Text>
             <View style={styles.muscleContainer}>
               <View>
                 <Text style={styles.subtext}>
-                  {exerciseDetails.requirements}
+                  {exercise.requirements}
                 </Text>
                 <View style={{flexDirection: 'row', marginTop: '5%'}}>
                   <Text
@@ -152,11 +157,11 @@ const ExerciseDetailScreen = ({ route }) => {
               <View style={styles.mgContainer}>
                 <Image
                   style={styles.mgImage}
-                  source={{uri: exerciseDetails.img_primary}}
+                  source={{uri: muscleGroupDetails.find((ele) => ele.label==exercise.muscle_group)?.primary_img}}
                 />
                 <Image
                   style={styles.mgImage}
-                  source={{uri: exerciseDetails.img_secondary}}
+                  source={{uri: muscleGroupDetails.find((ele) => ele.label==exercise.secondary_mg)?.secondary_img}}
                 />
               </View>
             </View>
@@ -179,24 +184,16 @@ const ExerciseDetailScreen = ({ route }) => {
               ))}
             </View>
             <View style={styles.steps}>
-              <Text style={styles.subHeader}>
-                Recommended sets for beginners
-              </Text>
-              <Text style={[styles.subtext, {marginBottom: '2%'}]}>
-                3-4 sets of 15 reps initially.
-              </Text>
+              <Text style={styles.subHeader}>Recommended sets for beginners</Text>
               <Text style={styles.subtext}>
-                3 sets of 15, 12, and 8 reps with a progressive overload of
-                weights.
+                {exercise.recommended_sets}
               </Text>
             </View>
+            {variation && 
             <View style={styles.steps}>
               <Text style={styles.subHeader}>Variations</Text>
-              <ExerciseCard
-                key={exerciseDetails.id}
-                exercise={exerciseDetails}
-              />
-            </View>
+              <ExerciseCard key={variation.id} exercise={variation} />
+            </View>}
           </View>
         </ImageBackground>
       </ScrollView>
@@ -217,7 +214,7 @@ const styles = StyleSheet.create({
     maxHeight: '94%'
   },
   contentContainer: {
-    marginTop: '2%',
+    marginVertical: '2%',
   },
   header: {
     color: 'white',

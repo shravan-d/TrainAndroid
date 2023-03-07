@@ -32,17 +32,10 @@ const ContactScreen = ({ route }) => {
   const [selectedContacts, setSelectedContacts] = useState([]);
   const [sendScreen, setSendScreen] = useState(sendCapture);
 
-  // const newMessage = useContext(NewMessageContext)
-  // const newShot = useContext(NewShotContext)
-
   const newMessage = useSelector(state => state.newMessage)
   const hasNewMessage = useSelector(state => state.hasNewMessage)
   const newShot = useSelector(state => state.newShot)
   const hasNewShot = useSelector(state => state.hasNewShot)
-  const dispatch = useDispatch();
-
-
-
 
   contactList.sort(function(a, b) {return (new Date(a.lastMessageTime) > new Date(b.lastMessageTime))?-1:1;});
 
@@ -118,28 +111,25 @@ const ContactScreen = ({ route }) => {
         if(res.error) console.error(res.error)
         const res_ = await supabase.from('profiles').select().eq('id', res.data[0].user_id);
         if(res_.error) console.error(res_.error)
-        const res__ = await supabase.from('participants').select('sent_unread_msg').eq('user_id', res.data[0].user_id)
+        const newMessageRes= await supabase.from('participants').select().eq('user_id', res.data[0].user_id)
         .eq('chatroom_id', chatroom.chatroom_id);
-        if(res__.error) console.error(res__.error)
+        if(newMessageRes.error) console.error(newMessageRes.error)
         const streakData = await supabase.from('chat_room').select('streak').eq('id', chatroom.chatroom_id)
         if(streakData.error) console.error(streakData.error)
-
-        // check if you can avoid these two calls. Biggest tables called often. Maybe could call in app open.
-        const messageRes= await supabase.from('messages').select('sent_at').eq('sender_id', res.data[0].user_id)
-        .eq('chatroom_id', chatroom.chatroom_id).order('sent_at', {ascending: false}).limit(1);
-        if(messageRes.error) console.error(messageRes.error)
+        
+        // check if you can avoid this call. Biggest tables called often. Maybe could call in app open.
         const shotRes = await supabase.from('shots').select('sent_at').eq('receiver_id', user.id).eq('read_bool', false)
         .eq('sender_id', res.data[0].user_id).order('sent_at', {ascending: false}).limit(1);
         if(shotRes.error) console.error(shotRes.error)
 
-        var timeToDisplay;
-        if (messageRes.data.length > 0 && shotRes.data.length > 0)
-          timeToDisplay = new Date(messageRes.data[0]?.sent_at) > new Date(shotRes.data[0]?.sent_at) ?
-          new Date(messageRes.data[0]?.sent_at) : new Date(shotRes.data[0]?.sent_at);
-        else if (messageRes.data.length) timeToDisplay =  new Date(messageRes.data[0]?.sent_at)
+        var timeToDisplay = null;
+        if (newMessageRes.data[0]?.last_msg_date  && shotRes.data.length > 0)
+          timeToDisplay = new Date(newMessageRes.data[0]?.last_msg_date) > new Date(shotRes.data[0]?.sent_at) ?
+          new Date(newMessageRes.data[0]?.last_msg_date) : new Date(shotRes.data[0]?.sent_at);
+        else if (newMessageRes.data[0]?.last_msg_date) timeToDisplay =  new Date(newMessageRes.data[0]?.last_msg_date)
         else if (shotRes.data.length) timeToDisplay = new Date(shotRes.data[0]?.sent_at);
         var tempContact = {user: res_.data[0], chatroomId: chatroom.chatroom_id, streak: streakData.data[0]?.streak,
-          lastMessageTime: timeToDisplay, newMsg: res__.data[0]?.sent_unread_msg, newShot: shotRes.data.length>0};
+          lastMessageTime: timeToDisplay, newMsg: newMessageRes.data[0]?.sent_unread_msg, newShot: shotRes.data.length>0};
         tempContacts.push(tempContact)
       }
       setContactList(tempContacts);

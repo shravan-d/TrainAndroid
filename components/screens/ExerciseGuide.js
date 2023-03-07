@@ -1,4 +1,4 @@
-import {React, useEffect, useState} from 'react';
+import {React, useEffect, useState, useContext, useMemo} from 'react';
 import {StyleSheet, ImageBackground, View, Text, Dimensions, TouchableOpacity, TextInput} from 'react-native';
 import ExerciseCard from '../views/ExerciseCard';
 import Dropdown from '../views/Dropdown';
@@ -6,47 +6,67 @@ import MenuBar from '../views/MenuBar';
 import NavBar from '../views/NavBar';
 import { ScrollView } from 'react-native-gesture-handler';
 import IonIcon from 'react-native-vector-icons/Ionicons';
+import { supabase } from '../../supabaseClient';
+import { AuthContext } from '../../App';
 
 var screenHeight = Dimensions.get('window').height;
 var screenWidth = Dimensions.get('window').width;
 
 const ExerciseGuide = () => {
+  const user = useContext(AuthContext);
   var bg = require ('../../assets/media/bg.png');
-  overlays = [require('../../assets/media/ig1.jpg')]
-  let dropdownItems = [
-    {label: 'Chest', value: 'Chest'},
-    {label: 'Back', value: 'Back'},
-    {label: 'Legs', value: 'Legs'},
-    {label: 'Shoulder', value: 'Shoulder'},
-    {label: 'Biceps', value: 'Biceps'},
-    {label: 'Triceps', value: 'Triceps'},
-    {label: 'Abs', value: 'Abs'},
+  var overlays = [require('../../assets/media/ig1.jpg')]
+  var muscleGroupDetails = [
+    {id: 1, primary_img: 'https://imgur.com/td3BZl0.jpg', secondary_img: '', label: 'Chest', value: 'Chest'},
+    {id: 2, primary_img: '', secondary_img: '', label: 'Back', value: 'Back'},
+    {id: 3, primary_img: '', secondary_img: '', label: 'Legs', value: 'Legs'},
+    {id: 4, primary_img: '', secondary_img: '', label: 'Shoulder', value: 'Shoulder'},
+    {id: 5, primary_img: 'https://imgur.com/flps7Wn.jpg', secondary_img: '', label: 'Biceps', value: 'Biceps'},
+    {id: 6, primary_img: '', secondary_img: '', label: 'Triceps', value: 'Triceps'},
+    {id: 7, primary_img: '', secondary_img: '', label: 'Abs', value: 'Abs'},
   ];
 
   const [showFavorites, setShowFavorites] = useState(false);
   const [search, setSearch] = useState('');
   const [openSearch, setOpenSearch] = useState(false)
   const [muscleGroup, setMuscleGroup] = useState(null);
-  const [exerciseList, setExerciseList] = useState([
-    {id: 2, name: 'Bench Press', requirements: 'Bench, Barbell', image:'https://imgur.com/ZphSDXT.jpg', steps: "Lay back down on a flat bench placing the hands up on the bar using an underhand grip slightly wider than shoulder width apart"},
-    {id: 3, name: "Pull Ups", requirements: "Pull-up bar", image:"https://imgur.com/5lMl8ry.jpg", steps: "Place your hands, wider than shoulder width, with palms facing away from you.Lock your legs, and pull yourself up until your face is level with the bar.Go back down to your starting position in a steady motion"},
-    {id: 4, name: "Machine Chest Flys", requirements: "Fly Machine", image:"https://imgur.com/tk9wNJL.jpg", steps: "Hold the handles of the machine with elbows bent a little.Push your hands forward, so that your fists meet each other right in front of you.Pause for a second, before going back slowly to your starting position.You should feel your chest contracting towards the center when pushing"},
-    {id: 5, name: "Lunges", requirements: "Dumbells", image:"https://imgur.com/DjvMo0F.jpg", steps: "Hold the dumbells in each hand and place one leg forward, and the other slightly behind.With your forward leg completely placed, and back leg on it's toes, bend both knees in a downward motion.Go down until your back knee is close to the ground, then return to starting position"},
-    {id: 6, name: "Squats", requirements: "", image:"https://imgur.com/qbEgEqJ.jpg", steps: "Stand with feet at shoulder width.Bend your knees, while pushing your hip backwards until you are in a seated position.Stand back up to the staring position"},
-    {id: 7, name: "Tricep Bench Dips", requirements: "Bench", image:"https://imgur.com/SGF0wEP.jpg", steps: "Sit on a bench hands next to your hips.Bring your hips forward with elbows stretched, but not locked.Bend your elbows and lower your hips down, keeping your hips close to the bench.Push back up to reach starting position"},
-    {id: 1, name: "Incline Dumbell Press", requirements: "Dumbell, Bench", image:"", steps: "Lie on the bench with one dumbell in each hand, with the bench inclined at 45 degrees.Looking up, push both the dumbells away from you, pushing against the bench.Pause for a minute at full extension, before slowly bring back to starting position."},
-  ]);
+  const [exerciseList, setExerciseList] = useState([]);
   const [filteredExerciseList, setFilteredExerciseList] = useState(exerciseList);
+  const [modifyFavourites, setModifyFavourites] = useState([]);
 
-  //use effect fetch all exercise list first, and on change muschle group, fetch releavant
+  const changeFavouriteCallback = (favorite, exercise_id) =>{
+    var temp = modifyFavourites;
+    if (favorite){
+      temp.push(exercise_id);
+    } else {
+      temp.push(-1*exercise_id);
+    }
+    setModifyFavourites(temp)
+  }
+
+  const getExerciseList = async () => {
+    const {data, error} = await supabase.from('exercises').select();
+    if(error) console.error(error.message)
+    for (var exercise of data)
+      exercise.favourite = false;
+    const favouriteRes = await supabase.from('user_exercise_fav').select('exercise_id').eq('user_id', user.id);
+    if(favouriteRes.error) console.error(favouriteRes.error.message)
+    for (const fav of favouriteRes.data){
+      var idx = data.findIndex((obj => obj.id == fav.exercise_id));
+      data[idx].favourite = true;
+    }
+    setExerciseList(data)
+    setFilteredExerciseList(data);
+  }
+
   useEffect(() => {
-    setFilteredExerciseList(exerciseList);
-  }, [muscleGroup]);
+    getExerciseList();
+  }, []);
 
   const [headerHeight, setHeaderHeight] = useState('32%');
   const scrollE = (e) => {
     if (e.nativeEvent.contentOffset.y > 50)
-      setHeaderHeight('18%')
+      setHeaderHeight('22%')
     if (e.nativeEvent.contentOffset.y < 50)
       setHeaderHeight('32%')
   }
@@ -65,6 +85,61 @@ const ExerciseGuide = () => {
       setSearch(text);
     }
   }
+
+  const muscleFilterFunction = () => {
+    if (!muscleGroup) return;
+    const newData = exerciseList.filter(function (item) {
+      const itemData = item.muscle_group? item.muscle_group.toUpperCase(): ''.toUpperCase();
+      const textData = muscleGroup.toUpperCase();
+      return itemData.indexOf(textData) > -1;
+    });
+    setFilteredExerciseList(newData);
+  }
+
+  const favoriteFilterFunction = (showFavorite) => {
+    setShowFavorites(showFavorite);
+    if(showFavorite){
+      const newData = exerciseList.filter((item) => {
+        return item.favourite === showFavorite;
+      });
+      setFilteredExerciseList(newData);
+    }
+    else 
+      setFilteredExerciseList(exerciseList);
+  }
+
+  useEffect(() => {
+    muscleFilterFunction();
+
+    return async () => {
+      var insertData = []
+      var deleteData = []
+      for (const ele of modifyFavourites){
+        if (ele < 0){
+          var idx = insertData.map(e => e.exercise_id).indexOf(-1*ele);
+          console.log(idx)
+          if (idx > -1){
+            insertData.splice(idx, 1);
+          } else 
+            deleteData.push({user_id: user.id, exercise_id: -1*ele})
+        } else {
+          var idx = deleteData.map(e => e.exercise_id).indexOf(ele);
+          if (idx > -1){
+            deleteData.splice(idx, 1);
+          } else
+            insertData.push({user_id: user.id, exercise_id: ele})
+        }
+      }
+      if (insertData.length > 0){
+        const insertRes = await supabase.from('user_exercise_fav').insert(insertData);
+        if(insertRes.error) console.error(insertRes.error)
+      }
+      for (const del of deleteData){
+        const deleteRes = await supabase.from('user_exercise_fav').delete().eq('user_id', del.user_id).eq('exercise_id', del.exercise_id);
+        if(deleteRes.error) console.error(deleteRes.error)
+      }
+    }
+  }, [muscleGroup])
 
   return (
     <View style={styles.container}>
@@ -94,21 +169,21 @@ const ExerciseGuide = () => {
       </View>
       <View style={[styles.headerContainer, {height: headerHeight}]}>
         <View >
-          <Dropdown value={muscleGroup} setValue={setMuscleGroup} header={"What muscle group would you like to workout today?"} dropdownItems={dropdownItems} elevation={0}/>      
+          <Dropdown value={muscleGroup} setValue={setMuscleGroup} header={"What muscle group would you like to workout today?"} dropdownItems={muscleGroupDetails} elevation={1}/>      
         </View>
         <View style={styles.favouritesContainer}>
-          <Text style={styles.text}>Show favorites</Text>
-          <TouchableOpacity onPress={() => setShowFavorites(!showFavorites)}>
+          <Text style={styles.text}>{showFavorites?'Show All':'Show favorites'}</Text>
+          <TouchableOpacity onPress={() => favoriteFilterFunction(!showFavorites)}>
           <IonIcon name="heart" size={18} color={showFavorites ? '#D4AF37' : 'white'} />
           </TouchableOpacity>
         </View>
         <View><Text style={styles.groupHeader}>{muscleGroup}</Text></View>
       
       </View>
-      <ScrollView showsVerticalScrollIndicator={false} style={[styles.exerciseContainer, {maxHeight: headerHeight=='32%'?'54%':'68%'}]}  onScroll={scrollE} scrollEventThrottle={16}> 
+      <ScrollView showsVerticalScrollIndicator={false} style={[styles.exerciseContainer, {maxHeight: headerHeight=='32%'?'54%':'64%'}]}  onScroll={scrollE} scrollEventThrottle={16}> 
       <ImageBackground source={bg} style={styles.background}>
         {filteredExerciseList.map((exercise) => (
-          <ExerciseCard key={exercise.id} exercise={exercise}/>
+          <ExerciseCard key={exercise.id} exercise={exercise} changeFavouriteCallback={changeFavouriteCallback}/>
         ))}
       </ImageBackground>
       </ScrollView>
@@ -132,8 +207,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginTop: '10%',
-    zIndex: -1,
-    elevation: -1,
+    // zIndex: -1,
+    // elevation: -1,
   },
   text: {
     color: 'white',

@@ -84,6 +84,10 @@ const ChatScreen = () => {
     const { data, error } = await supabase.from('participants').update({ sent_unread_msg: false })
       .eq('user_id', secondUser.id).eq('chatroom_id', chatroomId);
     if(error) console.error(error.message)
+    const res = await supabase.from('messages').update({ read_bool: true })
+    .eq('receiver_id', user.id).eq('read_bool', false).eq('sender_id', secondUser.id);
+    if(res.error) console.error(res.error.message)
+    console.log(res)
   }
 
   const updateReceivedMsg = () => {
