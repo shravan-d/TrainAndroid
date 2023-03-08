@@ -1,55 +1,44 @@
 import {React, useEffect, useState, useCallback, useMemo} from 'react';
-import { StyleSheet, Image, ActivityIndicator, ImageBackground, View, Text, Dimensions, TouchableOpacity } from 'react-native';
+import { StyleSheet, Image, ActivityIndicator, ImageBackground, View, Text, Dimensions, TouchableOpacity, Pressable } from 'react-native';
 import ExerciseCard from '../views/ExerciseCard';
-import Dropdown from '../views/Dropdown';
 import MenuBar from '../views/MenuBar';
 import NavBar from '../views/NavBar';
 import {ScrollView} from 'react-native-gesture-handler';
-import IonIonIcon from 'react-native-vector-icons/Ionicons';
-import Video, {LoadError, OnLoadData} from 'react-native-video';
+import Video from 'react-native-video';
 import {useIsFocused} from '@react-navigation/core';
 import {useIsForeground} from '../hooks/useIsAppForeground';
-import { useNavigation } from '@react-navigation/native';
 import { supabase } from '../../supabaseClient';
+import IonIcon from 'react-native-vector-icons/Ionicons';
 
 var screenHeight = Dimensions.get('window').height;
 var screenWidth = Dimensions.get('window').width;
 
 const ExerciseDetailScreen = ({ route }) => {
-  const navigation = useNavigation();
   var bg = require('../../assets/media/bg.png');
-  overlays = [require('../../assets/media/ig1.jpg')];
   const isForeground = useIsForeground();
   const isScreenFocused = useIsFocused();
   const isVideoPaused = !isForeground || !isScreenFocused;
+  var muscleGroupDetails = [
+    {id: 1, primary_img: 'https://imgur.com/td3BZl0.jpg', secondary_img: 'https://imgur.com/td3BZl0.jpg', label: 'Chest', value: 'Chest'},
+    {id: 2, primary_img: 'https://imgur.com/td3BZl0.jpg', secondary_img: 'https://imgur.com/td3BZl0.jpg', label: 'Back', value: 'Back'},
+    {id: 3, primary_img: 'https://imgur.com/td3BZl0.jpg', secondary_img: 'https://imgur.com/td3BZl0.jpg', label: 'Legs', value: 'Legs'},
+    {id: 4, primary_img: 'https://imgur.com/td3BZl0.jpg', secondary_img: 'https://imgur.com/td3BZl0.jpg', label: 'Shoulder', value: 'Shoulder'},
+    {id: 5, primary_img: 'https://imgur.com/td3BZl0.jpg', secondary_img: 'https://imgur.com/flps7Wn.jpg', label: 'Biceps', value: 'Biceps'},
+    {id: 6, primary_img: 'https://imgur.com/td3BZl0.jpg', secondary_img: 'https://imgur.com/td3BZl0.jpg', label: 'Triceps', value: 'Triceps'},
+    {id: 7, primary_img: 'https://imgur.com/td3BZl0.jpg', secondary_img: 'https://imgur.com/td3BZl0.jpg', label: 'Abs', value: 'Abs'},
+  ];
+  const { exercise, exerciseList } = route.params;
+
   const [isLoading, setIsLoading] = useState(false);
   const [variation, setVariation] = useState(null);
-  const { exercise, exerciseIdList, currIdx } = route.params;
-  let buttonsRequired = exerciseIdList?.length > 1;
-  var muscleGroupDetails = [
-    {id: 1, primary_img: 'https://imgur.com/td3BZl0.jpg', secondary_img: '', label: 'Chest', value: 'Chest'},
-    {id: 2, primary_img: '', secondary_img: '', label: 'Back', value: 'Back'},
-    {id: 3, primary_img: '', secondary_img: '', label: 'Legs', value: 'Legs'},
-    {id: 4, primary_img: '', secondary_img: '', label: 'Shoulder', value: 'Shoulder'},
-    {id: 5, primary_img: '', secondary_img: 'https://imgur.com/flps7Wn.jpg', label: 'Biceps', value: 'Biceps'},
-    {id: 6, primary_img: '', secondary_img: '', label: 'Triceps', value: 'Triceps'},
-    {id: 7, primary_img: '', secondary_img: '', label: 'Abs', value: 'Abs'},
-  ];
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
 
-  const [exerciseDetails, setExerciseDetails] = useState({
-    id: 4,
-    name: 'Machine Chest Flys',
-    requirements: 'Fly Machine',
-    video: 'https://imgur.com/bDqkS2v.gif',
-    image: 'https://imgur.com/tk9wNJL.jpg',
-    img_primary: 'https://imgur.com/td3BZl0.jpg',
-    img_secondary: 'https://imgur.com/flps7Wn.jpg',
-    mistakes:
-      'Push your chest out and keep your back glued to the seat.Your upper body should not move with your hands',
-    variations: 'Dumbell flys on a bench',
-    steps:
-      'Hold the handles of the machine with elbows bent a little.Push your hands forward, so that your fists meet each other right in front of you.Pause for a second, before going back slowly to your starting position.You should feel your chest contracting towards the center when pushing',
-  });
+  const currentExercise = useMemo( () => {
+    if (exercise!=null) return exercise;
+    return exerciseList[index];
+  }, [index])
+
   const onMediaLoadError = useCallback(error => {
     console.log(`failed to load media: ${JSON.stringify(error)}`);
   }, []);
@@ -74,18 +63,20 @@ const ExerciseDetailScreen = ({ route }) => {
     else return <View />;
   };
 
-  const source = useMemo(() => ({ uri: 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master_928.m3u8' }), [exerciseDetails]);
-  const exerciseSteps = exercise.steps.split('.');
-  const exerciseMistakes = exercise.mistakes.split('.');
-
   const getDetails = async () => {
-    const variationRes = await supabase.from('exercises').select().eq('id', exercise.variation_id);
+    if (!currentExercise.variation_id) return;
+    const variationRes = await supabase.from('exercises').select().eq('id', currentExercise.variation_id);
     setVariation(variationRes.data[0])
   }
 
   useEffect(() => {
     getDetails();
-  }, [exercise])
+  }, [currentExercise])
+
+  var buttonsRequired = exerciseList?.length > 1;
+  const exerciseSteps = currentExercise?.steps?.split('.');
+  const exerciseMistakes = currentExercise?.mistakes?.split('.');
+  const source = useMemo(() => ({ uri: 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master_928.m3u8' }), [currentExercise]);
 
   return (
     <View style={styles.container}>
@@ -95,7 +86,7 @@ const ExerciseDetailScreen = ({ route }) => {
             <Video
               source={source}
               style={{height: '100%'}}
-              paused={isVideoPaused}
+              paused={isVideoPaused||paused}
               resizeMode="cover"
               muted={true}
               posterResizeMode="cover"
@@ -113,33 +104,37 @@ const ExerciseDetailScreen = ({ route }) => {
             {loadingView()}
             {buttonsRequired && (
               <>
+              {index != 0 &&
               <View style={styles.controlButtonContainer}>
-                <TouchableOpacity onPress={()=>{navigation.navigate('ExerciseDetailScreen', 
-                    {exerciseIdList: exerciseIdList , currIdx: currIdx-1})
-                  }} disabled={currIdx==0}>
+                <Pressable onPress={()=>setIndex(index-1)}>
                 <View style={styles.controlButton_}>
-                  <Text style={{fontFamily: 'Montserrat-Regular', color: '#D4AF37'}}>Previous Exercise</Text>
+                  <Text style={{fontFamily: 'Montserrat-Regular', color: '#D4AF37'}}>Previous</Text>
                 </View>
-                </TouchableOpacity>
-              </View>
+                </Pressable>
+              </View>}
+              {index != exerciseList.length-1 && 
               <View style={[styles.controlButtonContainer, {alignSelf: 'flex-end'}]}>
-                <TouchableOpacity onPress={()=>{navigation.navigate('ExerciseDetailScreen', 
-                    {exerciseIdList: exerciseIdList , currIdx: currIdx+1})
-                  }} disabled={currIdx==exerciseIdList.length}>
+                <Pressable onPress={()=>setIndex(index+1)}>
                 <View style={styles.controlButton_}>
-                  <Text style={{fontFamily: 'Montserrat-Regular', color: '#D4AF37'}}>Next Exercise</Text>
+                  <Text style={{fontFamily: 'Montserrat-Regular', color: '#D4AF37'}}>Next</Text>
                 </View>
-                </TouchableOpacity>
+                </Pressable>
+              </View>}
+              <View style={styles.pauseButton}>
+                <Pressable onPress={()=>setPaused(!paused)}>
+                {!paused && <IonIcon name="pause-outline" size={18} color="white" />}
+                {paused && <IonIcon name="play" size={18} color="white" />}
+                </Pressable>
               </View>
               </>
             )}
           </View>
           <View style={styles.contentContainer}>
-            <Text style={styles.header}>{exercise.exercise_name}</Text>
+            <Text style={styles.header}>{currentExercise.exercise_name}</Text>
             <View style={styles.muscleContainer}>
               <View>
                 <Text style={styles.subtext}>
-                  {exercise.requirements}
+                  {currentExercise.requirements?currentExercise.requirements:'No Equipment Required'}
                 </Text>
                 <View style={{flexDirection: 'row', marginTop: '5%'}}>
                   <Text
@@ -149,19 +144,20 @@ const ExerciseDetailScreen = ({ route }) => {
                     ]}>
                     Primary
                   </Text>
+                  {muscleGroupDetails.find((ele) => ele.label==currentExercise.secondary_mg) &&
                   <Text style={[styles.subtext, {color: '#A06B6F'}]}>
                     Secondary
-                  </Text>
+                  </Text>}
                 </View>
               </View>
               <View style={styles.mgContainer}>
                 <Image
                   style={styles.mgImage}
-                  source={{uri: muscleGroupDetails.find((ele) => ele.label==exercise.muscle_group)?.primary_img}}
+                  source={{uri: muscleGroupDetails.find((ele) => ele.label==currentExercise.muscle_group)?.primary_img}}
                 />
                 <Image
                   style={styles.mgImage}
-                  source={{uri: muscleGroupDetails.find((ele) => ele.label==exercise.secondary_mg)?.secondary_img}}
+                  source={{uri: muscleGroupDetails.find((ele) => ele.label==currentExercise.secondary_mg)?.secondary_img}}
                 />
               </View>
             </View>
@@ -174,6 +170,7 @@ const ExerciseDetailScreen = ({ route }) => {
                 </View>
               ))}
             </View>
+            {exerciseMistakes &&
             <View style={styles.steps}>
               <Text style={styles.subHeader}>Common Mistakes to Avoid</Text>
               {exerciseMistakes.map((item, index) => (
@@ -182,13 +179,14 @@ const ExerciseDetailScreen = ({ route }) => {
                   <Text style={styles.subtext}>{item}.</Text>
                 </View>
               ))}
-            </View>
+            </View>}
+            {currentExercise.recommended_sets &&
             <View style={styles.steps}>
               <Text style={styles.subHeader}>Recommended sets for beginners</Text>
               <Text style={styles.subtext}>
-                {exercise.recommended_sets}
+                {currentExercise.recommended_sets}
               </Text>
-            </View>
+            </View>}
             {variation && 
             <View style={styles.steps}>
               <Text style={styles.subHeader}>Variations</Text>
@@ -197,7 +195,7 @@ const ExerciseDetailScreen = ({ route }) => {
           </View>
         </ImageBackground>
       </ScrollView>
-      <NavBar />
+      {/* <NavBar /> */}
       <MenuBar currentScreenId={0} />
     </View>
   );
@@ -258,14 +256,20 @@ const styles = StyleSheet.create({
   },
   controlButtonContainer: {
     position: 'absolute',
-    width: '40%',
-    top: '90%',
+    width: '30%',
+    bottom: 0
   },
   controlButton_: {
-    padding: 10,
     backgroundColor: 'rgba(30,30,30,0.8)',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    padding: 10
+  },
+  pauseButton: {
+    position: 'absolute',
+    bottom: 0,
+    alignSelf: 'center',
+    padding: 10
   }
 });
 

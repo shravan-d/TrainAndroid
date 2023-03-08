@@ -50,7 +50,7 @@ const ExerciseCard = ({ exercise, changeFavouriteCallback }) => {
                   <View style={styles.bigCardText2}>
                       { exerciseSteps.map((item, index)=> <Text key={index} style={styles.bigCardSubtext}>{item}.</Text>) }
                   </View>
-                  <TouchableOpacity onPress={() =>navigation.navigate('ExerciseDetailScreen', {exercise: exercise, currIdx: 0})} style={{paddingBottom: 10}}>
+                  <TouchableOpacity onPress={() =>navigation.navigate('ExerciseDetailScreen', {exercise: exercise})} style={{paddingBottom: 10}}>
                   {changeFavouriteCallback !== undefined &&
                   <View style={styles.cardMoretext}>
                   <Text style={{fontFamily: 'Montserrat-Italic', color: 'black'}}>Show exercise details</Text>

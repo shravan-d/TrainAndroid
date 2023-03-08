@@ -8,7 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useIsFocused } from '@react-navigation/native';
 import UserCard from '../views/UserCard';
 import { supabase } from '../../supabaseClient';
-import { AuthContext, NewMessageContext, NewShotContext } from '../../App';
+import { AuthContext } from '../../App';
 import ImgToBase64 from 'react-native-image-base64';
 import { useSelector, useDispatch } from 'react-redux';
 

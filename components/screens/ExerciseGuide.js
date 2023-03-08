@@ -17,6 +17,7 @@ const ExerciseGuide = () => {
   var bg = require ('../../assets/media/bg.png');
   var overlays = [require('../../assets/media/ig1.jpg')]
   var muscleGroupDetails = [
+    {id: 0, label: 'All', value: ''},
     {id: 1, primary_img: 'https://imgur.com/td3BZl0.jpg', secondary_img: '', label: 'Chest', value: 'Chest'},
     {id: 2, primary_img: '', secondary_img: '', label: 'Back', value: 'Back'},
     {id: 3, primary_img: '', secondary_img: '', label: 'Legs', value: 'Legs'},
@@ -29,10 +30,22 @@ const ExerciseGuide = () => {
   const [showFavorites, setShowFavorites] = useState(false);
   const [search, setSearch] = useState('');
   const [openSearch, setOpenSearch] = useState(false)
-  const [muscleGroup, setMuscleGroup] = useState(null);
+  const [muscleGroup, setMuscleGroup] = useState('');
   const [exerciseList, setExerciseList] = useState([]);
-  const [filteredExerciseList, setFilteredExerciseList] = useState(exerciseList);
   const [modifyFavourites, setModifyFavourites] = useState([]);
+  const [headerHeight, setHeaderHeight] = useState('32%');
+
+  const filteredExercises = useMemo( () => { return exerciseList.filter(function (item) {
+    const itemData = item.exercise_name.toUpperCase();
+    const textData = search.toUpperCase();
+    var searchBool = search == '' ? true : itemData.indexOf(textData) > -1;
+    var favoritesBool = !showFavorites ? true : item.favourite == showFavorites;
+    const mgItemData = item.muscle_group.toUpperCase();
+    const mgTextData = muscleGroup.toUpperCase();
+    var groupBool = muscleGroup == '' ? true : mgItemData.indexOf(mgTextData) > -1;
+    return favoritesBool && groupBool && searchBool;
+  })}, [showFavorites, muscleGroup, search, exerciseList])
+
 
   const changeFavouriteCallback = (favorite, exercise_id) =>{
     var temp = modifyFavourites;
@@ -56,14 +69,8 @@ const ExerciseGuide = () => {
       data[idx].favourite = true;
     }
     setExerciseList(data)
-    setFilteredExerciseList(data);
   }
 
-  useEffect(() => {
-    getExerciseList();
-  }, []);
-
-  const [headerHeight, setHeaderHeight] = useState('32%');
   const scrollE = (e) => {
     if (e.nativeEvent.contentOffset.y > 50)
       setHeaderHeight('22%')
@@ -71,45 +78,11 @@ const ExerciseGuide = () => {
       setHeaderHeight('32%')
   }
 
-  const searchFilterFunction = (text) => {
-    if (text) {
-      const newData = exerciseList.filter(function (item) {
-        const itemData = item.name? item.name.toUpperCase(): ''.toUpperCase();
-        const textData = text.toUpperCase();
-        return itemData.indexOf(textData) > -1;
-      });
-      setFilteredExerciseList(newData);
-      setSearch(text);
-    } else {
-      setFilteredExerciseList(exerciseList);
-      setSearch(text);
-    }
-  }
-
-  const muscleFilterFunction = () => {
-    if (!muscleGroup) return;
-    const newData = exerciseList.filter(function (item) {
-      const itemData = item.muscle_group? item.muscle_group.toUpperCase(): ''.toUpperCase();
-      const textData = muscleGroup.toUpperCase();
-      return itemData.indexOf(textData) > -1;
-    });
-    setFilteredExerciseList(newData);
-  }
-
-  const favoriteFilterFunction = (showFavorite) => {
-    setShowFavorites(showFavorite);
-    if(showFavorite){
-      const newData = exerciseList.filter((item) => {
-        return item.favourite === showFavorite;
-      });
-      setFilteredExerciseList(newData);
-    }
-    else 
-      setFilteredExerciseList(exerciseList);
-  }
+  useEffect(() => {
+    getExerciseList();
+  }, []);
 
   useEffect(() => {
-    muscleFilterFunction();
 
     return async () => {
       var insertData = []
@@ -117,7 +90,6 @@ const ExerciseGuide = () => {
       for (const ele of modifyFavourites){
         if (ele < 0){
           var idx = insertData.map(e => e.exercise_id).indexOf(-1*ele);
-          console.log(idx)
           if (idx > -1){
             insertData.splice(idx, 1);
           } else 
@@ -155,7 +127,7 @@ const ExerciseGuide = () => {
           <TextInput 
             style={styles.textInputStyle} 
             maxLength={10}
-            onChangeText={(text) => searchFilterFunction(text)}
+            onChangeText={(text) => setSearch(text)}
             onSubmitEditing = {() => {setOpenSearch(!openSearch); setSearch('')}}
             value={search}
             cursorColor='white'
@@ -173,7 +145,7 @@ const ExerciseGuide = () => {
         </View>
         <View style={styles.favouritesContainer}>
           <Text style={styles.text}>{showFavorites?'Show All':'Show favorites'}</Text>
-          <TouchableOpacity onPress={() => favoriteFilterFunction(!showFavorites)}>
+          <TouchableOpacity onPress={() => setShowFavorites(!showFavorites)}>
           <IonIcon name="heart" size={18} color={showFavorites ? '#D4AF37' : 'white'} />
           </TouchableOpacity>
         </View>
@@ -182,7 +154,7 @@ const ExerciseGuide = () => {
       </View>
       <ScrollView showsVerticalScrollIndicator={false} style={[styles.exerciseContainer, {maxHeight: headerHeight=='32%'?'54%':'64%'}]}  onScroll={scrollE} scrollEventThrottle={16}> 
       <ImageBackground source={bg} style={styles.background}>
-        {filteredExerciseList.map((exercise) => (
+        {filteredExercises.map((exercise) => (
           <ExerciseCard key={exercise.id} exercise={exercise} changeFavouriteCallback={changeFavouriteCallback}/>
         ))}
       </ImageBackground>
