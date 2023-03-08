@@ -1,64 +1,51 @@
-import {React, useEffect, useState} from 'react';
-import {
-  StyleSheet,
-  ImageBackground,
-  View,
-  Text,
-  Dimensions,
-  TouchableOpacity,
-  TextInput, Modal, Pressable
-} from 'react-native';
-import Dropdown from '../views/Dropdown';
+import {React, useEffect, useState, useContext} from 'react';
+import { StyleSheet, ImageBackground, View, Text, Dimensions, TouchableOpacity, TextInput, Modal, Pressable } from 'react-native';
 import MenuBar from '../views/MenuBar';
 import NavBar from '../views/NavBar';
 import {ScrollView} from 'react-native-gesture-handler';
-import RoutineCard from '../views/RoutineCard';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import {useNavigation} from '@react-navigation/native';
 import RoutineDayCard from '../views/RoutineDayCard';
 import DropDownPicker from 'react-native-dropdown-picker';
+import { supabase } from '../../supabaseClient';
+import { AuthContext } from '../../App';
 
 var screenHeight = Dimensions.get('window').height;
 var screenWidth = Dimensions.get('window').width;
 
 const RoutineDetailScreen = ({ route }) => {
   var bg = require('../../assets/media/bg.png');
-  overlays = require('../../assets/media/ig4.jpg');
-  const {routineId, self} = route.params
+  var overlays = require('../../assets/media/ig4.jpg');
+  const user = useContext(AuthContext);
+  const { routine, self } = route.params
+  var rating = routine.rating_count==0?-1:routine.rating_score * 5 / routine.rating_count;
+  const creator = user.id===routine.created_by;
+
+  const [routineName, setRoutineName] = useState(routine.routine_name);
   const [inMyList, setInMyList] = useState(self);
-  const [routineName, setRoutineName] = useState('Workout Program 1');
-  const [newWorkoutName, setNewWorkoutName] = useState('');
-
-  const [dayList, setDayList] = useState([
-    {id: '1', name: 'Day 1: Chest workout', complete: true, exerciseIds: ['0', '1', '2', '3', '4', '5', '6', '7']},
-    {id: '2', name: 'Day 2: Back workout', complete: false, exerciseIds: ['0', '1', '2', '3', '4', '5', '6', '7', '0', '1', '2', '3', '4', '5', '6', '7']},
-    {id: '3', name: 'Day 3: Arms workout', complete: false, exerciseIds: ['0', '1', '2', '3', '4']},
-    {id: '4', name: 'Day 4: Legs and Cardio', complete: false, exerciseIds: ['0', '1']},
-  ])
-
   const [modalVisible, setModalVisible] = useState(false);
-  const createNewRoutine = () => {
-    //create new workout with given name and retrive id
-    let id = 0
-    setModalVisible(false);
-  }
-
-  let dropdownItems = [
-    {value: 'ch', label: 'Chest'},
-    {value: 'ba', label: 'Back'},
-    {value: 'lg', label: 'Legs'},
-    {value: 'tr', label: 'Triceps'},
-    {value: 2, label: 'Bench Press', parent: 'ch'},
-    {value: 3, label: "Pull Ups", parent: 'ba'}, 
-    {value: 4, label: "Machine Chest Flys", parent: 'ch'}, 
-    {value: 5, label: "Lunges", parent: 'lg'}, 
-    {value: 7, label: "Tricep Bench Dips", parent: 'tr'}, 
-    {value: 1, label: "Incline Dumbell Press", parent: 'ch'}, 
-  ];
+  const [newWorkoutName, setNewWorkoutName] = useState('');
+  const [dropdownItems, setDropdownItems] = useState([]);
   const [open, setOpen] = useState(false);
-  const [items, setItems] = useState(dropdownItems);
   const [exerciseName, setExerciseName] = useState(null);
   const [newExercises, setNewExercises] = useState([]);
+  const [dayList, setDayList] = useState([]);
+
+  const createNewRoutine = async () => {
+    if(!newWorkoutName) return;
+    if(newExercises.length == 0) return;
+    const insertDayRes = await supabase.from('routine_days').insert({routine_id: routine.id, day_name: newWorkoutName}).select('id');
+    if (insertDayRes.error) console.error(insertDayRes.error)
+    var insertData = newExercises.map(e => {return {day_id: insertDayRes.data[0].id, exercise_id: e.id}});
+    const insertMapRes = await supabase.from('days_exercise_map').insert(insertData).select('exercise_id, exercises(*)').eq('day_id', insertDayRes.data[0].id);
+    if (insertMapRes.error) console.error(insertMapRes.error)
+    var newDay = {id: insertDayRes.data[0].id, day_name: newWorkoutName, routine_id: routine.id, created_at: new Date()};
+    newDay.exerciseList = insertMapRes.data.map(e => e.exercises);
+    setDayList([...dayList, newDay]);
+    setNewExercises([]);
+    setNewWorkoutName('');
+    setModalVisible(false);
+  }
 
   const addExercise = (item) => {
     const found = newExercises.some(el => el.id == item.value);
@@ -67,25 +54,87 @@ const RoutineDetailScreen = ({ route }) => {
     }
   }
 
-  useEffect(() => {}, []); 
+  const removeNewExercise = (idx) => {
+    setNewExercises([...newExercises.slice(0, idx), ...newExercises.slice(idx+1)]);
+  }
+
+  const getRoutineDays = async () => {
+    const dayRes = await supabase.from('routine_days').select().eq('routine_id', routine.id);
+    if (dayRes.error) console.error(dayRes.error)
+    var data = dayRes.data;
+    data.sort(function(a, b) {return (a.created_at > b.created_at)?1:-1;});
+    for(var day of data) {
+      const exerciseRes = await supabase.from('days_exercise_map').select('exercise_id, exercises(*)').eq('day_id', day.id);
+      if (exerciseRes.error) console.error(exerciseRes.error)
+      day.exerciseList = exerciseRes.data.map(e => e.exercises);
+    }
+    setDayList(data)
+  }
+
+  const getExercises = async () => {
+    if(!modalVisible) return;
+    if(dropdownItems.length > 0) return;
+    const {data, error} = await supabase.from('exercises').select('id, exercise_name, muscle_group');
+    if (error) console.error(error)
+    var parentList = [
+      {value: 'Chest', label: 'Chest'},
+      {value: 'Back', label: 'Back'},
+      {value: 'Legs', label: 'Legs'},
+      {value: 'Triceps', label: 'Triceps'},
+      {value: 'Biceps', label: 'Biceps'},
+      {value: 'Abs', label: 'Abs'},
+      {value: 'Shoulder', label: 'Shoulder'},
+    ];
+    var exerciseList = data.map((ele) => {return {label: ele.exercise_name, parent:ele.muscle_group, value: ele.id}})
+    parentList.push(...exerciseList);
+    setDropdownItems(parentList);
+  }
+
+  useEffect(() => {getExercises()}, [modalVisible])
+
+  useEffect(() => {
+    getRoutineDays();
+  }, []);
+
+  // useEffect(() => {
+  //   return () => {
+  //     console.log(self, inMyList)
+  //     // if(self==inMyList) return;
+  //     console.log('Updating routine in my list1', self, inMyList)
+  //   }
+  // }, []);  
+
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} style={[styles.contentContainer, modalVisible?{opacity: 0.5}:{}]}> 
       <ImageBackground source={overlays} imageStyle={{opacity: 0.07}} style={styles.overlay}>
-          <TextInput editable={self} style={styles.headerTextInputStyle}  maxLength={20} onChangeText={(text) => setRoutineName(text)} value={routineName} cursorColor={"rgba(0,0,0,1)"}/>
+          <TextInput editable={creator} style={styles.headerTextInputStyle}  maxLength={20} onChangeText={(text) => setRoutineName(text)} value={routineName} cursorColor={"rgba(0,0,0,1)"}/>
+          <View style={styles.subTextContainer}>
+            <View style={styles.starContainer}>
+              <Text style={styles.subText}>Rating: </Text>
+              <IonIcon name="star" size={12} color={rating > 0 ? '#D4AF37' : 'white'} />
+              <IonIcon name="star" size={12} color={rating > 1 ? '#D4AF37' : 'white'} />
+              <IonIcon name="star" size={12} color={rating > 2 ? '#D4AF37' : 'white'} />
+              <IonIcon name="star" size={12} color={rating > 3 ? '#D4AF37' : 'white'} />
+              <IonIcon name="star" size={12} color={rating > 4 ? '#D4AF37' : 'white'} />
+            </View>
+            <Text style={styles.subText}>Added by: {routine.added_by} users</Text>
+          </View>
           <View style={styles.addListContainer}>
             <TouchableOpacity onPress={() => {setInMyList(!inMyList)}}>
               <View style={styles.addListContainer_}>
-              <Text style={styles.addListText}>{inMyList?'Remove this routine from your list':'Add this routine to your list'}</Text>
-              {!inMyList&&<IonIcon name="ios-add-outline" color="rgba(250,250,250,1)" size={20} />}
-              {inMyList&&<IonIcon name="ios-close-outline" color="rgba(250,250,250,1)" size={20} />}
+              <Text style={styles.addListText}>
+                {creator?'Delete this routine':inMyList?'Remove this routine from your list':'Add this routine to your list'}
+              </Text>
+              {(!creator&&!inMyList)&&<IonIcon name="ios-add-outline" color="rgba(250,250,250,1)" size={20} />}
+              {(creator||inMyList)&&<IonIcon name="ios-remove-outline" color="rgba(250,250,250,1)" size={20} />}
               </View>
             </TouchableOpacity>
           </View>
           {dayList.map((day, index) => (
             <RoutineDayCard key={index} day={day} />
           ))}
-          {inMyList &&
+          {creator &&
           <View style={styles.createDayContainer}>
             <Text style={styles.createCardText}>Add New Workout</Text>
             <TouchableOpacity onPress={() => setModalVisible(!modalVisible)}>
@@ -103,11 +152,11 @@ const RoutineDetailScreen = ({ route }) => {
                 <DropDownPicker
                   open={open}
                   value={exerciseName}
-                  items={items}
+                  items={dropdownItems}
                   searchable={true}
                   setOpen={setOpen}
                   setValue={setExerciseName}
-                  setItems={setItems}
+                  setItems={setDropdownItems}
                   categorySelectable={false}
                   onSelectItem={(item) => {addExercise(item)}}
                   showTickIcon={false}
@@ -159,10 +208,14 @@ const RoutineDetailScreen = ({ route }) => {
                 />
                 <View style={styles.exerciseContainer}>
                 {newExercises.map((exercise, index) => (
-                    <View key={index} style={{marginBottom: '2%', width: '30%', flexDirection: 'row'}}>
-                        <Text style={{fontFamily: 'Montserrat-Bold', marginRight: '3%'}}>{index+1}</Text>
-                        <Text style={{fontFamily: 'Montserrat-Regular'}}>{exercise.name}</Text>
+                  <TouchableOpacity key={index} 
+                  style={{marginBottom: '2%', width: '40%'}}
+                  onPress={() => removeNewExercise(index)}>
+                    <View style={{flexDirection: 'row'}}>
+                      <Text style={{fontFamily: 'Montserrat-Bold', marginRight: '3%'}}>{index+1}</Text>
+                      <Text style={{fontFamily: 'Montserrat-Regular'}}>{exercise.name}</Text>    
                     </View>
+                  </TouchableOpacity>
                 ))}
                 </View>
                 <View style={{flexDirection: 'row'}}>
@@ -202,6 +255,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center'
   },
+  subTextContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    paddingVertical: '4%'
+  },
+  subText: {
+    fontFamily: 'Montserrat-Regular',
+    color: 'white',
+  },
+  starContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   createCardText: {
     fontFamily: 'Montserrat-Regular',
     fontSize: 18,
@@ -231,7 +298,7 @@ const styles = StyleSheet.create({
     marginVertical: '5%',
     fontFamily: 'Montserrat-Regular',
     color: 'black',
-    width: 180,
+    width: '75%',
     backgroundColor: 'rgba(0,0,0,0.1)',
     borderRadius: 8
   },
@@ -242,30 +309,23 @@ const styles = StyleSheet.create({
   },
   modalView: {
     backgroundColor: "white",
-    borderRadius: 10,
-    borderColor: 'mediumorchid',
-    borderWidth: 1,
     padding: 25,
     alignItems: "center",
-    shadowColor: "#D4AF37",
-    shadowOffset: {
-      width: 4,
-      height: 4
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5
+    elevation: 5,
+    width: '100%'
   },
   button: {
-    borderRadius: 2,
-    padding: 7,
+    borderRadius: 0,
+    padding: 5,
     elevation: 2,
     marginHorizontal: 15
   },
   exerciseContainer: {
     flexDirection: 'row', 
-    flexWrap: 'wrap', 
+    flexWrap: 'wrap',
     justifyContent: 'space-evenly',
+    alignItems: 'center',
+    alignSelf: 'center',
     marginBottom: '5%'
   },
   headerTextInputStyle: {
@@ -274,7 +334,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontFamily: 'Montserrat-Bold',
     fontSize: 20,
-    marginBottom: "4%",
     color: 'white',
     textDecorationColor: '',
     backgroundColor: 'rgba(0,0,0,0.1)',
