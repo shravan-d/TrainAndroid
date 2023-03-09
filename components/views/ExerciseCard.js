@@ -20,7 +20,7 @@ const ExerciseCard = ({ exercise, changeFavouriteCallback }) => {
   }
 
   return (
-    <View style={[styles.container, cardPress?{minHeight:0.25*screenHeight}:{height:0.12*screenHeight}]}>
+    <View style={[styles.container, cardPress?{minHeight:200}:{height:85}]}>
       {!cardPress && 
         <View style={styles.smallCard}>
           <View style={styles.cardContent}>
@@ -110,13 +110,14 @@ const styles = StyleSheet.create({
     flexBasis: "40%",
     marginLeft: "1%",
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    padding: 2
   },
   bigCardImage: {
     width: "99%",
   },
   bigCardText: {
-    marginTop: "3%",
+    paddingVertical: 15,
     width: "100%",
   },
   bigCardText2: {

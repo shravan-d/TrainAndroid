@@ -33,7 +33,7 @@ const ExerciseGuide = () => {
   const [muscleGroup, setMuscleGroup] = useState('');
   const [exerciseList, setExerciseList] = useState([]);
   const [modifyFavourites, setModifyFavourites] = useState([]);
-  const [headerHeight, setHeaderHeight] = useState('32%');
+  const [headerHeight, setHeaderHeight] = useState(1);
 
   const filteredExercises = useMemo( () => { return exerciseList.filter(function (item) {
     const itemData = item.exercise_name.toUpperCase();
@@ -72,10 +72,10 @@ const ExerciseGuide = () => {
   }
 
   const scrollE = (e) => {
-    if (e.nativeEvent.contentOffset.y > 50)
-      setHeaderHeight('22%')
-    if (e.nativeEvent.contentOffset.y < 50)
-      setHeaderHeight('32%')
+    if (e.nativeEvent.contentOffset.y > 30)
+      setHeaderHeight(0)
+    if (e.nativeEvent.contentOffset.y < 30)
+      setHeaderHeight(1)
   }
 
   useEffect(() => {
@@ -115,53 +115,57 @@ const ExerciseGuide = () => {
 
   return (
     <View style={styles.container}>
-    <ImageBackground source={overlays[0]} imageStyle={{opacity:0.08}} style={{height: '100%'}}>
-      <View style={styles.topBar}>
-          {!openSearch &&
-          <TouchableOpacity onPress={() => {setOpenSearch(!openSearch)}} style={styles.searchButton}>
-            <IonIcon name="ios-search-outline" color="rgba(250,250,250,0.8)" size={24} />
-          </TouchableOpacity>
-          }
-          {openSearch &&
-          <>
-          <TextInput 
-            style={styles.textInputStyle} 
-            maxLength={10}
-            onChangeText={(text) => setSearch(text)}
-            onSubmitEditing = {() => {setOpenSearch(!openSearch); setSearch('')}}
-            value={search}
-            cursorColor='white'
-            underlineColorAndroid="rgba(0,0,0,0)"
-          />
-          <TouchableOpacity onPress={() => {setOpenSearch(!openSearch)}} style={styles.closeButton}>
-            <IonIcon name="close-outline" color="rgba(250,250,250,0.8)" size={24} />
-          </TouchableOpacity>
-          </>
-          } 
-      </View>
-      <View style={[styles.headerContainer, {height: headerHeight}]}>
-        <View >
-          <Dropdown value={muscleGroup} setValue={setMuscleGroup} header={"What muscle group would you like to workout today?"} dropdownItems={muscleGroupDetails} elevation={1}/>      
+      <View style={{height: '94%'}}>
+      <ImageBackground source={overlays[0]} imageStyle={{opacity:0.08}} style={{height: '100%'}}>
+        <View style={styles.topBar}>
+            {!openSearch &&
+            <TouchableOpacity onPress={() => {setOpenSearch(!openSearch)}} style={styles.searchButton}>
+              <IonIcon name="ios-search-outline" color="rgba(250,250,250,0.8)" size={24} />
+            </TouchableOpacity>
+            }
+            {openSearch &&
+            <>
+            <TextInput 
+              style={styles.textInputStyle} 
+              maxLength={10}
+              onChangeText={(text) => setSearch(text)}
+              onSubmitEditing = {() => {setOpenSearch(!openSearch); setSearch('')}}
+              value={search}
+              cursorColor='white'
+              underlineColorAndroid="rgba(0,0,0,0)"
+            />
+            <TouchableOpacity onPress={() => {setOpenSearch(!openSearch)}} style={styles.closeButton}>
+              <IonIcon name="close-outline" color="rgba(250,250,250,0.8)" size={24} />
+            </TouchableOpacity>
+            </>
+            } 
         </View>
-        <View style={styles.favouritesContainer}>
-          <Text style={styles.text}>{showFavorites?'Show All':'Show favorites'}</Text>
-          <TouchableOpacity onPress={() => setShowFavorites(!showFavorites)}>
-          <IonIcon name="heart" size={18} color={showFavorites ? '#D4AF37' : 'white'} />
-          </TouchableOpacity>
+        <View style={[styles.headerContainer]}>
+          <View >
+            <Dropdown value={muscleGroup} setValue={setMuscleGroup} header={"What muscle group would you like to workout today?"} dropdownItems={muscleGroupDetails} elevation={1}/>      
+          </View>
+          {headerHeight==1 &&
+          <View>
+          <View style={styles.favouritesContainer}>
+            <Text style={styles.text}>{showFavorites?'Show All':'Show favorites'}</Text>
+            <TouchableOpacity onPress={() => setShowFavorites(!showFavorites)}>
+            <IonIcon name="heart" size={18} color={showFavorites ? '#D4AF37' : 'white'} />
+            </TouchableOpacity>
+          </View>
+          <View><Text style={styles.groupHeader}>{muscleGroup}</Text></View>
+          </View>}
         </View>
-        <View><Text style={styles.groupHeader}>{muscleGroup}</Text></View>
-      
-      </View>
-      <ScrollView showsVerticalScrollIndicator={false} style={[styles.exerciseContainer, {maxHeight: headerHeight=='32%'?'54%':'64%'}]}  onScroll={scrollE} scrollEventThrottle={16}> 
-      <ImageBackground source={bg} style={styles.background}>
-        {filteredExercises.map((exercise) => (
-          <ExerciseCard key={exercise.id} exercise={exercise} changeFavouriteCallback={changeFavouriteCallback}/>
-        ))}
+        <ScrollView showsVerticalScrollIndicator={false} style={[styles.exerciseContainer]}  onScroll={scrollE} scrollEventThrottle={16}> 
+        <ImageBackground source={bg} style={styles.background}>
+          {filteredExercises.map((exercise) => (
+            <ExerciseCard key={exercise.id} exercise={exercise} changeFavouriteCallback={changeFavouriteCallback}/>
+          ))}
+        </ImageBackground>
+        </ScrollView>
+        <NavBar />
       </ImageBackground>
-      </ScrollView>
-      <NavBar />
+      </View>
       <MenuBar currentScreenId={0}/>
-      </ImageBackground>
     </View>
   );
 };
@@ -174,13 +178,12 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     marginTop: '15%',
+    paddingHorizontal: 10
   },
   favouritesContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginTop: '10%',
-    // zIndex: -1,
-    // elevation: -1,
+    padding: 15
   },
   text: {
     color: 'white',
@@ -188,6 +191,7 @@ const styles = StyleSheet.create({
   },
   exerciseContainer: {
     width: "100%",
+    padding: 10,
   },
   groupHeader: {
     color: "white",
@@ -196,7 +200,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     zIndex: -1,
     elevation: -1,
-    marginTop: '10%'
   },
   topBar: {
     position: 'absolute',

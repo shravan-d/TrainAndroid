@@ -260,7 +260,8 @@ const ContactScreen = ({ route }) => {
 
   return (
     <View style={styles.container}>  
-    <ImageBackground source={bg} style={{height: '100%'}}>
+      <View style={{height: '100%'}}>
+      <ImageBackground source={bg} style={{height: '100%'}}>
         <View style={styles.topBar}>
           {!openSearch && !openUserSearch &&
           <>
@@ -333,8 +334,9 @@ const ContactScreen = ({ route }) => {
           </TouchableOpacity>}
         </View>
         <NavBar />
-        <MenuBar currentScreenId={2} />
-        </ImageBackground>
+      </ImageBackground>
+      </View>
+      <MenuBar currentScreenId={2} />
     </View>
   );
 };
@@ -352,6 +354,7 @@ const styles = StyleSheet.create({
   contactContainer: {
     // height: '86%',
     // marginTop: '15%'
+    paddingVertical: 5
   },
   topBar: {
     borderBottomColor: "#D4AF37",

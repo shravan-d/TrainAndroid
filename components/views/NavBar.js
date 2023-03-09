@@ -26,7 +26,7 @@ const NavBar = () => {
             </TouchableOpacity>
         </View>
         { showSidebar && 
-            <View style={styles.sidebar}>
+            <View style={[styles.sidebar, showSidebar?{}:{}]}>
               <TouchableOpacity onPress={() => {navigation.navigate('DebugScreen')}} 
               style={[styles.sidebarButton, {marginTop: 50}]}>
                 <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Debug</Text>
@@ -58,9 +58,9 @@ const NavBar = () => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    marginTop: "1%",
+    // marginTop: "1%",
     width: "40%",
-    height: "93%",
+    height: "94%",
     backgroundColor: "rgba(0,0,0,0)",
   },
   navButton: {

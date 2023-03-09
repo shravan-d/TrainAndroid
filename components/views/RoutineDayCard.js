@@ -19,14 +19,6 @@ const RoutineDayCard = ({ day }) => {
         <View style={styles.cardContent}>
           <View style={styles.cardText}>
             <Text style={styles.cardHeader}>{day.day_name}</Text>
-            {/* <TouchableOpacity onPress={() => {setMarkComplete(!markComplete)}} style={styles.moreIonIcon}>
-                <View style={styles.cardMoretext}>
-                <Text style={{fontFamily: 'Montserrat-Italic',fontSize: 11,marginRight: '2%', color: 'black' }}>
-                    Mark as complete
-                </Text>
-                <IonIcon name="checkmark-circle" size={14} color={markComplete?"#D4AF37":'white'} style={!markComplete?{borderColor: '#D4AF37', borderRadius: 100, borderWidth: 0.2}:{}} />
-                </View>
-            </TouchableOpacity> */}
             <TouchableOpacity onPress={() => {setCardPress(!cardPress)}} style={styles.moreIonIcon}>
               <View style={styles.cardMoretext}>
                 <Text style={{fontFamily: 'Montserrat-Regular',fontSize: 14, marginRight: '2%', color: 'black' }}>Expand</Text>

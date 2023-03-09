@@ -6,7 +6,7 @@ import {useNavigation} from '@react-navigation/native';
 var screenWidth = Dimensions.get('window').width;
 var screenHeight = Dimensions.get('window').height;
 
-const RoutineCard = ({routine, self}) => {
+const RoutineCard = ({ routine, self, myRoutineCallback, my_rating }) => {
   const navigation = useNavigation();
   var defaultIcon = require('../../assets/media/logo1.png');
   let experienceMap = {0: 'Beginner', 1: 'Intermediate', 2: 'Expert'};
@@ -19,7 +19,7 @@ const RoutineCard = ({routine, self}) => {
   var rating = routine.rating_count==0?-1:routine.rating_score * 5 / routine.rating_count;
 
   return (
-    <View style={[styles.container, self ? {height: 0.12 * screenHeight} : {height: 0.15 * screenHeight}]}>
+    <View style={[styles.container, self ? {height: 90} : {height: 110}]}>
       <View style={styles.card}>
         <View style={styles.cardContent}>
           <View style={styles.cardImage}>
@@ -47,7 +47,9 @@ const RoutineCard = ({routine, self}) => {
               </View>
             )}
             <TouchableOpacity
-              onPress={() => { navigation.navigate('RoutineDetailScreen', { routine: routine, self: self })}} style={styles.moreIonIcon}>
+              onPress={() => { navigation.navigate('RoutineDetailScreen', 
+              { routine: routine, self: self, myRoutineCallback: myRoutineCallback, my_rating })}} 
+              style={styles.moreIonIcon}>
               <View style={styles.cardMoretext}>
                 <Text style={{fontFamily: 'Montserrat-Regular',
                     fontSize: 14,

@@ -42,24 +42,44 @@ const RoutineScreen = () => {
     return levelBool && ratingBool && searchBool;
   })}, [experience, rating, search, routineList])
 
+  const myRoutineCallback = (id, action) => {
+    if (action == 'Add'){
+      const routine = routineList.find((ele) => ele.id == id)
+      var tempList = myRoutineList.slice();
+      tempList.push({id: -1, routines: routine})
+      setMyRoutineList(tempList);
+    } else if (action == 'Rem') {
+      const idx = myRoutineList.map((ele) => ele.routines.id).indexOf(id)
+      setMyRoutineList([...myRoutineList.slice(0, idx), ...myRoutineList.slice(idx + 1)])
+    } else if (action == 'Del') {
+      const idx = routineList.map((ele) => ele.id).indexOf(id)
+      const myIdx = myRoutineList.map((ele) => ele.routines.id).indexOf(id)
+      if(idx > -1) setRoutineList([...routineList.slice(0, idx), ...routineList.slice(idx + 1)])
+      if(myIdx > -1) setMyRoutineList([...myRoutineList.slice(0, myIdx), ...myRoutineList.slice(myIdx + 1)])
+    }
+  }
+
   const createNewRoutine = async () => {
     var newData = {routine_name: newRoutineName, level: newRoutineLevel, created_by: user.id, created_by_username: user.user_metadata.username}
     const insertRes = await supabase.from('routines').insert(newData).select();
     if(insertRes.error) console.error(insertRes.error)
-    const myInsertRes = await supabase.from('user_routine_my').insert({user_id: user.id, routine_id: insertRes.data[0].id});
+    const myInsertRes = await supabase.from('user_routine_my').insert({user_id: user.id, routine_id: insertRes.data[0].id}).select('id');
     if(myInsertRes.error) console.error(myInsertRes.error)
     navigation.navigate('RoutineDetailScreen', {
       routine: insertRes.data[0],
-      self: true
+      self: true,
+      myRoutineCallback: myRoutineCallback
     });
+    var tempList = myRoutineList.slice();
+    tempList.push({id: myInsertRes.data[0].id, routines: insertRes.data[0]})
     setModalVisible(false);
-    setMyRoutineList([...myRoutineList, insertRes.data[0]]);
+    setMyRoutineList(tempList);
   }
 
   const getRoutines = async () => {
     const routineRes = await supabase.from('routines').select().eq('published', true);
     if(routineRes.error) console.error(routineRes.error)
-    const myRoutineRes = await supabase.from('user_routine_my').select(`id, routines(*)`).eq('user_id', user.id);
+    const myRoutineRes = await supabase.from('user_routine_my').select(`id, my_rating, routines(*)`).eq('user_id', user.id);
     if(myRoutineRes.error) console.error(myRoutineRes.error)
     var data = routineRes.data;
     data.sort(function(a, b) {return (a.added_by > b.added_by)?-1:1;});
@@ -99,7 +119,7 @@ const RoutineScreen = () => {
         <View style={styles.myRoutineContainer}>
             <Text style={styles.header}>My Routines</Text>
             {myRoutineList.map(routine => (
-              <RoutineCard key={routine.id} routine={routine.routines} self={true} />
+              <RoutineCard key={routine.id} routine={routine.routines} my_rating={routine.my_rating} self={true} myRoutineCallback={myRoutineCallback} />
             ))}
             <View style={styles.createCard}>
               <Text style={styles.createCardText}>Create New Routine</Text>
@@ -143,7 +163,7 @@ const RoutineScreen = () => {
               </View>
             </View>
             {filteredRoutines.map(routine => (
-              <RoutineCard key={routine.id} routine={routine} self={false} />
+              <RoutineCard key={routine.id} routine={routine} self={false} myRoutineCallback={myRoutineCallback} />
             ))}
           </ImageBackground>
         </View>
@@ -206,9 +226,11 @@ const styles = StyleSheet.create({
   routinesContainer: {
     marginTop: '5%',
     minHeight: 0.4 * screenHeight,
+    paddingHorizontal: 10,
   },
   myRoutineContainer: {
     marginTop: '15%',
+    paddingHorizontal: 10,
   },
   header: {
     fontFamily: 'Montserrat-Bold',
@@ -220,7 +242,7 @@ const styles = StyleSheet.create({
   createCard: {
     width: '100%',
     marginBottom: 0.025 * screenHeight,
-    height: 0.12 * screenHeight,
+    height: 90,
     backgroundColor: 'white',
     borderRadius: 5,
     justifyContent: 'center',

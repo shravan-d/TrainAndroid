@@ -1,4 +1,4 @@
-import {React, useEffect, useState, useContext} from 'react';
+import {React, useEffect, useState, useContext, useRef} from 'react';
 import { StyleSheet, ImageBackground, View, Text, Dimensions, TouchableOpacity, TextInput, Modal, Pressable } from 'react-native';
 import MenuBar from '../views/MenuBar';
 import NavBar from '../views/NavBar';
@@ -16,20 +16,26 @@ var screenWidth = Dimensions.get('window').width;
 const RoutineDetailScreen = ({ route }) => {
   var bg = require('../../assets/media/bg.png');
   var overlays = require('../../assets/media/ig4.jpg');
+  const navigation = useNavigation();
   const user = useContext(AuthContext);
-  const { routine, self } = route.params
+  const { routine, self, myRoutineCallback, my_rating } = route.params
   var rating = routine.rating_count==0?-1:routine.rating_score * 5 / routine.rating_count;
+  const [myRating, setMyRating] = useState(my_rating==null?0:my_rating);
   const creator = user.id===routine.created_by;
 
   const [routineName, setRoutineName] = useState(routine.routine_name);
   const [inMyList, setInMyList] = useState(self);
+  const [dayList, setDayList] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [newWorkoutName, setNewWorkoutName] = useState('');
   const [dropdownItems, setDropdownItems] = useState([]);
   const [open, setOpen] = useState(false);
   const [exerciseName, setExerciseName] = useState(null);
   const [newExercises, setNewExercises] = useState([]);
-  const [dayList, setDayList] = useState([]);
+  const [deleteModal, setDeleteModal] = useState(false);
+  const myRoutineRef = useRef(inMyList);
+  const myRatingRef = useRef(myRating)
+
 
   const createNewRoutine = async () => {
     if(!newWorkoutName) return;
@@ -56,6 +62,23 @@ const RoutineDetailScreen = ({ route }) => {
 
   const removeNewExercise = (idx) => {
     setNewExercises([...newExercises.slice(0, idx), ...newExercises.slice(idx+1)]);
+  }
+
+  const modifyMyRoutine = (newVal) => {
+    setInMyList(newVal);
+    myRoutineRef.current = newVal;
+  }
+
+  const modifyMyRating = (newVal) => {
+    setMyRating(newVal);
+    myRatingRef.current = newVal;
+  }
+
+  const deleteRoutine = async () => {
+    const myDeleteRes = await supabase.from('routines').delete().eq('id', routine.id);
+    if (myDeleteRes.error) console.error(myDeleteRes.error)
+    myRoutineCallback(routine.id, 'Del')
+    navigation.goBack();
   }
 
   const getRoutineDays = async () => {
@@ -94,22 +117,38 @@ const RoutineDetailScreen = ({ route }) => {
 
   useEffect(() => {
     getRoutineDays();
+    
+    return async () => {
+      var temp = my_rating==null?0:my_rating;
+      if(myRatingRef.current != temp){
+        const myUpdateRes = await supabase.from('user_routine_my').update({my_rating: myRatingRef.current}).eq('user_id', user.id).eq('routine_id', routine.id);
+        if (myUpdateRes.error) console.error(myUpdateRes.error)
+      }
+      if(myRoutineRef.current==self) return;
+      if(myRoutineRef.current){
+        const myInsertRes = await supabase.from('user_routine_my').insert({user_id: user.id, routine_id: routine.id});
+        if(myInsertRes.error?.code=='23505'){
+          console.log('Already Present');
+        } else {
+          myRoutineCallback(routine.id, 'Add')
+        }
+      } else {
+        const myDeleteRes = await supabase.from('user_routine_my').delete().eq('user_id', user.id).eq('routine_id', routine.id);
+        if (myDeleteRes.error) console.error(myDeleteRes.error)
+        myRoutineCallback(routine.id, 'Rem')
+      }
+    }
   }, []);
 
-  // useEffect(() => {
-  //   return () => {
-  //     console.log(self, inMyList)
-  //     // if(self==inMyList) return;
-  //     console.log('Updating routine in my list1', self, inMyList)
-  //   }
-  // }, []);  
+  console.log(myRating);
 
   return (
     <View style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} style={[styles.contentContainer, modalVisible?{opacity: 0.5}:{}]}> 
+      <ScrollView showsVerticalScrollIndicator={false} style={[styles.contentContainer, (modalVisible||deleteModal)?{opacity: 0.5}:{}]}> 
       <ImageBackground source={overlays} imageStyle={{opacity: 0.07}} style={styles.overlay}>
           <TextInput editable={creator} style={styles.headerTextInputStyle}  maxLength={20} onChangeText={(text) => setRoutineName(text)} value={routineName} cursorColor={"rgba(0,0,0,1)"}/>
           <View style={styles.subTextContainer}>
+            {(creator || !inMyList) &&
             <View style={styles.starContainer}>
               <Text style={styles.subText}>Rating: </Text>
               <IonIcon name="star" size={12} color={rating > 0 ? '#D4AF37' : 'white'} />
@@ -117,19 +156,36 @@ const RoutineDetailScreen = ({ route }) => {
               <IonIcon name="star" size={12} color={rating > 2 ? '#D4AF37' : 'white'} />
               <IonIcon name="star" size={12} color={rating > 3 ? '#D4AF37' : 'white'} />
               <IonIcon name="star" size={12} color={rating > 4 ? '#D4AF37' : 'white'} />
-            </View>
+            </View>}
+            {(!creator && inMyList) &&
+            <View style={styles.starContainer}>
+              <Text style={styles.subText}>My Rating: </Text>
+              <TouchableOpacity onPress={()=>modifyMyRating(1)}><IonIcon name="star" size={12} color={myRating > 0 ? '#D4AF37' : 'white'} /></TouchableOpacity>
+              <TouchableOpacity onPress={()=>modifyMyRating(2)}><IonIcon name="star" size={12} color={myRating > 1 ? '#D4AF37' : 'white'} /></TouchableOpacity>
+              <TouchableOpacity onPress={()=>modifyMyRating(3)}><IonIcon name="star" size={12} color={myRating > 2 ? '#D4AF37' : 'white'} /></TouchableOpacity>
+              <TouchableOpacity onPress={()=>modifyMyRating(4)}><IonIcon name="star" size={12} color={myRating > 3 ? '#D4AF37' : 'white'} /></TouchableOpacity>
+              <TouchableOpacity onPress={()=>modifyMyRating(5)}><IonIcon name="star" size={12} color={myRating > 4 ? '#D4AF37' : 'white'} /></TouchableOpacity>
+            </View>}
             <Text style={styles.subText}>Added by: {routine.added_by} users</Text>
           </View>
           <View style={styles.addListContainer}>
-            <TouchableOpacity onPress={() => {setInMyList(!inMyList)}}>
+            {!creator &&
+            <TouchableOpacity onPress={() => modifyMyRoutine(!inMyList)}>
               <View style={styles.addListContainer_}>
               <Text style={styles.addListText}>
-                {creator?'Delete this routine':inMyList?'Remove this routine from your list':'Add this routine to your list'}
+                {inMyList?'Remove this routine from your list':'Add this routine to your list'}
               </Text>
-              {(!creator&&!inMyList)&&<IonIcon name="ios-add-outline" color="rgba(250,250,250,1)" size={20} />}
-              {(creator||inMyList)&&<IonIcon name="ios-remove-outline" color="rgba(250,250,250,1)" size={20} />}
+              {!inMyList&&<IonIcon name="ios-add-outline" color="rgba(250,250,250,1)" size={20} />}
+              {inMyList&&<IonIcon name="ios-remove-outline" color="rgba(250,250,250,1)" size={20} />}
               </View>
-            </TouchableOpacity>
+            </TouchableOpacity>}
+            {creator && 
+            <TouchableOpacity onPress={() => setDeleteModal(true)}>
+              <View style={styles.addListContainer_}>
+              <Text style={styles.addListText}>Delete this routine</Text>
+              <IonIcon name="ios-remove-outline" color="rgba(250,250,250,1)" size={20} />
+              </View>
+            </TouchableOpacity>}
           </View>
           {dayList.map((day, index) => (
             <RoutineDayCard key={index} day={day} />
@@ -224,6 +280,23 @@ const RoutineDetailScreen = ({ route }) => {
                 </Pressable>
                 <Pressable style={[styles.button, {backgroundColor: '#D4AF37'}]} onPress={() => createNewRoutine()}>
                   <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Save</Text>
+                </Pressable>
+                </View>
+              </View>
+            </View>
+          </Modal>
+          <Modal animationType="fade" transparent={true} visible={deleteModal}
+            onRequestClose={() => { setDeleteModal(false); }}
+          >
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <Text style={{fontFamily: 'Montserrat-Regular', color: 'black'}}>Are you sure you want to delete this routine? </Text>
+                <View style={{flexDirection: 'row', marginTop: 25}}>
+                <Pressable style={[styles.button, {backgroundColor: 'rgba(30,30,30,0.8)'}]} onPress={() => setDeleteModal(false)}>
+                  <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Cancel</Text>
+                </Pressable>
+                <Pressable style={[styles.button, {backgroundColor: '#D4AF37'}]} onPress={() => deleteRoutine()}>
+                  <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Yes</Text>
                 </Pressable>
                 </View>
               </View>
@@ -341,5 +414,3 @@ const styles = StyleSheet.create({
 });
 
 export default RoutineDetailScreen;
-
-// Reorder position

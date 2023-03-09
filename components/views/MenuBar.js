@@ -38,14 +38,14 @@ const styles = StyleSheet.create({
     container: {
         alignSelf: "center",
         width: "96%",
-        height: 0.06*screenHeight,
+        height: '6%',//0.06*screenHeight,
         borderTopWidth: 1,
         borderTopColor: "#D4AF37",
         position: "absolute",
         bottom: 0,
         flexDirection: "row",
         justifyContent: "space-around",
-        alignItems: 'center'
+        alignItems: 'center',
     },
     menuButton: {
         height: "100%",

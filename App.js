@@ -70,6 +70,7 @@ const App = () => {
   } else
   return (
     <AuthContext.Provider value={auth?.user}>
+      <Provider store={messageStore}>
       <NavigationContainer>
         {!auth?
         <Stack.Navigator>
@@ -95,7 +96,6 @@ const App = () => {
           />
         </Stack.Navigator>
         :
-        <Provider store={messageStore}>
         <Stack.Navigator>
           <Stack.Screen
             name="Home"
@@ -164,10 +164,10 @@ const App = () => {
             component={DebugScreen}
             options={{headerShown: false}}
           />
-        </Stack.Navigator>
-        </Provider>
+        </Stack.Navigator>       
         }
       </NavigationContainer>
+      </Provider>
     </AuthContext.Provider>
   );
 };
