@@ -1,8 +1,8 @@
 import { useRoute } from '@react-navigation/native';
 import React, { useEffect, useState, useCallback, useContext } from 'react';
 import {StyleSheet, ImageBackground, KeyboardAvoidingView, View, TouchableOpacity, Text, Dimensions} from 'react-native';
-import { GiftedChat, Bubble, InputToolbar, Time, Send, Composer} from 'react-native-gifted-chat'
-import { AuthContext, NewMessageContext, NewShotContext } from '../../App';
+import { GiftedChat, Bubble, InputToolbar, Time, Send } from 'react-native-gifted-chat'
+import { AuthContext } from '../../App';
 import { supabase } from '../../supabaseClient';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
@@ -165,6 +165,8 @@ const ChatScreen = () => {
 
   return (
     <View style={styles.container}>
+        <ImageBackground source={bg} style={styles.background}>
+        <View style={styles.contentContainer}>
         <View style={styles.nameBar}>
             <Text style={styles.name}>{secondUser.display_name}</Text>
             {shots.length > 0 && 
@@ -172,8 +174,6 @@ const ChatScreen = () => {
               <Text style={styles.viewShotText}>View Shot</Text>
             </TouchableOpacity>}
         </View>
-        <ImageBackground source={bg} style={styles.background}>
-        <View style={styles.contentContainer}>
         <GiftedChat
             messages={messages}
             onSend={messages => onSend(messages)}
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'black'
   },
   contentContainer: {
-    height: '96%'
+    height: '100%',
   },
   nameBar: {
     width: screenWidth,
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   },
   viewShot: {
     backgroundColor: "#D4AF37",
-    width: 110,
+    width: 120,
     height: '70%',
     borderRadius: 20,
     borderColor: "mediumorchid",

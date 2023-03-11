@@ -6,7 +6,7 @@ import {useNavigation} from '@react-navigation/native';
 import { AuthContext } from '../../App';
 import ImgToBase64 from 'react-native-image-base64';
 import { CameraRoll } from "@react-native-camera-roll/camera-roll";
-import DropDownPicker from 'react-native-dropdown-picker';
+import IonIcon from 'react-native-vector-icons/Ionicons';
 import Dropdown from '../views/Dropdown';
 
 var screenHeight = Dimensions.get('screen').height;
@@ -16,24 +16,30 @@ const AccountScreen = () => {
   const navigation = useNavigation();
   var bg = require ('../../assets/media/bg.png');
   const user = useContext(AuthContext);
-  var defaultIcon = 'public/logo.png';
+  var defaultIcon = require ('../../assets/media/logo.png');
   
   const [avatar, setAvatar] = useState(user?.user_metadata.avatar_url)
   const [newAvatar, setNewAvatar] = useState(null);
   const [image, setImage] = useState(defaultIcon)
   const [email, setEmail] = useState(user?.email);
-  const [displayName, setDisplayName] = useState(user?.user_metadata.display_name);
+  const [displayName, setDisplayName] = useState(user?.user_metadata.display_name||user?.user_metadata.name);
   const [username, setUsername] = useState(user?.user_metadata.username);
   const [password, setPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [showPasswordContainer, setShowPasswordContainer] = useState(false);
   const [monthActiveData, setMonthActiveData] = useState([]);
   const [updating, setUpdating] = useState(-1);
+  const [showGallery, setShowGallery] = useState(false);
+  const [galleryImages, setGalleryImages] = useState([]);
+  const [albumNames, setAlbumNames] = useState([]);
+  const [value, setValue] = useState(null);
+  const [usernameExists, setUsernameExists] = useState(0);
   var days = ["2018-10-28", "2018-10-29", "2018-10-30", "2018-11-3", "2018-11-4"];
   const Buffer = require("buffer").Buffer;
 
   const uploadImage = async () => {
-    var filename = 'public/avatar'+user.id.toString()+'.jpg';
+    var count = Math.floor(Math.random() * 1000);
+    var filename = 'public/avatar'+user.id.toString()+count.toString()+'.jpg';
     var base64Data = await ImgToBase64.getBase64String(newAvatar);
     const buf = Buffer.from(base64Data, 'base64');
     const { data, error } = await supabase
@@ -72,7 +78,25 @@ const AccountScreen = () => {
     setMonthActiveData(months);
   }
 
+  const updatePassword = async () => {
+    setUpdating(0);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword })
+      if (error) throw error;
+      setUpdating(1);
+    }
+    catch (error) {
+      console.error(error.message);
+      setUpdating(-2);
+    }
+
+  }
+
   const updateUserData = async () => {
+    if (showPasswordContainer) {
+      updatePassword();
+      return;
+    }
     if(username===user.user_metadata.username&&displayName===user.user_metadata.display_name&&avatar===newAvatar){
       return;
     }
@@ -89,6 +113,7 @@ const AccountScreen = () => {
         var avatar_url = await uploadImage();
         if(avatar_url) newData.avatar_url = avatar_url;
         else throw { message: 'RLS' };
+        console.log(avatar_url)
         setAvatar(avatar_url);
       }
       const { error } = await supabase.auth.updateUser({ data: newData })
@@ -103,11 +128,6 @@ const AccountScreen = () => {
       setUpdating(-2);
     }
   }
-
-  const [showGallery, setShowGallery] = useState(false);
-  const [galleryImages, setGalleryImages] = useState([]);
-  const [albumNames, setAlbumNames] = useState([]);
-  const [value, setValue] = useState(null);
 
   const getPhotos = (albumName) => {
     var data = {
@@ -139,78 +159,112 @@ const AccountScreen = () => {
     setShowGallery(false);
   }
 
+  const getUsername = async () => {
+    if (user.user_metadata.username != null) return;
+    const { data, error } = await supabase.from('profiles').select('username').eq('email', user.email);
+    if(error) console.error(error)
+    else setUsername(data[0].username);
+  }
+
+  const checkUsernames = async () => {
+    if(username==null) return;
+    if (user.user_metadata.username == username) return;
+    console.log('chainge')
+    const { data, error } = await supabase.from('profiles').select().eq('username', username).neq('id', user.id);
+    if(error) console.error(error)
+    if (data.length > 0)
+      setUsernameExists(1);
+    else 
+      setUsernameExists(2);
+  }
+
   useEffect(()=>{
+    getAlbums();
     setActiveList();
+    getUsername();
   },[])
 
   useEffect(() => {
-    if(avatar){
+    if(!avatar) return;
+    if(avatar.indexOf('avatar') > -1){
       const { data } = supabase
       .storage
       .from('avatars')
       .getPublicUrl(avatar)
       if (data) setImage({uri: data.publicUrl});
+    } else if (avatar.indexOf('google') > -1) {
+      setImage({uri: avatar})
     }
   }, [avatar])
 
   useEffect(() => {
     getPhotos(value);
   }, [value])
+
+  useEffect(()=> {checkUsernames()}, [username])
   
   return (
     <View style={styles.container}>
-    <ImageBackground source={bg} style={styles.background}>
+    <ImageBackground source={bg} style={styles.background} imageStyle={{opacity: 0.4}}>
       <ScrollView style={styles.contentContainer}>
         <Text style={styles.header}>Account Details</Text>
-          <View style={styles.contactImage}>
-            <TouchableOpacity onPress={() => {setShowGallery(!showGallery);getPhotos();getAlbums()}}>
-              <Image style={styles.image} source={image} />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.field}>
-            <Text style={{fontFamily: 'Montserrat-Italic', color: 'white'}}>Email: </Text>
-            <TextInput 
-            style={[styles.textInputStyle, {marginLeft: 'auto', marginRight: 10}]}
-            onChangeText={(text) => setEmail(text)}
-            onSubmitEditing = {() => {setEmail('')}}
-            editable={false}
-            keyboardType='email-address'
-            value={email}
-            cursorColor='white'
-            underlineColorAndroid="transparent"
-            placeholder='Enter your email'
-            placeholderTextColor={'rgba(250,250,250,0.3)'}
-            />
-          </View>
-          <View style={styles.field}>
-            <Text style={{fontFamily: 'Montserrat-Italic', color: 'white'}}>Display Name: </Text>
-            <TextInput 
-            style={[styles.textInputStyle, {marginLeft: 'auto', marginRight: 10}]}
-            onChangeText={(text) => setDisplayName(text)}
-            onSubmitEditing = {() => {setDisplayName('')}}
-            value={displayName}
-            cursorColor='white'
-            underlineColorAndroid="transparent"
-            placeholder='Enter your display name'
-            placeholderTextColor={'rgba(250,250,250,0.3)'}
-            />
+        <View style={styles.contactImage}>
+          <TouchableOpacity onPress={() => {setShowGallery(!showGallery);getPhotos()}}>
+            <Image style={styles.image} source={image} />
+          </TouchableOpacity>
         </View>
         <View style={styles.field}>
-            <Text style={{fontFamily: 'Montserrat-Italic', color: 'white'}}>User Name: </Text>   
-            <TextInput 
-            style={[styles.textInputStyle, {marginLeft: 'auto', marginRight: 10}]}
-            onChangeText={(text) => setUsername(text)}
-            onSubmitEditing = {() => {setUsername('')}}
-            value={username}
-            cursorColor='white'
-            underlineColorAndroid="transparent"
-            placeholder={username}
-            placeholderTextColor={'rgba(250,250,250,0.3)'}
+          <Text style={{fontFamily: 'Montserrat-Italic', color: 'white'}}>Email: </Text>
+          <TextInput 
+          style={[styles.textInputStyle, {marginLeft: 'auto', marginRight: 10}]}
+          onChangeText={(text) => setEmail(text)}
+          onSubmitEditing = {() => {setEmail('')}}
+          editable={false}
+          keyboardType='email-address'
+          value={email}
+          cursorColor='white'
+          underlineColorAndroid="transparent"
+          placeholder='Enter your email'
+          placeholderTextColor={'rgba(250,250,250,0.3)'}
           />
         </View>
+        {!showPasswordContainer && 
+        <>
+        <View style={styles.field}>
+          <Text style={{fontFamily: 'Montserrat-Italic', color: 'white'}}>Display Name: </Text>
+          <TextInput 
+          style={[styles.textInputStyle, {marginLeft: 'auto', marginRight: 10}]}
+          onChangeText={(text) => setDisplayName(text)}
+          onSubmitEditing = {() => {setDisplayName('')}}
+          value={displayName}
+          cursorColor='white'
+          underlineColorAndroid="transparent"
+          placeholderTextColor={'rgba(250,250,250,0.3)'}
+          />
+        </View>
+        <View style={styles.field}>
+          <Text style={{fontFamily: 'Montserrat-Italic', color: 'white'}}>User Name: </Text>   
+          <TextInput 
+          style={[styles.textInputStyle, {marginLeft: 'auto', marginRight: 10}]}
+          onChangeText={(text) => setUsername(text)}
+          onSubmitEditing = {() => {setUsername('')}}
+          value={username}
+          cursorColor='white'
+          underlineColorAndroid="transparent"
+          placeholderTextColor={'rgba(250,250,250,0.3)'}
+        />
+        <View style={{flexDirection: 'row', position: 'absolute', right: 20, alignItems: 'center'}}>
+          {usernameExists == 1 && <IonIcon name="ios-close-circle" color="rgba(250,0,0,0.8)" size={14} />}
+          {usernameExists == 2 && <IonIcon name="ios-checkmark-circle" color="rgba(0,250,0,0.8)" size={14} />}
+          {usernameExists == 1 && <Text style={{fontFamily: 'Montserrat-Italic', color: 'white', marginLeft: 5}}>Exists!</Text>}
+        </View>
+        </View>
+        </>}
         {showPasswordContainer &&
-        <View style={styles.passwordContainer}>
-            <TextInput 
+        <>
+        <View style={styles.field}>
+          <Text style={{fontFamily: 'Montserrat-Italic', color: 'white'}}>Current Password: </Text>
+          <TextInput 
             style={styles.textInputStyle}
             onChangeText={(text) => setPassword(text)}
             onSubmitEditing = {() => {setPassword('')}}
@@ -221,9 +275,12 @@ const AccountScreen = () => {
             cursorColor='white'
             underlineColorAndroid="transparent"
           />
+        </View>
+        <View style={styles.field}>
+          <Text style={{fontFamily: 'Montserrat-Italic', color: 'white'}}>New Password: </Text>
           <TextInput 
-            style={[styles.textInputStyle, {marginTop: 10}]}
-            onChangeText={(text) => setNewPassword(text)}
+          style={[styles.textInputStyle, {marginLeft: 'auto', marginRight: 10}]}
+          onChangeText={(text) => setNewPassword(text)}
             onSubmitEditing = {() => {setNewPassword('')}}
             value={newPassword}
             secureTextEntry={true}
@@ -233,26 +290,27 @@ const AccountScreen = () => {
             underlineColorAndroid="transparent"
           />
         </View>
+        </>
         }
         <View style={{flexDirection: 'row'}}>
-            <TouchableOpacity onPress={()=>{setShowPasswordContainer(!showPasswordContainer)}}
-            style={{width: '40%', marginLeft: 10}}>
-                <View style={styles.buttonContainer}>
-                    <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>
-                        {showPasswordContainer?'Cancel':'Change Password'}</Text>
-                </View>
-            </TouchableOpacity>
-            <TouchableOpacity 
-            disabled={updating!=-1}
-            onPress={()=>updateUserData()}
-            style={{width: '40%', marginLeft: 'auto', marginRight: 10}}>
-                <View style={styles.buttonContainer}>
-                    {updating==-1&&<Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Save Changes</Text>}
-                    {updating==1&&<Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Changes Saved</Text>}
-                    {updating==-2&&<Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Unable to save</Text>}
-                    {updating==-0&&<ActivityIndicator color="rgba(250,250,250,0.8)" />}
-                </View>
-            </TouchableOpacity>
+          <TouchableOpacity onPress={()=>{setShowPasswordContainer(!showPasswordContainer)}}
+          style={{width: '40%', marginLeft: 10}}>
+            <View style={styles.buttonContainer}>
+              <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>
+                  {showPasswordContainer?'Cancel':'Change Password'}</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity 
+          disabled={updating!=-1}
+          onPress={()=>updateUserData()}
+          style={{width: '40%', marginLeft: 'auto', marginRight: 10}}>
+              <View style={styles.buttonContainer}>
+                  {updating==-1&&<Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Save Changes</Text>}
+                  {updating==1&&<Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Changes Saved</Text>}
+                  {updating==-2&&<Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Unable to save</Text>}
+                  {updating==-0&&<ActivityIndicator color="rgba(250,250,250,0.8)" />}
+              </View>
+          </TouchableOpacity>
         </View>
         <Text style={[styles.header, {marginTop: '5%'}]}>Daily Activity Chart</Text>
         <View style={styles.activityContainer}>
@@ -301,6 +359,7 @@ const styles = StyleSheet.create({
     container: {
       width: "100%",
       height: '100%',
+      backgroundColor: 'black'
     },
     background: {
       width: "100%",
@@ -317,7 +376,9 @@ const styles = StyleSheet.create({
       alignSelf: 'center',
       marginVertical: '3%',
       borderWidth: 0.3,
-      borderColor: '#D4AF37'
+      borderColor: '#D4AF37',
+      justifyContent: 'center',
+      // alignItems: 'center'
     },
     image: {
       width: "100%", 

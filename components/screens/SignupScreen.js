@@ -10,10 +10,47 @@ const SignupScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
+  const [showErrorMessage, setShowErrorMessage] = useState('');
+  const [loginLinkReceived, setLoginLinkReceived] = useState(false);
+  const [otp, setOtp] = useState();
+
+  const validateEmail = (email) => {
+    return email.match(
+      /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    );
+  };
+
+  const signInWithOtp = async () => {
+    const { data, error } = await supabase.auth.verifyOtp({ email:email, token: otp, type: 'signup'})
+    if (error) { 
+      console.error(error);
+      setLoginLinkReceived(false);
+      setShowErrorMessage('Please check the OTP');
+    }
+    else navigation.navigate('Home')
+  }
 
   async function signUpWithEmail(event) {
     event.preventDefault();
+    if(loginLinkReceived && otp){
+      signInWithOtp();
+      return;
+    }
+    if(username==''||email==''||displayName=='') {
+      setShowErrorMessage('Please enter all details');
+      return;
+    }
+    if(!validateEmail(email)) {
+      setShowErrorMessage('Invalid Email');
+      return;
+    }
+    if(loginLinkReceived) return;
+    const emailRes = await supabase.from('profiles').select('id').eq('email', email)
+    if(emailRes.data.length > 0) {
+      setShowErrorMessage('Given email is linked to an existing account.');
+      return;
+    }
     setLoading(true)
     let username = displayName.toLowerCase();
     const res = await supabase.from('profiles').select('username').like('username', username+'%');
@@ -25,13 +62,13 @@ const SignupScreen = () => {
         data: {
           display_name: displayName,
           avatar_url: null,
-          username: username
+          username: username,
+          name: displayName
         }
       }  
     })
     if(data.user){
-      console.log('Created User'); 
-      navigation.navigate('Home');
+      setLoginLinkReceived(true);
     }
     if (error) console.error(error.message)
     setLoading(false)
@@ -44,7 +81,7 @@ const SignupScreen = () => {
         <Text style={styles.header}>Create your fitness account</Text>
         <View style={styles.loginContainer}>
           <TextInput 
-            style={styles.textInputStyle}
+            style={[styles.textInputStyle, showErrorMessage!=''?{borderBottomColor: 'red'}:{borderBottomColor: '#D4AF37'}]}
             onChangeText={(text) => setEmail(text)}
             onSubmitEditing = {() => {setEmail('')}}
             keyboardType='email-address'
@@ -75,12 +112,8 @@ const SignupScreen = () => {
             placeholder='Enter your display name'
             placeholderTextColor={'rgba(250,250,250,0.3)'}
           />
-          <Text style={{fontFamily: 'Montserrat-Regular', fontSize: 12, color: 'rgba(250,250,250,0.8)', textAlign: 'center', margin: '2%'}}>Or</Text>
-          <View style={styles.socialsContainer}>
-            <TouchableOpacity><FontAwesome name='google' size={16} color='white' /></TouchableOpacity>
-            <TouchableOpacity><FontAwesome name='facebook' size={16} color='white' /></TouchableOpacity>
-            <TouchableOpacity><FontAwesome name='spotify' size={16} color='white' /></TouchableOpacity>
-          </View>
+          {loginLinkReceived && 
+          <TextInput keyboardType = 'numeric' letterSpacing={5} maxLength={6} style={styles.otpInput} value={otp} onChangeText={(text) => setOtp(text)} placeholder='OTP'/>}
           <View style={styles.footerContainer}>
             <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Have an account? </Text>
             <TouchableOpacity onPress={() => {navigation.navigate('LoginScreen')}}>
@@ -94,6 +127,8 @@ const SignupScreen = () => {
             {!loading && <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Create Account</Text>}
           </View>
         </TouchableOpacity>
+        {loginLinkReceived && <Text style={{fontFamily: 'Montserrat-Regular', color: 'white', marginTop: 10}}>Check your email for the login link</Text>}
+        {showErrorMessage!='' && <Text style={{fontFamily: 'Montserrat-Regular', color: 'white', marginTop: 10}}>{showErrorMessage}</Text>}
       </View>
     </ImageBackground>
     </View>
@@ -140,6 +175,18 @@ const styles = StyleSheet.create({
       borderBottomWidth: 1,
       borderTopEndRadius: 10,
       width: '100%'
+    },
+    otpInput: {
+      marginTop: '4%',
+      fontFamily: 'Montserrat-Regular',
+      fontSize: 20,
+      color: 'white',
+      backgroundColor: 'rgba(20,20,20,0.2)',
+      borderBottomWidth: 1,
+      borderTopEndRadius: 10,
+      width: '60%',
+      alignSelf: 'center',
+      textAlign: 'center'
     },
     linkContainer: {
       backgroundColor: 'rgba(20,20,20,0.2)',

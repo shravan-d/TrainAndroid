@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
     container: {
         alignSelf: "center",
         width: "96%",
-        height: '6%',//0.06*screenHeight,
+        height: '6%',
         borderTopWidth: 1,
         borderTopColor: "#D4AF37",
         position: "absolute",

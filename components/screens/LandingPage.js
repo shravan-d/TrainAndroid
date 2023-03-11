@@ -9,6 +9,8 @@ const LandingPage = () => {
   var bg = require ('../../assets/media/bg.png');
   const user = useContext(AuthContext);
 
+  console.log(user)
+
   return (
     <View style={styles.container}>
     <ImageBackground source={bg} style={styles.background}>

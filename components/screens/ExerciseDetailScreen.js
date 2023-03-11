@@ -120,14 +120,14 @@ const ExerciseDetailScreen = ({ route }) => {
                 </View>
                 </Pressable>
               </View>}
-              <View style={styles.pauseButton}>
-                <Pressable onPress={()=>setPaused(!paused)}>
-                {!paused && <IonIcon name="pause-outline" size={18} color="white" />}
-                {paused && <IonIcon name="play" size={18} color="white" />}
-                </Pressable>
-              </View>
               </>
             )}
+            <View style={styles.pauseButton}>
+              <Pressable onPress={()=>setPaused(!paused)}>
+              {!paused && <IonIcon name="pause-outline" size={18} color="white" />}
+              {paused && <IonIcon name="play" size={18} color="white" />}
+              </Pressable>
+            </View>
           </View>
           <View style={styles.contentContainer}>
             <Text style={styles.header}>{currentExercise.exercise_name}</Text>

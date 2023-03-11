@@ -33,7 +33,6 @@ const ExerciseGuide = () => {
   const [muscleGroup, setMuscleGroup] = useState('');
   const [exerciseList, setExerciseList] = useState([]);
   const [modifyFavourites, setModifyFavourites] = useState([]);
-  const [headerHeight, setHeaderHeight] = useState(1);
 
   const filteredExercises = useMemo( () => { return exerciseList.filter(function (item) {
     const itemData = item.exercise_name.toUpperCase();
@@ -69,13 +68,6 @@ const ExerciseGuide = () => {
       data[idx].favourite = true;
     }
     setExerciseList(data)
-  }
-
-  const scrollE = (e) => {
-    if (e.nativeEvent.contentOffset.y > 30)
-      setHeaderHeight(0)
-    if (e.nativeEvent.contentOffset.y < 30)
-      setHeaderHeight(1)
   }
 
   useEffect(() => {
@@ -116,7 +108,7 @@ const ExerciseGuide = () => {
   return (
     <View style={styles.container}>
       <View style={{height: '94%'}}>
-      <ImageBackground source={overlays[0]} imageStyle={{opacity:0.08}} style={{height: '100%'}}>
+      <ImageBackground source={overlays[0]} imageStyle={{opacity:0.06}} style={{height: '100%'}}>
         <View style={styles.topBar}>
             {!openSearch &&
             <TouchableOpacity onPress={() => {setOpenSearch(!openSearch)}} style={styles.searchButton}>
@@ -140,27 +132,21 @@ const ExerciseGuide = () => {
             </>
             } 
         </View>
-        <View style={[styles.headerContainer]}>
+        <View style={styles.headerContainer}>
           <View >
             <Dropdown value={muscleGroup} setValue={setMuscleGroup} header={"What muscle group would you like to workout today?"} dropdownItems={muscleGroupDetails} elevation={1}/>      
           </View>
-          {headerHeight==1 &&
-          <View>
+        </View>
+        <ScrollView showsVerticalScrollIndicator={false} style={styles.exerciseContainer}>
           <View style={styles.favouritesContainer}>
             <Text style={styles.text}>{showFavorites?'Show All':'Show favorites'}</Text>
             <TouchableOpacity onPress={() => setShowFavorites(!showFavorites)}>
             <IonIcon name="heart" size={18} color={showFavorites ? '#D4AF37' : 'white'} />
             </TouchableOpacity>
           </View>
-          <View><Text style={styles.groupHeader}>{muscleGroup}</Text></View>
-          </View>}
-        </View>
-        <ScrollView showsVerticalScrollIndicator={false} style={[styles.exerciseContainer]}  onScroll={scrollE} scrollEventThrottle={16}> 
-        <ImageBackground source={bg} style={styles.background}>
           {filteredExercises.map((exercise) => (
             <ExerciseCard key={exercise.id} exercise={exercise} changeFavouriteCallback={changeFavouriteCallback}/>
           ))}
-        </ImageBackground>
         </ScrollView>
         <NavBar />
       </ImageBackground>
@@ -172,18 +158,20 @@ const ExerciseGuide = () => {
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
-    height: '100%',
-    backgroundColor: "black"
+    backgroundColor: 'black',
+    width: '100%', 
+    height: '100%', 
+    minHeight: screenHeight
   },
   headerContainer: {
     marginTop: '15%',
-    paddingHorizontal: 10
+    paddingHorizontal: 10,
+    paddingBottom: 10
   },
   favouritesContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    padding: 15
+    paddingBottom: 20
   },
   text: {
     color: 'white',

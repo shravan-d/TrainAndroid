@@ -43,6 +43,7 @@ const MediaScreen = ({ route }) => {
       else{
         await CameraRoll.save(`file://${path}`, {
           type: type,
+          album: 'Train'
         });
         setSavingState('saved');
       }
