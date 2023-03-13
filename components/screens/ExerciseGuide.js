@@ -134,7 +134,8 @@ const ExerciseGuide = () => {
         </View>
         <View style={styles.headerContainer}>
           <View >
-            <Dropdown value={muscleGroup} setValue={setMuscleGroup} header={"What muscle group would you like to workout today?"} dropdownItems={muscleGroupDetails} elevation={1}/>      
+            <Dropdown value={muscleGroup} setValue={setMuscleGroup} 
+            header={"What muscle group would you like to workout today?"} dropdownItems={muscleGroupDetails} elevation={1} zIndex={1}/>      
           </View>
         </View>
         <ScrollView showsVerticalScrollIndicator={false} style={styles.exerciseContainer}>
@@ -148,9 +149,9 @@ const ExerciseGuide = () => {
             <ExerciseCard key={exercise.id} exercise={exercise} changeFavouriteCallback={changeFavouriteCallback}/>
           ))}
         </ScrollView>
-        <NavBar />
       </ImageBackground>
       </View>
+      <NavBar />
       <MenuBar currentScreenId={0}/>
     </View>
   );
@@ -161,12 +162,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
     width: '100%', 
     height: '100%', 
-    minHeight: screenHeight
+    minHeight: 0.94*screenHeight
   },
   headerContainer: {
-    marginTop: '15%',
+    marginTop: 55,
     paddingHorizontal: 10,
-    paddingBottom: 10
+    paddingBottom: 10,
+    zIndex: 1,
+    elevation: 1
   },
   favouritesContainer: {
     flexDirection: 'row',
@@ -180,14 +183,8 @@ const styles = StyleSheet.create({
   exerciseContainer: {
     width: "100%",
     padding: 10,
-  },
-  groupHeader: {
-    color: "white",
-    textAlign: "center",
-    fontFamily: 'Montserrat-Bold',
-    fontSize: 24,
-    zIndex: -1,
-    elevation: -1,
+    zIndex: 0,
+    elevation: 0
   },
   topBar: {
     position: 'absolute',
@@ -211,7 +208,6 @@ const styles = StyleSheet.create({
   },
   textInputStyle: {
     marginTop: '3%',
-    // marginLeft: 50+0.04*screenWidth,
     fontFamily: 'Montserrat-Regular',
     paddingVertical: 5,
     fontSize: 14,
@@ -222,5 +218,3 @@ const styles = StyleSheet.create({
 });
 
 export default ExerciseGuide;
-
-// flicker on scroll(animation), pagination

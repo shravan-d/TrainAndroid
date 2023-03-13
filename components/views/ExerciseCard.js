@@ -20,7 +20,7 @@ const ExerciseCard = ({ exercise, changeFavouriteCallback }) => {
   }
 
   return (
-    <View style={[styles.container, cardPress?{minHeight:200}:{height:85}]}>
+    <View style={[styles.container, cardPress?{minHeight:200}:{height:90}]}>
       {!cardPress && 
         <View style={styles.smallCard}>
           <View style={styles.cardContent}>
@@ -71,7 +71,7 @@ const ExerciseCard = ({ exercise, changeFavouriteCallback }) => {
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    marginBottom: 0.025*screenHeight,
+    marginBottom: 10,
   },
   smallCard: {
     height: "100%",
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     height: "85%",
     width: "40%",
     alignSelf: 'center',
-    marginLeft: "1%",
+    marginLeft: 5,
   },
   cardText: {
     marginTop: "5%"
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   cardSubtext: {
     fontFamily: 'Montserrat-Regular',
     fontSize: 14,
-    marginTop: "4%",
+    marginTop: 5,
     color: 'black'
   },
   bigCard: {
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     width: "99%",
   },
   bigCardText: {
-    paddingVertical: 15,
+    paddingVertical: 10,
     width: "100%",
   },
   bigCardText2: {
@@ -126,22 +126,22 @@ const styles = StyleSheet.create({
   bigCardHeader: {
     fontFamily: 'Montserrat-Italic',
     fontSize: 18,
-    marginLeft: "2%",
-    marginVertical: '5%',
+    marginLeft: 5,
+    marginVertical: 10,
     color: 'black'
   },
   bigCardSubtext: {
     fontFamily: 'Montserrat-Regular',
     fontSize: 14,
-    marginTop: "4%",
-    marginRight: "6%",
+    marginTop: 10,
+    marginRight: 10,
     color: 'black'
   },
   expandArrow: {
     backgroundColor: "rgba(0,0,0,0)",
     position: 'absolute',
-    right: 4,
-    paddingLeft: 11
+    right: 5,
+    paddingLeft: 10
   },
   heart: {
     backgroundColor: "rgba(0,0,0,0)",
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     paddingLeft: 10
   },
   cardMoretext: {
-    marginTop: '3%',
+    marginTop: 5,
     flexDirection: 'row',
   },
 });

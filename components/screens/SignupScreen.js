@@ -51,6 +51,7 @@ const SignupScreen = () => {
       setShowErrorMessage('Given email is linked to an existing account.');
       return;
     }
+    setShowErrorMessage('')
     setLoading(true)
     let username = displayName.toLowerCase();
     const res = await supabase.from('profiles').select('username').like('username', username+'%');

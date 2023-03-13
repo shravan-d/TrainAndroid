@@ -263,9 +263,9 @@ const AccountScreen = () => {
         {showPasswordContainer &&
         <>
         <View style={styles.field}>
-          <Text style={{fontFamily: 'Montserrat-Italic', color: 'white'}}>Current Password: </Text>
+          <Text style={{fontFamily: 'Montserrat-Italic', color: 'white'}}>Password: </Text>
           <TextInput 
-            style={styles.textInputStyle}
+            style={[styles.textInputStyle, {marginLeft: 'auto', marginRight: 10}]}
             onChangeText={(text) => setPassword(text)}
             onSubmitEditing = {() => {setPassword('')}}
             value={password}
@@ -367,18 +367,17 @@ const styles = StyleSheet.create({
     },
     contentContainer: {
       flex: 1,
-      paddingTop: '15%',
+      paddingTop: 55,
     },
     contactImage: {
       width: 80,
       height: 80,
       borderRadius: 80,
       alignSelf: 'center',
-      marginVertical: '3%',
+      marginVertical: 10,
       borderWidth: 0.3,
       borderColor: '#D4AF37',
       justifyContent: 'center',
-      // alignItems: 'center'
     },
     image: {
       width: "100%", 
@@ -395,7 +394,7 @@ const styles = StyleSheet.create({
     field: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginBottom: '4%',
+      marginBottom: 12,
       marginLeft: 10
     },
     textInputStyle: {
@@ -414,11 +413,11 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       paddingVertical: 5,
       borderRadius: 5,
-      marginTop: '6%',
+      marginTop: 10,
     },
     passwordContainer: {
       alignItems: 'center',
-      paddingBottom: '4%'
+      paddingBottom: 10
     },
     activityContainer: {
       backgroundColor: 'rgba(0,0,0,0.7)',

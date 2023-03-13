@@ -1,5 +1,5 @@
 import {React, useState} from 'react';
-import { StyleSheet, TouchableOpacity, View, Text, Dimensions, Image, ActivityIndicator } from 'react-native';
+import { StyleSheet, TouchableHighlight, TouchableOpacity, View, Text, Dimensions, Image, ActivityIndicator } from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import {useNavigation} from '@react-navigation/native';
 
@@ -19,7 +19,10 @@ const RoutineCard = ({ routine, self, myRoutineCallback, my_rating }) => {
   var rating = routine.rating_count==0?-1:routine.rating_score * 5 / routine.rating_count;
 
   return (
-    <View style={[styles.container, self ? {height: 90} : {height: 110}]}>
+    <TouchableHighlight
+              onPress={() => { navigation.navigate('RoutineDetailScreen', 
+              { routine: routine, self: self, myRoutineCallback: myRoutineCallback, my_rating })}} >
+    <View style={[styles.container, self ? {height: 90} : {height: 90}]}>
       <View style={styles.card}>
         <View style={styles.cardContent}>
           <View style={styles.cardImage}>
@@ -27,9 +30,6 @@ const RoutineCard = ({ routine, self, myRoutineCallback, my_rating }) => {
           </View>
           <View style={styles.cardText}>
             <Text style={styles.cardHeader}>{routine.routine_name}</Text>
-            <View style={styles.cardSubtextContainer}>
-              <Text style={styles.cardSubtext}>Created by: {routine.created_by_username}</Text>
-            </View>
             {!self && (
               <View style={[styles.cardSubtextContainer, {justifyContent: 'space-evenly'}]}>
                 <Text style={[ styles.cardSubtext, {color: experienceColorMap[routine.level]} ]}>
@@ -46,7 +46,11 @@ const RoutineCard = ({ routine, self, myRoutineCallback, my_rating }) => {
                 </View>
               </View>
             )}
-            <TouchableOpacity
+            <View style={styles.cardSubtextContainer}>
+              <Text style={styles.cardSubtext}>Created by: {routine.created_by_username}</Text>
+            </View>
+            
+            {/* <TouchableOpacity
               onPress={() => { navigation.navigate('RoutineDetailScreen', 
               { routine: routine, self: self, myRoutineCallback: myRoutineCallback, my_rating })}} 
               style={styles.moreIonIcon}>
@@ -58,18 +62,19 @@ const RoutineCard = ({ routine, self, myRoutineCallback, my_rating }) => {
                   }}> {self ? 'Start Now' : 'Show More'} </Text>
                 <IonIcon name="arrow-forward" size={18} color="#D4AF37" />
               </View>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         </View>
       </View>
     </View>
+    </TouchableHighlight>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    marginBottom: 0.025 * screenHeight,
+    marginBottom: 10,
   },
   card: {
     height: '100%',
@@ -84,11 +89,11 @@ const styles = StyleSheet.create({
     height: '85%',
     width: '30%',
     alignSelf: 'center',
-    marginLeft: '1%',
+    marginLeft: 5,
   },
   cardText: {
     width: '60%',
-    marginTop: '3%',
+    marginTop: 10,
   },
   cardHeader: {
     fontFamily: 'Montserrat-Italic',
@@ -98,7 +103,9 @@ const styles = StyleSheet.create({
   },
   cardSubtextContainer: {
     flexDirection: 'row',
-    padding: 3
+    paddingHorizontal: 3,
+    marginTop: 5,
+    marginLeft: 5
   },
   cardSubtext: {
     fontFamily: 'Montserrat-Regular',

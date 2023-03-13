@@ -22,9 +22,9 @@ const ContactScreen = ({ route }) => {
   const mediaSource = useMemo(() => (`file://${path}`), [path]);
   const user = useContext(AuthContext);
   var bg = require ('../../assets/media/bg.png');
+  const Buffer = require("buffer").Buffer;
   
   const [contactList, setContactList] = useState([]);
-  const [filteredContactList, setFilteredContactList] = useState(contactList);
   const [userList, setUserList] = useState([]);
   const [search, setSearch] = useState('');
   const [openSearch, setOpenSearch] = useState(false)
@@ -39,20 +39,15 @@ const ContactScreen = ({ route }) => {
 
   contactList.sort(function(a, b) {return (new Date(a.lastMessageTime) > new Date(b.lastMessageTime))?-1:1;});
 
-  const searchFilterFunction = (text) => {
-    if (text) {
-      const newData = contactList.filter(function (item) {
-        const itemData = item.user.display_name? item.user.display_name.toUpperCase(): ''.toUpperCase();
-        const textData = text.toUpperCase();
-        return itemData.indexOf(textData) > -1;
-      });
-      setFilteredContactList(newData);
-      setSearch(text);
-    } else {
-      setFilteredContactList(contactList);
-      setSearch(text);
-    }
-  }
+  const filteredContacts = useMemo( () => { return contactList.filter(function (item) {
+    const itemData1 = item.user.display_name.toUpperCase();
+    const itemData2 = item.user.username.toUpperCase();
+    const textData = search.toUpperCase();
+    var searchBool1 = search==''?true:itemData1.indexOf(textData) > -1;
+    var searchBool2 = search==''?true:itemData2.indexOf(textData) > -1;
+    return searchBool1 || searchBool2;
+  })}, [search, contactList])
+
 
   const searchUsers = async (text) => {
     if (text!='') {
@@ -72,17 +67,17 @@ const ContactScreen = ({ route }) => {
       navigation.navigate('ChatScreen', { secondUser: secondUser, chatroomId: chatExists[0].chatroomId });
       setOpenUserSearch(false);
     } else {
-      var { data, error } = await supabase
-      .from('chat_room')
-      .insert({})
-      .select('id')
+      var { data, error } = await supabase.from('chat_room').insert({}).select('id')
       if(error) console.error(error)
       var chatroomId = data[0].id;
-      var { data, error } = await supabase
-      .from('participants')
+      navigation.navigate('ChatScreen', { secondUser: secondUser, chatroomId: chatroomId })
+      var { data, error } = await supabase.from('participants')
       .insert([{chatroom_id: chatroomId, user_id: user.id}, {chatroom_id: chatroomId, user_id: secondUser.id}])
       if(error) console.error(error)
-      navigation.navigate('ChatScreen', { secondUser: secondUser, chatroomId: chatroomId })
+      var tempContact = {user: secondUser, chatroomId: chatroomId, streak: 0, lastMessageTime: null, newMsg: false, newShot: false};
+      var tempList = contactList.slice();
+      tempList.push(tempContact)
+      setContactList(tempList);
     }
   }
 
@@ -94,7 +89,7 @@ const ContactScreen = ({ route }) => {
         } else
           setSelectedContacts(oldArray => [...oldArray, contact.user.id] )
     } else {
-      var tempContacts = [...filteredContactList.slice(0, idx), {...contact, newMsg: false}, ...filteredContactList.slice(idx+1)];
+      var tempContacts = [...contactList.slice(0, idx), {...contact, newMsg: false}, ...contactList.slice(idx+1)];
       setContactList(tempContacts);
       navigation.navigate('ChatScreen', { secondUser: contact.user, chatroomId: contact.chatroomId });
       setOpenUserSearch(false);
@@ -102,42 +97,25 @@ const ContactScreen = ({ route }) => {
   };
 
   const getChatrooms = async () => {
-    var tempContacts = []
-    const { data, error } = await supabase.from('participants').select('chatroom_id').eq('user_id', user.id);
-    if(error) console.error(error.message)
-    if(data){
-      for (const chatroom of data){
-        const res = await supabase.from('participants').select('user_id').eq('chatroom_id', chatroom.chatroom_id).neq('user_id', user.id)
-        if(res.error) console.error(res.error)
-        const res_ = await supabase.from('profiles').select().eq('id', res.data[0].user_id);
-        if(res_.error) console.error(res_.error)
-        const newMessageRes= await supabase.from('participants').select().eq('user_id', res.data[0].user_id)
-        .eq('chatroom_id', chatroom.chatroom_id);
-        if(newMessageRes.error) console.error(newMessageRes.error)
-        const streakData = await supabase.from('chat_room').select('streak').eq('id', chatroom.chatroom_id)
-        if(streakData.error) console.error(streakData.error)
-        
-        // check if you can avoid this call. Biggest tables called often. Maybe could call in app open.
-        const shotRes = await supabase.from('shots').select('sent_at').eq('receiver_id', user.id).eq('read_bool', false)
-        .eq('sender_id', res.data[0].user_id).order('sent_at', {ascending: false}).limit(1);
-        if(shotRes.error) console.error(shotRes.error)
-
-        var timeToDisplay = null;
-        if (newMessageRes.data[0]?.last_msg_date  && shotRes.data.length > 0)
-          timeToDisplay = new Date(newMessageRes.data[0]?.last_msg_date) > new Date(shotRes.data[0]?.sent_at) ?
-          new Date(newMessageRes.data[0]?.last_msg_date) : new Date(shotRes.data[0]?.sent_at);
-        else if (newMessageRes.data[0]?.last_msg_date) timeToDisplay =  new Date(newMessageRes.data[0]?.last_msg_date)
-        else if (shotRes.data.length) timeToDisplay = new Date(shotRes.data[0]?.sent_at);
-        var tempContact = {user: res_.data[0], chatroomId: chatroom.chatroom_id, streak: streakData.data[0]?.streak,
-          lastMessageTime: timeToDisplay, newMsg: newMessageRes.data[0]?.sent_unread_msg, newShot: shotRes.data.length>0};
-        tempContacts.push(tempContact)
-      }
-      setContactList(tempContacts);
-      setFilteredContactList(tempContacts);
-    }
+    const res = await supabase.from('participants').select('chatroom_id').eq('user_id', user.id);
+    var chatrooms = res.data.map((e) => e.chatroom_id)
+    const { data, error } = await supabase.from('participants').select('*, chat_room(streak), profiles(*)')
+    .in('chatroom_id', chatrooms).neq('user_id', user.id)
+    if(error) console.error(error);
+    var tempList = data.map((ele) => {
+      var timeToDisplay = null;
+      if (ele.last_msg_date && ele.last_shot_date)
+        timeToDisplay = new Date(ele.last_msg_date) > new Date(ele.last_shot_date) ?
+        new Date(ele.last_msg_date) : new Date(ele.last_shot_date);
+      else if (ele.last_msg_date) timeToDisplay =  new Date(ele.last_msg_date)
+      else if (ele.last_shot_date) timeToDisplay = new Date(ele.last_shot_date);
+      return {
+        user: ele.profiles, chatroomId: ele.chatroom_id, streak: ele.chat_room.streak,
+        lastMessageTime: timeToDisplay, newMsg: ele.sent_unread_msg, newShot: ele.sent_unseen_shot}
+    })
+    setContactList(tempList);
   }
 
-  const Buffer = require("buffer").Buffer;
   const uploadImage = async () => {
     var count = Math.floor(Math.random() * 1000);
     var filename = 'private/'+user.id.toString()+count.toString()+'.jpg';
@@ -220,7 +198,6 @@ const ContactScreen = ({ route }) => {
       var contacts = [...contactList.slice(0, itemIdx), {...contactList[itemIdx], newMsg: true, lastMessageTime: newMessage.sent_at}, 
       ...contactList.slice(itemIdx+1)]
       setContactList(contacts);
-      setFilteredContactList(contacts);
     }
   }
 
@@ -239,7 +216,6 @@ const ContactScreen = ({ route }) => {
       var contacts = [...contactList.slice(0, itemIdx), {...contactList[itemIdx], newShot: hasNewShot, lastMessageTime: newShot.sent_at}, 
       ...contactList.slice(itemIdx+1)]
       setContactList(contacts);
-      setFilteredContactList(contacts);
     }
   }
 
@@ -247,7 +223,6 @@ const ContactScreen = ({ route }) => {
   
   useEffect(() => { 
     setSelectedContacts([]);
-    setFilteredContactList(contactList);
   }, [isFocused]);
 
   useEffect(() => {
@@ -284,6 +259,7 @@ const ContactScreen = ({ route }) => {
             value={search}
             cursorColor='white'
             underlineColorAndroid="transparent"
+            placeholder='Search by username'
           />
           <TouchableOpacity onPress={() => {setOpenUserSearch(!openUserSearch)}} style={styles.closeButton}>
             <IonIcon name="close-outline" color="rgba(250,250,250,0.8)" size={24} />
@@ -295,7 +271,7 @@ const ContactScreen = ({ route }) => {
           <TextInput 
             style={styles.textInputStyle} 
             maxLength={20}
-            onChangeText={(text) => searchFilterFunction(text)}
+            onChangeText={(text) => setSearch(text)}
             onSubmitEditing = {() => {setOpenSearch(!openSearch); setSearch('')}}
             value={search}
             cursorColor='white'
@@ -318,9 +294,9 @@ const ContactScreen = ({ route }) => {
           </ScrollView>
         </View>
         }
-        <View style={[styles.contactContainer, openUserSearch?{height: '58%'}:{height: '86%', marginTop:'15%'}]}>
+        <View style={[styles.contactContainer, openUserSearch?{height: '58%'}:{height: '86%', marginTop: 55}]}>
           <ScrollView>
-            {filteredContactList.map((contact, idx) => (
+            {filteredContacts.map((contact, idx) => (
                 <TouchableOpacity key={contact.user.id} onPress={() => onCardPress(contact, idx)}>
                   <ContactCard contact={contact} highlight={selectedContacts.includes(contact.user.id)} />
                 </TouchableOpacity>
@@ -346,16 +322,14 @@ const styles = StyleSheet.create({
     width: "100%",
     height: '100%',
     backgroundColor: 'black', 
-    minHeight: screenHeight
+    minHeight: 0.94*screenHeight
   },
   userContainer: {
-    marginTop: '15%',
+    marginTop: 55,
     height: 210,
   },
   contactContainer: {
-    // height: '86%',
-    // marginTop: '15%'
-    paddingVertical: 5
+    paddingVertical: 10
   },
   topBar: {
     borderBottomColor: "#D4AF37",
@@ -367,12 +341,12 @@ const styles = StyleSheet.create({
     lineHeight: "7%",
     zIndex: 0,
     elevation: 0,
+    justifyContent: 'center'
   },
   header: {
     fontFamily: 'Montserrat-Italic',
     fontSize: 20,
-    color: "white",
-    marginTop: "4%",
+    color: "white"
   },
   searchButton: {
     position: 'absolute',
@@ -403,7 +377,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   textInputStyle: {
-    marginTop: '3%',
     fontFamily: 'Montserrat-Regular',
     paddingVertical: 5,
     fontSize: 14,

@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     backgroundColor: 'black', 
-    minHeight: screenHeight
+    minHeight: 0.94*screenHeight
   },
   contentContainer: {
     width: '100%',
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   myRoutineContainer: {
-    marginTop: '15%',
+    marginTop: 55,
     paddingHorizontal: 10,
   },
   header: {
@@ -238,11 +238,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: 'white',
     textAlign: 'center',
-    marginBottom: '5%',
+    marginBottom: 15,
   },
   createCard: {
     width: '100%',
-    marginBottom: 0.025 * screenHeight,
+    marginBottom: 10,
     height: 90,
     backgroundColor: 'white',
     borderRadius: 5,
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   },
   ratingContainer: {
     flexDirection: 'row',
-    margin: '8%',
+    margin: 20,
     justifyContent: 'space-between',
     alignItems: 'center',
   },
@@ -265,17 +265,17 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-Regular',
   },
   starContainer: {
-    width: 0.3 * screenWidth,
-    height: 0.04 * screenHeight,
+    width: 100, //0.3 * screenWidth,
+    height: 20, // 0.04 * screenHeight,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
   starTouch: {
-    marginRight: '2%',
+    marginRight: 3,
   },
   textInputStyleModal: {
-    marginVertical: '5%',
+    marginVertical: 15,
     paddingVertical: 2,
     fontFamily: 'Montserrat-Regular',
     color: 'black',

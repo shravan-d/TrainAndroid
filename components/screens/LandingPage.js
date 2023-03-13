@@ -9,12 +9,10 @@ const LandingPage = () => {
   var bg = require ('../../assets/media/bg.png');
   const user = useContext(AuthContext);
 
-  console.log(user)
-
   return (
     <View style={styles.container}>
     <ImageBackground source={bg} style={styles.background}>
-        {user && <Text style={styles.header}>Hello {user.user_metadata.display_name}</Text>}
+        {user && <Text style={styles.header}>Hello {user.user_metadata.display_name||user.user_metadata.name}</Text>}
         <Text style={styles.header}>Welcome to Train.com</Text>
         <NavBar style = {styles.NavBar}/>
         <MenuBar />

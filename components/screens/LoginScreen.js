@@ -84,7 +84,6 @@ const LoginScreen = () => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: provider,
     })
-    console.log(data)
     await Linking.openURL(data.url)
     if (error) console.error(error.message)
   }
@@ -97,8 +96,6 @@ const LoginScreen = () => {
       const refreshToken = url.searchParams.get('refresh_token');
       const accessToken = url.searchParams.get('access_token');
       const type = url.searchParams.get('type');
-
-      console.log(urlString)
 
       if (accessToken && refreshToken) {
         supabase.auth.setSession({ refresh_token: refreshToken, access_token: accessToken })

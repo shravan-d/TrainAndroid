@@ -77,23 +77,23 @@ const ContactCard = ({ contact, highlight }) => {
 const styles = StyleSheet.create({
   container: {
     alignSelf: 'center',
-    width: "99%",
+    width: "98%",
     height: 90,
-    marginTop: 5
+    marginBottom: 10,
   },
   cardContainer: {
     flex: 1,
     flexDirection: "row",
-    paddingLeft: "2%",
+    paddingHorizontal: 5,
     alignItems: 'center',
     backgroundColor: "rgba(30,30,30,0.8)",
     borderRadius: 5
   },
   contactImage: {
-    width: 0.18*screenWidth,
-    height: 0.18*screenWidth,
-    borderRadius: 0.18*screenWidth,
-    marginRight: "3%",
+    width: 65,
+    height: 65,
+    borderRadius: 65,
+    marginRight: 5,
   },
   image: {
     width: "100%", 
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
   },
   contactTime: {
     marginLeft: 'auto',
-    marginRight: "2%",
+    marginRight: 5,
     justifyContent: 'center',
     alignItems: 'center'
   },

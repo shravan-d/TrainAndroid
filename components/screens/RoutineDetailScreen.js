@@ -140,8 +140,6 @@ const RoutineDetailScreen = ({ route }) => {
     }
   }, []);
 
-  console.log(myRating);
-
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} style={[styles.contentContainer, (modalVisible||deleteModal)?{opacity: 0.5}:{}]}> 
@@ -206,6 +204,7 @@ const RoutineDetailScreen = ({ route }) => {
                 <Text style={{fontFamily: 'Montserrat-Regular', color: 'black'}}>Enter the name of your workout</Text>
                 <TextInput autoCapitalize='sentences' style={styles.textInputStyle}  maxLength={20} onChangeText={(text) => setNewWorkoutName(text)} value={newWorkoutName} cursorColor={"rgba(0,0,0,1)"}/>
                 <DropDownPicker
+                  listMode='MODAL'
                   open={open}
                   value={exerciseName}
                   items={dropdownItems}
@@ -224,19 +223,13 @@ const RoutineDetailScreen = ({ route }) => {
                     borderBottomColor: '#D4AF37',
                     marginBottom: '5%'
                   }}
-                  dropDownContainerStyle={{
-                    backgroundColor: "rgba(250,250,250,1)",
+                  modalContentContainerStyle={{
+                    backgroundColor: "black",
                     borderColor: '#D4AF37',
                     borderTopColor: '#dfdfdf',
                   }}
                   placeholderStyle={{
-                    textAlign: 'center'
-                  }}
-                  labelStyle={{
-                    textAlign: 'center'
-                  }}
-                  textStyle={{
-                    fontFamily: 'Montserrat-Regular',
+                    textAlign: 'center',
                     color: 'black'
                   }}
                   arrowIonIconStyle={{
@@ -245,13 +238,14 @@ const RoutineDetailScreen = ({ route }) => {
                     top: "-27%"
                   }}
                   searchContainerStyle={{
-                    borderBottomColor: "#dfdfdf"
+                    borderBottomColor: "#D4AF37"
                   }}
                   listItemLabelStyle={{
-                    color: "#000"
+                    color: "white"
                   }}
                   listParentLabelStyle={{
-                    fontWeight: "bold"
+                    fontWeight: "bold",
+                    color: 'white'
                   }}
                   listParentContainerStyle={{
                     borderBottomColor: '#dfdfdf',
@@ -259,17 +253,19 @@ const RoutineDetailScreen = ({ route }) => {
                   }}
                   searchTextInputStyle={{
                     borderWidth: 0,
-                    textAlign: 'center'
+                    textAlign: 'center',
+                    color: 'white'
                   }}
+                  searchTextInputProps={cursorColor='white'}
                 />
                 <View style={styles.exerciseContainer}>
                 {newExercises.map((exercise, index) => (
                   <TouchableOpacity key={index} 
-                  style={{marginBottom: '2%', width: '40%'}}
+                  style={{marginBottom: 5, width: '45%'}}
                   onPress={() => removeNewExercise(index)}>
                     <View style={{flexDirection: 'row'}}>
-                      <Text style={{fontFamily: 'Montserrat-Bold', marginRight: '3%'}}>{index+1}</Text>
-                      <Text style={{fontFamily: 'Montserrat-Regular'}}>{exercise.name}</Text>    
+                      <Text style={{fontFamily: 'Montserrat-Bold', marginRight: 5, color: 'black'}}>{index+1}</Text>
+                      <Text style={{fontFamily: 'Montserrat-Regular', color: 'black'}}>{exercise.name}</Text>    
                     </View>
                   </TouchableOpacity>
                 ))}
@@ -319,11 +315,11 @@ const styles = StyleSheet.create({
   contentContainer: {
     width: '100%',
     maxHeight: '86%',
-    marginTop: '15%'
+    marginTop: 55
   },
   createDayContainer: {
     width: '100%',
-    height: 0.1 * screenHeight,
+    height: 90,
     backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center'
@@ -332,7 +328,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    paddingVertical: '4%'
+    paddingVertical: 10
   },
   subText: {
     fontFamily: 'Montserrat-Regular',
@@ -368,7 +364,7 @@ const styles = StyleSheet.create({
   },
   textInputStyle: {
     paddingVertical: 2,
-    marginVertical: '5%',
+    marginVertical: 15,
     fontFamily: 'Montserrat-Regular',
     color: 'black',
     width: '75%',
@@ -399,7 +395,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
     alignItems: 'center',
     alignSelf: 'center',
-    marginBottom: '5%'
+    marginBottom: 15
   },
   headerTextInputStyle: {
     paddingVertical: 2,

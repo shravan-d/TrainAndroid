@@ -137,17 +137,9 @@ const ExerciseDetailScreen = ({ route }) => {
                   {currentExercise.requirements?currentExercise.requirements:'No Equipment Required'}
                 </Text>
                 <View style={{flexDirection: 'row', marginTop: '5%'}}>
-                  <Text
-                    style={[
-                      styles.subtext,
-                      {color: '#CD3B3C', marginRight: '5%'},
-                    ]}>
-                    Primary
-                  </Text>
+                  <Text style={[styles.subtext, {color: '#CD3B3C', marginRight: '5%'} ]}>Primary</Text>
                   {muscleGroupDetails.find((ele) => ele.label==currentExercise.secondary_mg) &&
-                  <Text style={[styles.subtext, {color: '#A06B6F'}]}>
-                    Secondary
-                  </Text>}
+                  <Text style={[styles.subtext, {color: '#A06B6F'}]}>Secondary</Text>}
                 </View>
               </View>
               <View style={styles.mgContainer}>
@@ -195,7 +187,6 @@ const ExerciseDetailScreen = ({ route }) => {
           </View>
         </ImageBackground>
       </ScrollView>
-      {/* <NavBar /> */}
       <MenuBar currentScreenId={0} />
     </View>
   );
@@ -212,7 +203,7 @@ const styles = StyleSheet.create({
     maxHeight: '94%'
   },
   contentContainer: {
-    marginVertical: '2%',
+    marginVertical: 10,
   },
   header: {
     color: 'white',
@@ -224,10 +215,10 @@ const styles = StyleSheet.create({
     color: 'white',
     fontFamily: 'Montserrat-Bold',
     fontSize: 18,
-    marginBottom: '3%',
+    marginBottom: 10,
   },
   muscleContainer: {
-    marginTop: '5%',
+    marginTop: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: '3%',
@@ -243,11 +234,11 @@ const styles = StyleSheet.create({
   subtext: {
     color: 'white',
     fontFamily: 'Montserrat-Regular',
-    marginLeft: '2%',
+    marginLeft: 8,
   },
   steps: {
-    marginTop: '5%',
-    paddingHorizontal: '4%',
+    marginTop: 10,
+    paddingHorizontal: 15,
   },
   counter: {
     color: '#D4AF37',
@@ -274,5 +265,3 @@ const styles = StyleSheet.create({
 });
 
 export default ExerciseDetailScreen;
-
-// related, onBuffer, fix prev button

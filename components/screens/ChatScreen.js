@@ -18,8 +18,6 @@ const ChatScreen = () => {
   const [shots, setShots] = useState([]);
   const route = useRoute();
   const { secondUser, chatroomId } = route.params;
-  // const newMessage = useContext(NewMessageContext)
-  // const newShot = useContext(NewShotContext)
 
   const newMessage = useSelector(state => state.newMessage)
   const hasNewMessage = useSelector(state => state.hasNewMessage)
@@ -30,12 +28,12 @@ const ChatScreen = () => {
   var secondUser_ = {
     _id: secondUser.id,
     name: secondUser.display_name,
-    avatar: 'https://mhtzqkkrssrxagqjbpdd.supabase.co/storage/v1/object/public/avatars/' +  secondUser.avatar_url
+    avatar: secondUser.avatar_url?'https://mhtzqkkrssrxagqjbpdd.supabase.co/storage/v1/object/public/avatars/' +  secondUser.avatar_url:null
   }
   var user_ = {
     _id: user.id,
     name: user.display_name,
-    avatar: 'https://mhtzqkkrssrxagqjbpdd.supabase.co/storage/v1/object/public/avatars/' +  user.avatar_url
+    avatar: user.avatar_url?'https://mhtzqkkrssrxagqjbpdd.supabase.co/storage/v1/object/public/avatars/' +  user.avatar_url:null
   }
 
   const getMessages = async () => {
@@ -77,6 +75,9 @@ const ChatScreen = () => {
     const { data, error } = await supabase.from('shots').update({ read_bool: true })
     .eq('receiver_id', user.id).eq('read_bool', false).eq('sender_id', secondUser.id);
     if(error) console.error(error.message)
+    const res = await supabase.from('participants').update({ sent_unseen_shot: false })
+      .eq('user_id', secondUser.id).eq('chatroom_id', chatroomId);
+    if(res.error) console.error(res.error.message)
     setShots([]);
   }
 
@@ -87,7 +88,6 @@ const ChatScreen = () => {
     const res = await supabase.from('messages').update({ read_bool: true })
     .eq('receiver_id', user.id).eq('read_bool', false).eq('sender_id', secondUser.id);
     if(res.error) console.error(res.error.message)
-    console.log(res)
   }
 
   const updateReceivedMsg = () => {
@@ -237,6 +237,3 @@ const styles = StyleSheet.create({
 });
 
 export default ChatScreen;
-
-// usereducer, sub in contact, set reducer, check if rerender is caused in chat
-//input box size when long message, input box no show when keyboard active (check num of lines for text input)

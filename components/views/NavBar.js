@@ -11,12 +11,13 @@ const NavBar = () => {
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
-    if (error) console.error('Login failed: ', error.message);
+    if (error) console.error('Logout failed: ', error.message);
     setShowSidebar(false);
     navigation.navigate('LoginScreen');
   }
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, showSidebar?{width: '40%'}:{width: 10}]}>
         <View style = {styles.navButton}>
             <TouchableOpacity onPress={() => {setShowSidebar(!showSidebar)}} style={styles.button}>
                 <>
@@ -26,7 +27,7 @@ const NavBar = () => {
             </TouchableOpacity>
         </View>
         { showSidebar && 
-            <View style={[styles.sidebar, showSidebar?{}:{}]}>
+            <View style={styles.sidebar}>
               <TouchableOpacity onPress={() => {navigation.navigate('DebugScreen')}} 
               style={[styles.sidebarButton, {marginTop: 50}]}>
                 <Text style={{fontFamily: 'Montserrat-Regular', color: 'white'}}>Debug</Text>
@@ -58,10 +59,10 @@ const NavBar = () => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    // marginTop: "1%",
-    width: "40%",
     height: "94%",
     backgroundColor: "rgba(0,0,0,0)",
+    zIndex: 2,
+    elevation: 2
   },
   navButton: {
     zIndex: 3,

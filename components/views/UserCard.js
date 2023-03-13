@@ -26,13 +26,13 @@ const UserCard = ({ user }) => {
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    height: 0.08*screenHeight,
-    marginTop: "1%",
+    height: 60,
+    marginTop: 5,
   },
   cardContainer: {
     flex: 1,
     flexDirection: "row",
-    paddingLeft: "2%",
+    paddingLeft: 5,
     alignItems: 'center',
     backgroundColor: "rgba(30,30,30,0.8)",
     borderRadius: 5
@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 50,
-    marginRight: "3%",
+    marginRight: 5,
   },
   image: {
     width: "100%", 

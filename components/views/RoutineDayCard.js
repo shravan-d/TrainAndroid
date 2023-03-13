@@ -55,7 +55,7 @@ const RoutineDayCard = ({ day }) => {
                   exerciseList: day.exerciseList})
                 }} 
                 style={styles.moreIonIcon}>
-                  <View style={styles.cardMoretext}>
+                  <View style={[styles.cardMoretext, {marginTop: 5}]}>
                     <Text style={{fontFamily: 'Montserrat-Regular',fontSize: 14, marginRight: '2%', color: 'black' }}>
                         Start day's workout
                     </Text>
@@ -70,20 +70,20 @@ const RoutineDayCard = ({ day }) => {
 
 const styles = StyleSheet.create({
   dayContainer: {
-    marginBottom: 0.01 * screenHeight,
+    marginBottom: 10,
     width: '100%',
-    minHeight: 0.09 * screenHeight,
+    minHeight: 60,
     backgroundColor: 'white',
   },
   cardContent: {
-    margin: '4%'
+    margin: 15
   },
   exerciseContainer: {
     flexDirection: 'row', 
     flexWrap: 'wrap', 
     justifyContent: 'space-evenly',
     alignItems:'center',
-    marginTop: '2%'
+    marginTop: 5
   },
   cardText: {
     flexDirection: 'row',
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     color: 'black'
   },
   cardMoretext: {
-    marginTop: '3%',
+    // marginTop: 5,
     flexDirection: 'row',
     justifyContent: 'center',
   },
