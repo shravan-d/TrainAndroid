@@ -58,10 +58,6 @@ const LoginScreen = () => {
         setShowErrorMessage('Invalid Email');
         return;
       }
-      if(password.length < 6) {
-        setShowErrorMessage('Password should be atleast 6 characters');
-        return;
-      }
       const { data, error } = await supabase.from('profiles').select('id').eq('email', email)
       if(data.length == 0){
         setShowErrorMessage('Given email is not registered. Please sign up for an account.');
@@ -74,7 +70,7 @@ const LoginScreen = () => {
       setLoginLinkReceived(true)
     } catch (error) {
       console.error(error.error_description || error.message)
-      setShowErrorMessage(error.message);
+      setShowErrorMessage('Please try again after a few minutes');
     } finally {
       setLoading(false)
     }

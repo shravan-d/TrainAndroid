@@ -18,7 +18,7 @@ const screenWidth = Dimensions.get("window").width
 const ContactScreen = ({ route }) => {
   const navigation = useNavigation();
   const isFocused = useIsFocused()
-  const { path, type, sendCapture } = route.params;
+  const { path, type, sendCapture, contentText, positionY } = route.params;
   const mediaSource = useMemo(() => (`file://${path}`), [path]);
   const user = useContext(AuthContext);
   var bg = require ('../../assets/media/bg.png');
@@ -156,7 +156,12 @@ const ContactScreen = ({ route }) => {
     var media_url = type=='photo'?await uploadImage():await uploadVideo();
     var newShots = [];
     for (const secondUserId of selectedContacts){
-      newShots.push({sender_id: user.id, receiver_id: secondUserId, content_url: media_url});
+      var newData = {sender_id: user.id, receiver_id: secondUserId, content_url: media_url};
+      if (contentText){
+        newData.content_text = contentText;
+        newData.text_position = Math.round(positionY);
+      }
+      newShots.push(newData);
     }
     const { data, error } = await supabase.from('shots').insert(newShots);
     if(error) console.error(error.message)
@@ -177,7 +182,7 @@ const ContactScreen = ({ route }) => {
         if(streakData.data[0].last_streak_date == null)
           newData.start_day = now.getUTCDay();
         const res_ = await supabase.from('chat_room').update(newData).eq('id', chatroomId);
-        console.log(res_)
+        if(res_.error) console.error(res_.error.message)
       }
     }
 

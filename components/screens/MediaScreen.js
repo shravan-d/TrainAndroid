@@ -1,11 +1,17 @@
-import { React, useState, useCallback, useMemo, useEffect } from 'react';
-import {StyleSheet, Image, View, TouchableOpacity, Alert, PermissionsAndroid, ActivityIndicator} from 'react-native';
+import { React, useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import {StyleSheet, Image, Dimensions, TouchableOpacity, Alert, PermissionsAndroid, ActivityIndicator, View, Text} from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import { CameraRoll } from "@react-native-camera-roll/camera-roll";
 import { useNavigation } from '@react-navigation/native';
-import Video, { LoadError, OnLoadData } from 'react-native-video';
+import Video from 'react-native-video';
 import { useIsFocused } from '@react-navigation/core';
 import { useIsForeground } from '../hooks/useIsAppForeground';
+import DraggableText from '../views/DraggableText';
+import {GestureHandlerRootView} from 'react-native-gesture-handler'
+import { TextInput } from 'react-native';
+import { useSharedValue } from 'react-native-reanimated';
+
+var screenHeight = Dimensions.get('window').height;
 
 const requestSavePermission = async () => {
   if (Platform.OS !== 'android') return true;
@@ -31,6 +37,8 @@ const MediaScreen = ({ route }) => {
   const [index, setIndex] = useState(0);
   const [source, setSource] = useState({ uri: `file://${path}` });
   const [mediaType, setMediaType] = useState(type);
+  const [text, setText] = useState(!send?shots[0].contentText:null);
+  const positionY = useSharedValue(!send?shots[0].positionY:500);
   
   const onSavePressed = useCallback(async () => {
     try {
@@ -55,11 +63,16 @@ const MediaScreen = ({ route }) => {
   }, [path, type]);
 
   const sendCapture = () => {
-    navigation.navigate('ContactScreen', {
+    var data = {
       path: path,
       type: type,
       sendCapture: true
-    });
+    }
+    if(text!=null){
+      data.contentText = text,
+      data.positionY = positionY.value
+    }
+    navigation.navigate('ContactScreen', data);
   }
   const onMediaLoadEnd = useCallback(() => {
     setHasMediaLoaded(true);
@@ -73,13 +86,15 @@ const MediaScreen = ({ route }) => {
     if (!send) {
       setSource({ uri: shots[index].url })
       setMediaType( shots[index].url.includes('.mp4')?'video':'photo' )
+      setText(shots[index].contentText);
+      positionY.value = shots[index].positionY;
     }
   }, [index])
   
   const screenStyle = useMemo(() => ({ opacity: hasMediaLoaded ? 1 : 0, backgroundColor: 'black' }), [hasMediaLoaded]);
 
   return (
-    <View style={[styles.container, screenStyle]}>
+    <GestureHandlerRootView style={[styles.container, screenStyle]}>
         {mediaType === 'photo' && (
         <Image source={source} style={StyleSheet.absoluteFill} resizeMode="cover" onLoadEnd={onMediaLoadEnd} />
         )}
@@ -102,8 +117,28 @@ const MediaScreen = ({ route }) => {
           onError={onMediaLoadError}
         />
         )}
+        {text !== null && 
+        <DraggableText style={{}} initialX={-1} initialY={positionY.value} positionY={positionY} disabled={!send}>
+          {send && <View style={{width: 60, height: 12, backgroundColor: 'rgba(0, 0, 0, 0.8)', borderTopEndRadius: 5, borderTopStartRadius: 5, alignSelf: 'flex-end'}}>
+          </View>}
+          <View style={styles.textContainer} >
+          <TextInput 
+            style={styles.textInputStyle}
+            onChangeText={(text) => setText(text)}
+            value={text}
+            cursorColor='white'
+            multiline={true}
+            autoFocus={send}
+            textAlign='center'
+            disabled={!send}
+            />
+          </View>
+        </DraggableText>}
         {send &&
         <>
+        <TouchableOpacity onPress={() => {setText(text==null?'':null)}} style={styles.textButton}>
+          <IonIcon name="md-pencil-outline"  color="rgba(255,255,255,0.8)" size={30} />
+        </TouchableOpacity>
         <TouchableOpacity onPress={() => {sendCapture()}} style={styles.sendButton}><IonIcon name="send-sharp" color="rgba(255,255,255,0.8)" size={30} /></TouchableOpacity>
         <TouchableOpacity style={styles.saveButton} onPress={onSavePressed} disabled={savingState !== 'none'}>
           <>
@@ -123,13 +158,12 @@ const MediaScreen = ({ route }) => {
         <TouchableOpacity onPress={() => {setIndex(index+1)}} style={[styles.nextButton, {right: '5%'}]}>
           <IonIcon name="caret-forward-outline"  color="rgba(255,255,255,0.8)" size={30} />
         </TouchableOpacity>}
-        </>
-        }
+        </>}
         <TouchableOpacity onPress={() => {navigation.goBack()}} style={styles.closeButton}>
           <IonIcon name="close-outline"  color="rgba(255,255,255,0.8)" size={30} />
         </TouchableOpacity>
         <TouchableOpacity onPress={() => {navigation.navigate('CameraScreen')}} style={styles.retakeButton}><></></TouchableOpacity>
-    </View>
+    </GestureHandlerRootView>
   );
 };
 
@@ -137,25 +171,37 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     height: "100%",
+    minHeight: screenHeight
+  },
+  textContainer: {
+    width: '100%', 
+    backgroundColor: 'rgba(0, 0, 0, 0.8)', 
+    justifyContent: 'center', 
+    alignItems: 'center',
   },
   sendButton: {
     position: 'absolute',
-    bottom: "5%",
-    right: "5%"
+    bottom: 50,
+    right: 30
   },
   closeButton: {
     position: 'absolute',
-    top: "5%",
-    right: "5%"
+    top: 30,
+    right: 30
   },
   saveButton: {
     position: 'absolute',
-    bottom: "5%",
-    left: "5%"
+    bottom: 50,
+    left: 30
   },
   nextButton: {
     position: 'absolute',
     bottom: "50%",
+  },
+  textButton: {
+    position: 'absolute',
+    bottom: 150,
+    right: 30
   },
   retakeButton: {
     width: 60,
@@ -166,8 +212,15 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     alignSelf: 'center',
     position: 'absolute',
-    bottom: "5%"
+    bottom: 50
   },
+  textInputStyle: {
+    fontFamily: 'Montserrat-Regular',
+    color: 'white',
+    backgroundColor: 'rgba(0, 0, 0, 0)',
+    paddingVertical: 0,
+    paddingHorizontal: 2,
+  }
 });
 
 export default MediaScreen;

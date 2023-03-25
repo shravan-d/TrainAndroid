@@ -52,7 +52,7 @@ const ChatScreen = () => {
   }
 
   const getShots = async () => {
-    const { data, error } = await supabase.from('shots').select('content_url')
+    const { data, error } = await supabase.from('shots').select()
     .eq('receiver_id', user.id).eq('read_bool', false).eq('sender_id', secondUser.id);
     setShots(data);
     if(error) console.error(error.message)
@@ -64,7 +64,7 @@ const ChatScreen = () => {
       const res = await supabase.storage.from('shots').createSignedUrl(shot.content_url, 60)
       if(res.error) console.error(res.error.message)
       var publicUrl = res.data.signedUrl
-      newShots.push({url: publicUrl});
+      newShots.push({url: publicUrl, contentText: shot.content_text, positionY: shot.text_position});
     }
     navigation.navigate('MediaScreen', {
       path: newShots[0].url,
@@ -104,7 +104,7 @@ const ChatScreen = () => {
   const updateReceivedShot = () => {
     if (!hasNewShot) return;
     if (newShot.sender_id==secondUser.id){
-      setShots((shots) => [...shots, {content_url: newShot.content_url}])
+      setShots((shots) => [...shots, {content_url: newShot.content_url, contentText: newShot.content_text, positionY: newShot.text_position}])
     }
   }
 
