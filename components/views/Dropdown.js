@@ -7,7 +7,7 @@ const Dropdown = ({value, setValue, header, dropdownItems, elevation}) => {
   const [items, setItems] = useState(dropdownItems);
   return (
     <View style={[styles.dropdown, {zIndex: elevation, elevation: elevation}]}>
-        <Text style={styles.dropdownHeader}>{header}</Text>
+        {header != "" && <Text style={styles.dropdownHeader}>{header}</Text>}
           <DropDownPicker
             listMode="SCROLLVIEW"
             open={open}
@@ -53,4 +53,3 @@ const styles = StyleSheet.create({
 });
 
 export default Dropdown;
-//Change dropdown items to state based variables?

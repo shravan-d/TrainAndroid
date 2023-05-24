@@ -39,14 +39,6 @@ const ExerciseDetailScreen = ({ route }) => {
     return exerciseList[index];
   }, [index])
 
-  const onMediaLoadError = useCallback(error => {
-    console.log(`failed to load media: ${JSON.stringify(error)}`);
-  }, []);
-
-  const onVideoBuffer = param => {
-    setIsLoading(param.isBuffering);
-  };
-
   const loadingView = () => {
     if (isLoading)
       return (
@@ -64,6 +56,13 @@ const ExerciseDetailScreen = ({ route }) => {
   };
 
   const getDetails = async () => {
+    const detailRes = await supabase.from('exercises').select().eq('exercise_id', currentExercise.id);
+    if (detailRes.error) console.error(detailRes.error)
+    setExerciseDetails({
+      steps: detailRes.data[0].steps.split('.'), 
+      mistakes: detailRes.data[0].mistakes?.split('.'), 
+      recommended_sets: detailRes.data[0].recommended_sets?.split('.')})
+    console.log(detailRes.data)
     if (!currentExercise.variation_id) return;
     const variationRes = await supabase.from('exercises').select().eq('id', currentExercise.variation_id);
     setVariation(variationRes.data[0])
@@ -74,16 +73,15 @@ const ExerciseDetailScreen = ({ route }) => {
   }, [currentExercise])
 
   var buttonsRequired = exerciseList?.length > 1;
-  const exerciseSteps = currentExercise?.steps?.split('.');
-  const exerciseMistakes = currentExercise?.mistakes?.split('.');
-  const source = useMemo(() => ({ uri: 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master_928.m3u8' }), [currentExercise]);
+  const [exerciseDetails, setExerciseDetails] = useState({steps: [], mistakes: [], recommended_sets: []});
+  const source = useMemo(() => ({ uri: currentExercise.gifUrl }), [currentExercise]);
 
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} style={styles.exerciseContainer}>
         <ImageBackground source={bg} imageStyle={{opacity: 0.4}}>
           <View style={{height: 0.5*screenHeight}}>
-            <Video
+            {/* <Video
               source={source}
               style={{height: '100%'}}
               paused={isVideoPaused||paused}
@@ -100,6 +98,10 @@ const ExerciseDetailScreen = ({ route }) => {
               ignoreSilentSwitch="ignore"
               onBuffer={onVideoBuffer}
               onError={onMediaLoadError}
+            /> */}
+            <Image 
+              source={source}  
+              style={{height: '100%'}}
             />
             {loadingView()}
             {buttonsRequired && (
@@ -122,19 +124,20 @@ const ExerciseDetailScreen = ({ route }) => {
               </View>}
               </>
             )}
-            <View style={styles.pauseButton}>
+            {/* <View style={styles.pauseButton}>
               <Pressable onPress={()=>setPaused(!paused)}>
               {!paused && <IonIcon name="pause-outline" size={18} color="white" />}
               {paused && <IonIcon name="play" size={18} color="white" />}
               </Pressable>
-            </View>
+            </View> */}
           </View>
           <View style={styles.contentContainer}>
-            <Text style={styles.header}>{currentExercise.exercise_name}</Text>
+            <Text style={styles.header}>{currentExercise.name}</Text>
             <View style={styles.muscleContainer}>
               <View>
                 <Text style={styles.subtext}>
-                  {currentExercise.requirements?currentExercise.requirements:'No Equipment Required'}
+                  {/* {currentExercise.equipment?currentExercise.equipment:'No Equipment Required'} */}
+                  {currentExercise.target}
                 </Text>
                 <View style={{flexDirection: 'row', marginTop: '5%'}}>
                   <Text style={[styles.subtext, {color: '#CD3B3C', marginRight: '5%'} ]}>Primary</Text>
@@ -145,38 +148,39 @@ const ExerciseDetailScreen = ({ route }) => {
               <View style={styles.mgContainer}>
                 <Image
                   style={styles.mgImage}
-                  source={{uri: muscleGroupDetails.find((ele) => ele.label==currentExercise.muscle_group)?.primary_img}}
+                  source={{uri: muscleGroupDetails.find((ele) => ele.label==currentExercise.bodyPart)?.primary_img}}
                 />
                 <Image
                   style={styles.mgImage}
-                  source={{uri: muscleGroupDetails.find((ele) => ele.label==currentExercise.secondary_mg)?.secondary_img}}
+                  source={{uri: muscleGroupDetails.find((ele) => ele.label==currentExercise.bodyPart)?.secondary_img}}
                 />
               </View>
             </View>
+            {exerciseDetails.steps &&
             <View style={styles.steps}>
               <Text style={styles.subHeader}>Steps</Text>
-              {exerciseSteps.map((item, index) => (
+              {exerciseDetails.steps.map((item, index) => (
                 <View key={index} style={{flexDirection: 'row', marginBottom: '2%'}}>
                   <Text style={styles.counter}>{index + 1}</Text>
                   <Text style={styles.subtext}>{item}.</Text>
                 </View>
               ))}
-            </View>
-            {exerciseMistakes &&
+            </View> }
+            {exerciseDetails.mistakes &&
             <View style={styles.steps}>
               <Text style={styles.subHeader}>Common Mistakes to Avoid</Text>
-              {exerciseMistakes.map((item, index) => (
+              {exerciseDetails.mistakes.map((item, index) => (
                 <View key={index} style={{flexDirection: 'row', marginBottom: '2%'}}>
                   <Text style={styles.counter}>{index + 1}</Text>
                   <Text style={styles.subtext}>{item}.</Text>
                 </View>
               ))}
             </View>}
-            {currentExercise.recommended_sets &&
+            {exerciseDetails.recommended_sets &&
             <View style={styles.steps}>
               <Text style={styles.subHeader}>Recommended sets for beginners</Text>
               <Text style={styles.subtext}>
-                {currentExercise.recommended_sets}
+                {exerciseDetails.recommended_sets}
               </Text>
             </View>}
             {variation && 
@@ -210,6 +214,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: 'Montserrat-Bold',
     fontSize: 28,
+    textTransform: 'capitalize'
   },
   subHeader: {
     color: 'white',
@@ -235,6 +240,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontFamily: 'Montserrat-Regular',
     marginLeft: 8,
+    textTransform: 'capitalize'
   },
   steps: {
     marginTop: 10,

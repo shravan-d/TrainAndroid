@@ -1,13 +1,14 @@
 import {React, useEffect, useState, useContext, useMemo} from 'react';
-import {StyleSheet, ImageBackground, View, Text, Dimensions, TouchableOpacity, TextInput} from 'react-native';
+import {StyleSheet, ImageBackground, View, Text, Dimensions, TouchableOpacity, TextInput, FlatList} from 'react-native';
 import ExerciseCard from '../views/ExerciseCard';
 import Dropdown from '../views/Dropdown';
 import MenuBar from '../views/MenuBar';
 import NavBar from '../views/NavBar';
-import { ScrollView } from 'react-native-gesture-handler';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import { supabase } from '../../supabaseClient';
 import { AuthContext } from '../../App';
+import { exerciseStore } from '../ExerciseReducer';
+import RadioGroup from '../views/RadioGroup';
 
 var screenHeight = Dimensions.get('window').height;
 var screenWidth = Dimensions.get('window').width;
@@ -26,24 +27,49 @@ const ExerciseGuide = () => {
     {id: 6, primary_img: '', secondary_img: '', label: 'Triceps', value: 'Triceps'},
     {id: 7, primary_img: '', secondary_img: '', label: 'Abs', value: 'Abs'},
   ];
+  var equipmentDetails = [
+    {id: 0, label: 'Full Gym', value: '0'},
+    {id: 1, label: 'No Equipment', value: '1'},
+    {id: 2, label: 'Resistance Band and Dumbells', value: '2'},
+  ];
 
   const [showFavorites, setShowFavorites] = useState(false);
   const [search, setSearch] = useState('');
   const [openSearch, setOpenSearch] = useState(false)
   const [muscleGroup, setMuscleGroup] = useState('');
+  const [equipment, setEquipment] = useState(0);
   const [exerciseList, setExerciseList] = useState([]);
   const [modifyFavourites, setModifyFavourites] = useState([]);
+  
+  var fullExerciseList = exerciseStore.getState().exerciseList;
 
-  const filteredExercises = useMemo( () => { return exerciseList.filter(function (item) {
-    const itemData = item.exercise_name.toUpperCase();
-    const textData = search.toUpperCase();
-    var searchBool = search == '' ? true : itemData.indexOf(textData) > -1;
-    var favoritesBool = !showFavorites ? true : item.favourite == showFavorites;
-    const mgItemData = item.muscle_group.toUpperCase();
-    const mgTextData = muscleGroup.toUpperCase();
-    var groupBool = muscleGroup == '' ? true : mgItemData.indexOf(mgTextData) > -1;
-    return favoritesBool && groupBool && searchBool;
-  })}, [showFavorites, muscleGroup, search, exerciseList])
+  const filteredExercises = useMemo( () => { 
+    if (search=='' && muscleGroup=='' && !showFavorites && equipment==0)
+      return exerciseList
+    else
+      return fullExerciseList.filter(function (item) {
+        const itemData = item.name.toUpperCase();
+        const textData = search.toUpperCase();
+        var searchBool = search == '' ? true : itemData.indexOf(textData) > -1;
+        var favoritesBool = !showFavorites ? true : item.favourite == showFavorites;
+        const mgItemData = item.bodyPart.toUpperCase();
+        const mgTextData = muscleGroup.toUpperCase();
+        var groupBool = muscleGroup == '' ? true : mgItemData.indexOf(mgTextData) > -1;
+        const equipmentData = item.equipment;
+        var equipmentBool = false;
+        switch(equipment){
+          case 0:
+            equipmentBool = true
+          case 1:
+            if (equipmentData == 'body weight')
+              equipmentBool = true
+          case 2:
+            if (equipmentData == 'resistance band' || equipmentData == 'dumbbell' || equipmentData == 'band')
+              equipmentBool = true
+        }
+        return favoritesBool && groupBool && searchBool && equipmentBool;
+      })
+  }, [showFavorites, muscleGroup, search, exerciseList, equipment])
 
 
   const changeFavouriteCallback = (favorite, exercise_id) =>{
@@ -55,19 +81,55 @@ const ExerciseGuide = () => {
     }
     setModifyFavourites(temp)
   }
+  
+  const getNextExercises = () => {
+    exerciseStore.dispatch({ type: 'nextPage' })
+    const storeData = exerciseStore.getState()
+    const data = storeData.exerciseList.slice(0, storeData.pageNum);
+    setExerciseList(data)
+  }
 
   const getExerciseList = async () => {
-    const {data, error} = await supabase.from('exercises').select();
-    if(error) console.error(error.message)
-    for (var exercise of data)
-      exercise.favourite = false;
+    if (fullExerciseList.length > 0){
+      setExerciseList(fullExerciseList.slice(0, 20))
+      return;
+    }
+    const url = 'https://exercisedb.p.rapidapi.com/exercises';
+    const options = {
+      method: 'GET',
+      headers: {
+        'X-RapidAPI-Key': '6922712921msha18f9f777ed4224p13d611jsnc5f3e21aa4a8',
+        'X-RapidAPI-Host': 'exercisedb.p.rapidapi.com'
+      }
+    };
+    const response = await fetch(url, options);
+    if(response.error) console.error(response.error);
+    var data = await response.json();
+    var initialData = data.slice(0, 20)
+
     const favouriteRes = await supabase.from('user_exercise_fav').select('exercise_id').eq('user_id', user.id);
     if(favouriteRes.error) console.error(favouriteRes.error.message)
-    for (const fav of favouriteRes.data){
-      var idx = data.findIndex((obj => obj.id == fav.exercise_id));
-      data[idx].favourite = true;
+    const favourites = favouriteRes.data.map((ele) => {return ele.exercise_id})
+
+    for (var exercise of initialData){
+      if (favourites.includes(exercise.id))
+        exercise.favourite = true;
+      else
+        exercise.favourite = false;
     }
-    setExerciseList(data)
+    setExerciseList(initialData)
+
+    var newData = [];
+    for (var exercise of data){
+      if (favourites.includes(exercise.id))
+        exercise.favourite = true;  
+      else
+        exercise.favourite = false;
+      if (exercise.name.length < 30)
+        newData.push(exercise)
+    }
+    fullExerciseList = newData;
+    exerciseStore.dispatch({ type: 'fetchedExercises', payload: newData})
   }
 
   useEffect(() => {
@@ -97,6 +159,12 @@ const ExerciseGuide = () => {
       if (insertData.length > 0){
         const insertRes = await supabase.from('user_exercise_fav').insert(insertData);
         if(insertRes.error) console.error(insertRes.error)
+        for (var exercise of fullExerciseList){
+          const favourites = insertData.map((ele) => {return ele.exercise_id})
+          if (favourites.includes(exercise.id))
+            exercise.favourite = true;
+        }
+        exerciseStore.dispatch({ type: 'fetchedExercises', payload: fullExerciseList})
       }
       for (const del of deleteData){
         const deleteRes = await supabase.from('user_exercise_fav').delete().eq('user_id', del.user_id).eq('exercise_id', del.exercise_id);
@@ -104,6 +172,21 @@ const ExerciseGuide = () => {
       }
     }
   }, [muscleGroup])
+
+  const renderListHeader = () => (
+    <>
+      <RadioGroup 
+        data={[{label: 'Full Gym', value: 0}, {label: 'No Equipment', value: 1}, {label: 'Dumbells & Band', value: 2}]}
+        currentValue={equipment}
+        onSelect={(value) => setEquipment(value)} />
+      <View style={styles.favouritesContainer}>
+        <Text style={styles.text}>{showFavorites?'Show All':'Show favorites'}</Text>
+        <TouchableOpacity onPress={() => setShowFavorites(!showFavorites)}>
+        <IonIcon name="heart" size={18} color={showFavorites ? '#D4AF37' : 'white'} />
+        </TouchableOpacity>
+      </View>
+    </>
+  )
 
   return (
     <View style={styles.container}>
@@ -119,14 +202,14 @@ const ExerciseGuide = () => {
             <>
             <TextInput 
               style={styles.textInputStyle} 
-              maxLength={10}
+              maxLength={30}
               onChangeText={(text) => setSearch(text)}
               onSubmitEditing = {() => {setOpenSearch(!openSearch); setSearch('')}}
               value={search}
               cursorColor='white'
               underlineColorAndroid="rgba(0,0,0,0)"
             />
-            <TouchableOpacity onPress={() => {setOpenSearch(!openSearch)}} style={styles.closeButton}>
+            <TouchableOpacity onPress={() => {setSearch('');setOpenSearch(!openSearch)}} style={styles.closeButton}>
               <IonIcon name="close-outline" color="rgba(250,250,250,0.8)" size={24} />
             </TouchableOpacity>
             </>
@@ -138,17 +221,20 @@ const ExerciseGuide = () => {
             header={"What muscle group would you like to workout today?"} dropdownItems={muscleGroupDetails} elevation={1} zIndex={1}/>      
           </View>
         </View>
-        <ScrollView showsVerticalScrollIndicator={false} style={styles.exerciseContainer}>
-          <View style={styles.favouritesContainer}>
-            <Text style={styles.text}>{showFavorites?'Show All':'Show favorites'}</Text>
-            <TouchableOpacity onPress={() => setShowFavorites(!showFavorites)}>
-            <IonIcon name="heart" size={18} color={showFavorites ? '#D4AF37' : 'white'} />
-            </TouchableOpacity>
+        <View style={styles.exerciseContainer}>
+          <FlatList 
+            contentContainerStyle={{ flexGrow: 1 }}
+            showsVerticalScrollIndicator={false}
+            data={filteredExercises}
+            renderItem={(exercise) => (
+              <ExerciseCard key={exercise.item.id} exercise={exercise.item} changeFavouriteCallback={changeFavouriteCallback}/>
+            )}
+            ListHeaderComponent={renderListHeader}
+            onEndReached={getNextExercises}
+            onEndReachedThreshold={0.2}
+            keyExtractor={(item, index) => item.id}
+          />
           </View>
-          {filteredExercises.map((exercise) => (
-            <ExerciseCard key={exercise.id} exercise={exercise} changeFavouriteCallback={changeFavouriteCallback}/>
-          ))}
-        </ScrollView>
       </ImageBackground>
       </View>
       <NavBar />
@@ -174,7 +260,7 @@ const styles = StyleSheet.create({
   favouritesContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingBottom: 20
+    paddingVertical: 20
   },
   text: {
     color: 'white',
@@ -182,6 +268,7 @@ const styles = StyleSheet.create({
   },
   exerciseContainer: {
     width: "100%",
+    height: '76%',
     padding: 10,
     zIndex: 0,
     elevation: 0

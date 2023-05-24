@@ -1,18 +1,15 @@
 import {React, useState} from 'react';
-import {StyleSheet, TouchableOpacity, View, Text, Dimensions, Image, ScrollView} from 'react-native';
+import {StyleSheet, TouchableOpacity, View, Text, Dimensions, Image, ImageBackground} from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
-
-var width = Dimensions.get('window').width;
-var screenHeight = Dimensions.get('window').height;
 
 const ExerciseCard = ({ exercise, changeFavouriteCallback }) => {
   const navigation = useNavigation();
   const [favorite, setFavorite] = useState(exercise.favourite);
   const [cardPress, setCardPress] = useState(false);
-  const exerciseSteps = exercise.steps.split(".");
+  // const exerciseSteps = exercise.steps.split(".");
   var defaultIcon = require ('../../assets/media/logo1.png');
-  let image = exercise.image_url?{uri: exercise.image_url}:defaultIcon;
+  let image = exercise.gifUrl?{uri: exercise.gifUrl}:defaultIcon;
 
   const onFavouriteClick = (fav) => {
     setFavorite(fav);
@@ -20,30 +17,30 @@ const ExerciseCard = ({ exercise, changeFavouriteCallback }) => {
   }
 
   return (
-    <View style={[styles.container, cardPress?{minHeight:200}:{height:90}]}>
-      {!cardPress && 
-        <View style={styles.smallCard}>
-          <View style={styles.cardContent}>
-            <View style={styles.cardImage}><Image style={{width:"90%", height: "100%", borderRadius: 5,}} source={image}/></View>
-            <View style={styles.cardText}>
-              <Text style={styles.cardHeader}>{exercise.exercise_name}</Text>
-              <Text style={styles.cardSubtext}>{exercise.requirements?exercise.requirements:"No Requirements"}</Text>
-            </View>
+    <View style={[styles.container, cardPress?{minHeight:200}:{height:90}]}> 
+      <View style={styles.smallCard}>
+        <View style={styles.cardContent}>
+          <View style={styles.cardImage}><Image style={{width:"90%", height: "100%", borderRadius: 5}} source={image}/></View>
+          <View style={styles.cardText}>
+            <Text style={styles.cardHeader}>{exercise.name}</Text>
+            <Text style={styles.cardSubtext}>{exercise.equipment?exercise.equipment:"No Requirements"}</Text>
           </View>
-          <TouchableOpacity onPress={() => {setCardPress(!cardPress)}} style={styles.expandArrow}>
-            <IonIcon name="chevron-down" size={30} color="#D4AF37" />
-          </TouchableOpacity>
-          {changeFavouriteCallback !== undefined &&
-          <TouchableOpacity onPress={() => onFavouriteClick(!favorite)} style={styles.heart}>
-            <IonIcon name="heart" size={18} color={favorite ? '#D4AF37' : 'rgba(20,20,20,0.2)'} />
-          </TouchableOpacity>}
         </View>
-      }
-      {cardPress && 
+        <TouchableOpacity onPress={() =>navigation.navigate('ExerciseDetailScreen', {exercise: exercise})} style={styles.expandArrow}>
+          {/* <IonIcon name="chevron-down" size={30} color="#D4AF37" /> */}
+          <IonIcon name="arrow-forward" size={18} color="#D4AF37" />
+        </TouchableOpacity>
+        {changeFavouriteCallback !== undefined &&
+        <TouchableOpacity onPress={() => onFavouriteClick(!favorite)} style={styles.heart}>
+          <IonIcon name="heart" size={18} color={favorite ? '#D4AF37' : 'rgba(20,20,20,0.2)'} />
+        </TouchableOpacity>}
+      </View>
+      
+      {/* {cardPress && 
         <View style={styles.bigCard}>
             <View style={styles.cardContent}>
                 <View style={styles.cardImageContent}>
-                    <Text style={styles.bigCardHeader}>{exercise.exercise_name}</Text>
+                    <Text style={styles.bigCardHeader}>{exercise.name}</Text>
                     <View style={styles.bigCardImage}><Image style={{width:"90%", height: 0.15*screenHeight, borderRadius: 5,}} source={image}/></View>
                 </View>
                 <View style={styles.bigCardText}>
@@ -63,7 +60,7 @@ const ExerciseCard = ({ exercise, changeFavouriteCallback }) => {
             <IonIcon name="chevron-up" size={30} color="#D4AF37" />
             </TouchableOpacity>
         </View>
-      }
+      } */}
     </View>
   );
 };
@@ -89,18 +86,21 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   cardText: {
-    marginTop: "5%"
+    paddingVertical: '3%',
+    width: '50%',
   },
   cardHeader: {
     fontFamily: 'Montserrat-Italic',
     fontSize: 18,
-    color: 'black'
+    color: 'black',
+    textTransform: 'capitalize'
   },
   cardSubtext: {
     fontFamily: 'Montserrat-Regular',
     fontSize: 14,
     marginTop: 5,
-    color: 'black'
+    color: 'black',
+    textTransform: 'capitalize'
   },
   bigCard: {
     backgroundColor: "rgba(255,255,255,0.95)",
@@ -140,15 +140,15 @@ const styles = StyleSheet.create({
   expandArrow: {
     backgroundColor: "rgba(0,0,0,0)",
     position: 'absolute',
-    right: 5,
-    paddingLeft: 10
+    right: 0,
+    padding: 10
   },
   heart: {
     backgroundColor: "rgba(0,0,0,0)",
     position: 'absolute',
-    right: 10,
-    bottom: 15,
-    paddingLeft: 10
+    right: 0,
+    bottom: 5,
+    padding: 10
   },
   cardMoretext: {
     marginTop: 5,

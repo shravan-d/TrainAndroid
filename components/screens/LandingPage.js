@@ -13,7 +13,7 @@ const LandingPage = () => {
     <View style={styles.container}>
     <ImageBackground source={bg} style={styles.background}>
         {user && <Text style={styles.header}>Hello {user.user_metadata.display_name||user.user_metadata.name}</Text>}
-        <Text style={styles.header}>Welcome to Train.com</Text>
+        <Text style={styles.header}>Welcome to Train</Text>
         <NavBar style = {styles.NavBar}/>
         <MenuBar />
     </ImageBackground>

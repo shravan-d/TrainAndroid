@@ -54,6 +54,7 @@ const LoginScreen = () => {
   const signInWithLink = async (e) => {
     e.preventDefault()
     try {
+      setLoading(true)
       if(!validateEmail(email)){
         setShowErrorMessage('Invalid Email');
         return;
@@ -64,7 +65,6 @@ const LoginScreen = () => {
         return;
       }
       setShowErrorMessage('');
-      setLoading(true)
       const res = await supabase.auth.signInWithOtp({ email })
       if (res.error) throw res.error
       setLoginLinkReceived(true)
