@@ -9,12 +9,9 @@ import RoutineDayCard from '../views/RoutineDayCard';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { supabase } from '../../supabaseClient';
 import { AuthContext } from '../../App';
-
-var screenHeight = Dimensions.get('window').height;
-var screenWidth = Dimensions.get('window').width;
+import { exerciseStore } from '../ExerciseReducer';
 
 const RoutineDetailScreen = ({ route }) => {
-  var bg = require('../../assets/media/bg.png');
   var overlays = require('../../assets/media/ig4.jpg');
   const navigation = useNavigation();
   const user = useContext(AuthContext);
@@ -35,7 +32,7 @@ const RoutineDetailScreen = ({ route }) => {
   const [deleteModal, setDeleteModal] = useState(false);
   const myRoutineRef = useRef(inMyList);
   const myRatingRef = useRef(myRating)
-
+  var fullExerciseList = exerciseStore.getState().exerciseList;
 
   const createNewRoutine = async () => {
     if(!newWorkoutName) return;
@@ -81,15 +78,49 @@ const RoutineDetailScreen = ({ route }) => {
     navigation.goBack();
   }
 
+  const getExerciseList = async () => {
+    const url = 'https://exercisedb.p.rapidapi.com/exercises';
+    const options = {
+      method: 'GET',
+      headers: {
+        'X-RapidAPI-Key': '6922712921msha18f9f777ed4224p13d611jsnc5f3e21aa4a8',
+        'X-RapidAPI-Host': 'exercisedb.p.rapidapi.com'
+      }
+    };
+    const response = await fetch(url, options);
+    if(response.error) console.error(response.error);
+    var data = await response.json();
+    const favouriteRes = await supabase.from('user_exercise_fav').select('exercise_id').eq('user_id', user.id);
+    if(favouriteRes.error) console.error(favouriteRes.error.message)
+    const favourites = favouriteRes.data.map((ele) => {return ele.exercise_id})
+    var newData = [];
+    for (var exercise of data){
+      if (favourites.includes(exercise.id))
+        exercise.favourite = true;  
+      else
+        exercise.favourite = false;
+      if (exercise.name.length < 30)
+        newData.push(exercise)
+    }
+    fullExerciseList = newData;
+    exerciseStore.dispatch({ type: 'fetchedExercises', payload: newData})
+  }
+
   const getRoutineDays = async () => {
     const dayRes = await supabase.from('routine_days').select().eq('routine_id', routine.id);
     if (dayRes.error) console.error(dayRes.error)
     var data = dayRes.data;
     data.sort(function(a, b) {return (a.created_at > b.created_at)?1:-1;});
     for(var day of data) {
-      const exerciseRes = await supabase.from('days_exercise_map').select('exercise_id, exercises(*)').eq('day_id', day.id);
+      const exerciseRes = await supabase.from('days_exercise_map').select('exercise_id').eq('day_id', day.id);
       if (exerciseRes.error) console.error(exerciseRes.error)
-      day.exerciseList = exerciseRes.data.map(e => e.exercises);
+      if (fullExerciseList.length === 0){
+        getExerciseList();
+        fullExerciseList = exerciseStore.getState().exerciseList;
+      } 
+      day.exerciseList = [];
+      if (fullExerciseList.length !== 0)
+        day.exerciseList = exerciseRes.data.map(e => fullExerciseList.find(ele => ele.id == e.exercise_id));
     }
     setDayList(data)
   }
@@ -97,18 +128,22 @@ const RoutineDetailScreen = ({ route }) => {
   const getExercises = async () => {
     if(!modalVisible) return;
     if(dropdownItems.length > 0) return;
-    const {data, error} = await supabase.from('exercises').select('id, exercise_name, muscle_group');
-    if (error) console.error(error)
+    if (fullExerciseList.length === 0){
+      getExerciseList();
+      fullExerciseList = exerciseStore.getState().exerciseList;
+    } 
     var parentList = [
-      {value: 'Chest', label: 'Chest'},
-      {value: 'Back', label: 'Back'},
-      {value: 'Legs', label: 'Legs'},
-      {value: 'Triceps', label: 'Triceps'},
-      {value: 'Biceps', label: 'Biceps'},
-      {value: 'Abs', label: 'Abs'},
-      {value: 'Shoulder', label: 'Shoulder'},
+      {value: 'chest', label: 'Chest'},
+      {value: 'back', label: 'Back'},
+      {value: 'upper legs', label: 'Upper Legs'},
+      {value: 'lower legs', label: 'Lower Legs'},
+      {value: 'upper arms', label: 'Upper Arms'},
+      {value: 'lower arms', label: 'Lower Arms'},
+      {value: 'cardio', label: 'Cardio'},
+      {value: 'waist', label: 'Abs'},
+      {value: 'shoulders', label: 'Shoulder'},
     ];
-    var exerciseList = data.map((ele) => {return {label: ele.exercise_name, parent:ele.muscle_group, value: ele.id}})
+    var exerciseList = fullExerciseList.map((ele) => {return {label: ele.name, parent:ele.bodyPart, value: ele.id}})
     parentList.push(...exerciseList);
     setDropdownItems(parentList);
   }
@@ -201,7 +236,7 @@ const RoutineDetailScreen = ({ route }) => {
           >
             <View style={styles.centeredView}>
               <View style={styles.modalView}>
-                <Text style={{fontFamily: 'Montserrat-Regular', color: 'black'}}>Enter the name of your workout</Text>
+                <Text style={{fontFamily: 'Montserrat-Regular', color: 'black'}}>Enter the name of your workout day</Text>
                 <TextInput autoCapitalize='sentences' style={styles.textInputStyle}  maxLength={20} onChangeText={(text) => setNewWorkoutName(text)} value={newWorkoutName} cursorColor={"rgba(0,0,0,1)"}/>
                 <DropDownPicker
                   listMode='MODAL'
@@ -241,7 +276,8 @@ const RoutineDetailScreen = ({ route }) => {
                     borderBottomColor: "#D4AF37"
                   }}
                   listItemLabelStyle={{
-                    color: "white"
+                    color: "white",
+                    textTransform: 'capitalize'
                   }}
                   listParentLabelStyle={{
                     fontWeight: "bold",
@@ -345,7 +381,7 @@ const styles = StyleSheet.create({
   },
   addListContainer: {
     flexDirection: 'row',
-    marginBottom: '5%',
+    marginBottom: '4%',
     justifyContent: 'center',
   },
   addListContainer_: {

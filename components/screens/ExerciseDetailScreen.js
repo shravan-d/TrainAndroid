@@ -62,7 +62,6 @@ const ExerciseDetailScreen = ({ route }) => {
       steps: detailRes.data[0].steps.split('.'), 
       mistakes: detailRes.data[0].mistakes?.split('.'), 
       recommended_sets: detailRes.data[0].recommended_sets?.split('.')})
-    console.log(detailRes.data)
     if (!currentExercise.variation_id) return;
     const variationRes = await supabase.from('exercises').select().eq('id', currentExercise.variation_id);
     setVariation(variationRes.data[0])
@@ -135,7 +134,7 @@ const ExerciseDetailScreen = ({ route }) => {
             <Text style={styles.header}>{currentExercise.name}</Text>
             <View style={styles.muscleContainer}>
               <View>
-                <Text style={styles.subtext}>
+                <Text style={[styles.subtext, {textTransform: 'capitalize'}]}>
                   {/* {currentExercise.equipment?currentExercise.equipment:'No Equipment Required'} */}
                   {currentExercise.target}
                 </Text>
@@ -240,7 +239,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontFamily: 'Montserrat-Regular',
     marginLeft: 8,
-    textTransform: 'capitalize'
   },
   steps: {
     marginTop: 10,

@@ -3,16 +3,10 @@ import { StyleSheet, View, Text, Dimensions, TouchableOpacity } from 'react-nati
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import {useNavigation} from '@react-navigation/native';
 
-var screenHeight = Dimensions.get('window').height;
-var screenWidth = Dimensions.get('window').width;
-
 const RoutineDayCard = ({ day }) => {
   const navigation = useNavigation();
   const [cardPress, setCardPress] = useState(false);
-
-  let exercises = [{name: 'Pull Ups', id: '0'}, {id: '3',name: 'Hyper extensions'}, {id: '1',name: 'Lat Pulldowns'}, {id: '2', name: 'Dumbell Rows'}, {id: '5', name: 'Single hand rows'}, {id: '6', name: 'Deadlifts'}, {id: '7', name: 'Barbell Rows'},]
-  useEffect(() => {}, []);
-
+  
   return (
     <View style={styles.dayContainer}>
       {!cardPress && (
@@ -43,10 +37,10 @@ const RoutineDayCard = ({ day }) => {
               </View>
               <View style={styles.exerciseContainer}>
               {day.exerciseList.map((exercise, index) => (
-                  <View key={index} style={{marginBottom: '2%', width: '40%', flexDirection: 'row'}}>
-                      <Text style={{fontFamily: 'Montserrat-Bold', marginRight: '3%', color: 'black'}}>{index+1}</Text>
-                      <Text style={{fontFamily: 'Montserrat-Regular', color: 'black'}}>{exercise.exercise_name}</Text>
-                  </View>
+                <View key={index} style={{marginBottom: '2%', width: '40%', flexDirection: 'row'}}>
+                  <Text style={{fontFamily: 'Montserrat-Bold', marginRight: '3%', color: 'black'}}>{index+1}</Text>
+                  <Text style={{fontFamily: 'Montserrat-Regular', textTransform: 'capitalize', color: 'black'}}>{exercise.name}</Text>
+                </View>
               ))}
               </View>
               {day.exerciseList.length > 0 && 

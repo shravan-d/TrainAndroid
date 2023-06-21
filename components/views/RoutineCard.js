@@ -12,7 +12,6 @@ const RoutineCard = ({ routine, self, myRoutineCallback, my_rating }) => {
   let experienceMap = {0: 'Beginner', 1: 'Intermediate', 2: 'Expert'};
   let experienceColorMap = {0: '#ABE6CE', 1: '#CECBD6', 2: '#F388B1'};
   
-
   if (routine == undefined)
     return (<ActivityIndicator />)
   let image = routine.image_url ? {uri: routine.image_url} : defaultIcon;
