@@ -10,6 +10,7 @@ import RoutineCard from '../views/RoutineCard';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import {useNavigation} from '@react-navigation/native';
 import { supabase } from '../../supabaseClient';
+import { LoadingCard } from '../views/LoadingCard';
 
 var screenHeight = Dimensions.get('window').height;
 var screenWidth = Dimensions.get('window').width;
@@ -162,6 +163,11 @@ const RoutineScreen = () => {
                 </TouchableOpacity>
               </View>
             </View>
+            {filteredRoutines.length ===0 && 
+            <View>
+              <LoadingCard />
+              <LoadingCard />
+            </View>}
             {filteredRoutines.map(routine => (
               <RoutineCard key={routine.id} routine={routine} self={false} myRoutineCallback={myRoutineCallback} />
             ))}

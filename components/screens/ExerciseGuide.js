@@ -9,13 +9,13 @@ import { supabase } from '../../supabaseClient';
 import { AuthContext } from '../../App';
 import { exerciseStore } from '../ExerciseReducer';
 import RadioGroup from '../views/RadioGroup';
+import { LoadingCard } from '../views/LoadingCard';
 
 var screenHeight = Dimensions.get('window').height;
 var screenWidth = Dimensions.get('window').width;
 
 const ExerciseGuide = () => {
   const user = useContext(AuthContext);
-  var bg = require ('../../assets/media/bg.png');
   var overlays = [require('../../assets/media/ig1.jpg')]
   var muscleGroupDetails = [
     {id: 0, label: 'All', value: ''},
@@ -26,11 +26,6 @@ const ExerciseGuide = () => {
     {id: 5, primary_img: 'https://imgur.com/flps7Wn.jpg', secondary_img: '', label: 'Biceps', value: 'Biceps'},
     {id: 6, primary_img: '', secondary_img: '', label: 'Triceps', value: 'Triceps'},
     {id: 7, primary_img: '', secondary_img: '', label: 'Abs', value: 'Abs'},
-  ];
-  var equipmentDetails = [
-    {id: 0, label: 'Full Gym', value: '0'},
-    {id: 1, label: 'No Equipment', value: '1'},
-    {id: 2, label: 'Resistance Band and Dumbells', value: '2'},
   ];
 
   const [showFavorites, setShowFavorites] = useState(false);
@@ -185,12 +180,18 @@ const ExerciseGuide = () => {
         <IonIcon name="heart" size={18} color={showFavorites ? '#D4AF37' : 'white'} />
         </TouchableOpacity>
       </View>
+      {exerciseList.length === 0 && 
+      <View>
+        <LoadingCard />
+        <LoadingCard />
+        <LoadingCard />
+      </View>}
     </>
   )
 
   return (
     <View style={styles.container}>
-      <View style={{height: '94%'}}>
+      <View style={{height: '100%'}}>
       <ImageBackground source={overlays[0]} imageStyle={{opacity:0.06}} style={{height: '100%'}}>
         <View style={styles.topBar}>
             {!openSearch &&

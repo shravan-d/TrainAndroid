@@ -1,9 +1,8 @@
 import React, { useContext } from 'react';
-import {StyleSheet, View, Text, ImageBackground, Dimensions, TouchableOpacity} from 'react-native';
+import {StyleSheet, View, Text, ImageBackground } from 'react-native';
 import MenuBar from '../views/MenuBar';
 import NavBar from '../views/NavBar';
 import { AuthContext } from '../../App';
-
 
 const LandingPage = () => {
   var bg = require ('../../assets/media/bg.png');

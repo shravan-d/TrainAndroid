@@ -1,6 +1,6 @@
 import {NavigationContainer} from '@react-navigation/native';
-import React, { useEffect, useReducer, useState } from 'react';
-import {StyleSheet, Linking, View, Text, ActivityIndicator} from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import {StyleSheet, Dimensions, View, Text, Animated, Image} from 'react-native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import LandingPage from './components/screens/LandingPage';
 import ExerciseGuide from './components/screens/ExerciseGuide';
@@ -21,10 +21,14 @@ import { Provider } from 'react-redux';
 
 const Stack = createNativeStackNavigator();
 export const AuthContext = React.createContext(null);
+var screenWidth = Dimensions.get('screen').width;
 
 const App = () => {
   const [loading, setLoading] = useState(true);
+  const [animationComplete, setAnimationComplete] = useState(false);
   const [auth, setAuth] = useState(null);
+  var bg = require ('./assets/media/playstore-icon.png');
+  var ballAnimatedValue = useRef(new Animated.Value(0)).current;
 
   useEffect(()=>{
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -62,12 +66,45 @@ const App = () => {
       )
       .subscribe()
   }, [auth])
-  
-  if(loading){
+
+  const moveBall = () => {
+    Animated.timing(ballAnimatedValue, {
+      toValue: 1,
+      duration: 3000,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const xVal = ballAnimatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, screenWidth],
+  });
+  const yVal = ballAnimatedValue.interpolate({
+    inputRange: [0, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 1],
+    outputRange: [0, 0, 10, 0, -15, 0, 20, 0, -15, 0, 10, 0, 0],
+  });
+  const scale = ballAnimatedValue.interpolate({
+    inputRange: [0, 0.7, 0.75, 1],
+    outputRange: [1, 1, 10, 400],
+  });
+
+  const animStyle = {
+    transform: [{ translateY: yVal }, { translateX: xVal } ]
+  };
+  useEffect(()=>{
+    moveBall();
+    setTimeout(() => {setAnimationComplete(true)}, 2000)
+  }, [])
+  if(loading || !animationComplete){
     return (
-      <ActivityIndicator color={'white'} size={40}/>
+      <View style={{width: "100%", height: '100%', backgroundColor: 'black', justifyContent: 'center'}}>
+        <Image source={bg} style={{width: '100%', minHeight: '50%', position: 'absolute'}} />
+        <Animated.View style={[{width: 6, height: 6, borderRadius: 2, backgroundColor: '#D4AF37'}, animStyle]}>
+        </Animated.View>
+      </View>
     )
-  } else
+  } 
+  else if(!loading && animationComplete){
   return (
     <AuthContext.Provider value={auth?.user}>
       <Provider store={messageStore}>
@@ -169,7 +206,7 @@ const App = () => {
       </NavigationContainer>
       </Provider>
     </AuthContext.Provider>
-  );
+  );}
 };
 
 const styles = StyleSheet.create({});

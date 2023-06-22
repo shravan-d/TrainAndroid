@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect, useContext} from 'react';
-import {StyleSheet, ImageBackground, View, Text, TextInput, ScrollView, TouchableOpacity, FlatList, Dimensions} from 'react-native';
+import React, { useState, useMemo, useEffect, useContext, useRef} from 'react';
+import {StyleSheet, ImageBackground, View, Text, TextInput, ScrollView, TouchableOpacity, Animated, Dimensions} from 'react-native';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import ContactCard from '../views/ContactCard';
 import MenuBar from '../views/MenuBar';
@@ -11,6 +11,7 @@ import { supabase } from '../../supabaseClient';
 import { AuthContext } from '../../App';
 import ImgToBase64 from 'react-native-image-base64';
 import { useSelector, useDispatch } from 'react-redux';
+import { LoadingCard, LoadingContactCard } from '../views/LoadingCard';
 
 const screenHeight = Dimensions.get("window").height
 const screenWidth = Dimensions.get("window").width
@@ -23,6 +24,7 @@ const ContactScreen = ({ route }) => {
   const user = useContext(AuthContext);
   var bg = require ('../../assets/media/bg.png');
   const Buffer = require("buffer").Buffer;
+  var ballAnimatedValue = useRef(new Animated.Value(0)).current;
   
   const [contactList, setContactList] = useState([]);
   const [userList, setUserList] = useState([]);
@@ -31,6 +33,7 @@ const ContactScreen = ({ route }) => {
   const [openUserSearch, setOpenUserSearch] = useState(false)
   const [selectedContacts, setSelectedContacts] = useState([]);
   const [sendScreen, setSendScreen] = useState(sendCapture);
+  const [loading, setLoading] = useState(true);
 
   const newMessage = useSelector(state => state.newMessage)
   const hasNewMessage = useSelector(state => state.hasNewMessage)
@@ -114,6 +117,7 @@ const ContactScreen = ({ route }) => {
         lastMessageTime: timeToDisplay, newMsg: ele.sent_unread_msg, newShot: ele.sent_unseen_shot}
     })
     setContactList(tempList);
+    setLoading(false);
   }
 
   const uploadImage = async () => {
@@ -152,6 +156,31 @@ const ContactScreen = ({ route }) => {
     else return data.path;
   }
 
+  const moveBall = () => {
+    Animated.timing(ballAnimatedValue, {
+      toValue: 1,
+      duration: 1000,
+      useNativeDriver: true,
+    }).start();
+    setTimeout(()=> {ballAnimatedValue.setValue(0);}, 1000)
+  };
+
+  const yVal = ballAnimatedValue.interpolate({
+    inputRange: [0, 0.4, 0.6, 0.9, 1],
+    outputRange: [0, 0, -55, -55, 0],
+  });
+  const opacity = ballAnimatedValue.interpolate({
+    inputRange: [0, 0.1, 0.9, 1],
+    outputRange: [0, 1, 1, 0],
+  });
+  const xVal = ballAnimatedValue.interpolate({
+    inputRange: [0, 0.4, 0.6, 0.9, 1],
+    outputRange: [0, 130, 130, -10, -10],
+  });
+  const animStyle = {
+    transform: [{ translateY: yVal }, { translateX: xVal }]
+  };
+
   const sendShot = async () => {
     var media_url = type=='photo'?await uploadImage():await uploadVideo();
     var newShots = [];
@@ -185,8 +214,8 @@ const ContactScreen = ({ route }) => {
         if(res_.error) console.error(res_.error.message)
       }
     }
-
-    setSendScreen(false)
+    moveBall();
+    setSendScreen(false);
     setSelectedContacts([]);
   }
   
@@ -301,18 +330,26 @@ const ContactScreen = ({ route }) => {
         }
         <View style={[styles.contactContainer, openUserSearch?{height: '58%'}:{height: '86%', marginTop: 55}]}>
           <ScrollView>
+            {loading && 
+            <View>
+              <LoadingContactCard />
+              <LoadingContactCard />
+            </View>}
             {filteredContacts.map((contact, idx) => (
                 <TouchableOpacity key={contact.user.id} onPress={() => onCardPress(contact, idx)}>
                   <ContactCard contact={contact} highlight={selectedContacts.includes(contact.user.id)} />
                 </TouchableOpacity>
             ))}
           </ScrollView>
-          {!sendScreen && <TouchableOpacity onPress={() => {navigation.navigate('CameraScreen');}} style={styles.addButton}>
-            <IonIcon name="camera-outline" color="rgba(250,250,250,0.8)" size={30} />
-          </TouchableOpacity>}
-          {sendScreen && selectedContacts.length > 0 && <TouchableOpacity onPress={() => sendShot()} style={styles.addButton}>
-            <IonIcon name="send-sharp" color="rgba(250,250,250,0.8)" size={30} />
-          </TouchableOpacity>}
+          <View style={styles.buttonContainer}>
+            {!sendScreen && <TouchableOpacity onPress={() => {navigation.navigate('CameraScreen');}} style={styles.addButton}>
+              <IonIcon name="camera-outline" color="rgba(250,250,250,0.8)" size={30} />
+            </TouchableOpacity>}
+            {sendScreen && selectedContacts.length > 0 && <TouchableOpacity onPress={() => sendShot()} style={styles.addButton}>
+              <IonIcon name="send-sharp" color="rgba(250,250,250,0.8)" size={30} />
+            </TouchableOpacity>}
+            <Animated.View style={[{width: 6, height: 6, borderRadius: 2, backgroundColor: '#D4AF37', opacity: opacity}, animStyle]}></Animated.View>
+          </View>
         </View>
         <NavBar />
       </ImageBackground>
@@ -363,23 +400,21 @@ const styles = StyleSheet.create({
     right: "3%",
     top: "30%",
   },
-  addButton: {
+  buttonContainer: {
     position: 'absolute',
     right: "3%",
     bottom: "15%",
     width: "30%",
-    height: 50,
-    backgroundColor: "rgba(0,0,0,0.6)",
-    borderColor: "rgba(255,255,255,0.5)",
+  },
+  addButton: {
+    width: 128,
+    height: 48,
+    backgroundColor: "rgba(10,10,10,10.8)",
+    borderColor: "rgba(255,255,255,0.9)",
     borderWidth: 2,
-    borderTopRightRadius: 50,
-    borderBottomRightRadius: 50,
-    borderTopLeftRadius: 50,
-    borderBottomLeftRadius: 50,
-    flex:1,
+    borderRadius: 50,
     justifyContent: 'center',
     alignItems: 'center',
-    alignSelf: 'center',
   },
   textInputStyle: {
     fontFamily: 'Montserrat-Regular',
@@ -392,5 +427,3 @@ const styles = StyleSheet.create({
 });
 
 export default ContactScreen;
-
-// Add friends
