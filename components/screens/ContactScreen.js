@@ -194,6 +194,8 @@ const ContactScreen = ({ route }) => {
     }
     const { data, error } = await supabase.from('shots').insert(newShots);
     if(error) console.error(error.message)
+    moveBall();
+    setSendScreen(false);
 
     const now = new Date()
     for (const secondUserId of selectedContacts){
@@ -214,8 +216,6 @@ const ContactScreen = ({ route }) => {
         if(res_.error) console.error(res_.error.message)
       }
     }
-    moveBall();
-    setSendScreen(false);
     setSelectedContacts([]);
   }
   

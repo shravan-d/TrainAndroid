@@ -40,10 +40,10 @@ const RoutineDetailScreen = ({ route }) => {
     const insertDayRes = await supabase.from('routine_days').insert({routine_id: routine.id, day_name: newWorkoutName}).select('id');
     if (insertDayRes.error) console.error(insertDayRes.error)
     var insertData = newExercises.map(e => {return {day_id: insertDayRes.data[0].id, exercise_id: e.id}});
-    const insertMapRes = await supabase.from('days_exercise_map').insert(insertData).select('exercise_id, exercises(*)').eq('day_id', insertDayRes.data[0].id);
+    const insertMapRes = await supabase.from('days_exercise_map').insert(insertData).select('exercise_id').eq('day_id', insertDayRes.data[0].id);
     if (insertMapRes.error) console.error(insertMapRes.error)
     var newDay = {id: insertDayRes.data[0].id, day_name: newWorkoutName, routine_id: routine.id, created_at: new Date()};
-    newDay.exerciseList = insertMapRes.data.map(e => e.exercises);
+    newDay.exerciseList = insertMapRes.data.map(e => fullExerciseList.find(ele => ele.id == e.exercise_id));
     setDayList([...dayList, newDay]);
     setNewExercises([]);
     setNewWorkoutName('');
@@ -265,7 +265,8 @@ const RoutineDetailScreen = ({ route }) => {
                   }}
                   placeholderStyle={{
                     textAlign: 'center',
-                    color: 'black'
+                    color: 'black',
+                    textTransform: 'capitalize'
                   }}
                   arrowIonIconStyle={{
                     position: 'absolute',
@@ -290,9 +291,9 @@ const RoutineDetailScreen = ({ route }) => {
                   searchTextInputStyle={{
                     borderWidth: 0,
                     textAlign: 'center',
-                    color: 'white'
+                    color: 'white',
+                    textTransform: 'capitalize'
                   }}
-                  searchTextInputProps={cursorColor='white'}
                 />
                 <View style={styles.exerciseContainer}>
                 {newExercises.map((exercise, index) => (
@@ -301,7 +302,7 @@ const RoutineDetailScreen = ({ route }) => {
                   onPress={() => removeNewExercise(index)}>
                     <View style={{flexDirection: 'row'}}>
                       <Text style={{fontFamily: 'Montserrat-Bold', marginRight: 5, color: 'black'}}>{index+1}</Text>
-                      <Text style={{fontFamily: 'Montserrat-Regular', color: 'black'}}>{exercise.name}</Text>    
+                      <Text style={{fontFamily: 'Montserrat-Regular', color: 'black', textTransform: 'capitalize'}}>{exercise.name}</Text>    
                     </View>
                   </TouchableOpacity>
                 ))}
